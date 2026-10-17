@@ -27,8 +27,8 @@ const compiled = spawnSync(
     '/nologo',
     '/target:exe',
     '/platform:x64',
-    '/out:native/pty-job-host.exe',
-    'native/PtyJobHost.cs'
+    `/out:${join(process.cwd(), 'native', 'pty-job-host.exe')}`,
+    join(process.cwd(), 'native', 'PtyJobHost.cs')
   ],
   { stdio: 'inherit' }
 )
