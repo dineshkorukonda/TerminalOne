@@ -25,7 +25,7 @@ const [directory] = await packager({
     /^\/\.git(?:\/|$)/
   ],
   afterCopy: [
-    async (buildPath) => {
+    async ({ buildPath }) => {
       await copyFile(
         'tests/fixtures/native-probe.cjs',
         join(buildPath, 'native-probe.cjs')
