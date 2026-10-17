@@ -227,13 +227,13 @@ app
             )
             await session.wait(/INTERACTIVE_READY/)
             const before = session.position()
-            // CMD must receive a reply from ping itself before Ctrl+C. An echo
-            // before launching it races with the transition to the child process.
+            // Wait for readiness from the blocking operation itself. A marker
+            // before launching a child races with the transition to that child.
             const busyWithMarker =
               family === 'cmd'
                 ? 'ping -n 90 127.0.0.1\r'
                 : family === 'bash'
-                  ? "printf '%s%s\\n' 'BUSY_' 'READY'; sleep 90\r"
+                  ? 'read -r -t 90 -p \'BUSY_\'"READY" matrix_input\r'
                   : "Write-Output ('BUSY_' + 'READY'); Start-Sleep -Seconds 90\r"
             await session.handle.write(busyWithMarker)
             await session.wait(
@@ -275,7 +275,9 @@ app
                 'environment-isolation',
                 'pipeline',
                 'resize',
-                'interactive-ctrlc',
+                family === 'bash'
+                  ? 'interactive-read-ctrlc'
+                  : 'interactive-ctrlc',
                 'exit-7',
                 'cleanup'
               ]
