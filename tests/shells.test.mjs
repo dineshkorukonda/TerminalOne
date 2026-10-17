@@ -27,6 +27,7 @@ test('shell discovery handles Windows paths, optional shells, stable IDs and arg
   )
   assert.equal(shells[0].executable, 'D:\\用户 files\\pwsh.exe')
   assert(shells.every((shell) => Array.isArray(shell.args)))
+  assert.deepEqual(shells.find((shell) => shell.id === 'cmd').args, ['/d'])
   assert.equal(selectShell(shells, 'auto').id, 'pwsh')
   assert.throws(() => selectShell(shells, 'missing'), /unavailable/)
 })
