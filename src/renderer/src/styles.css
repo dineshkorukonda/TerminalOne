@@ -1,7 +1,6 @@
 @import 'tailwindcss' source(none);
 @import './theme/tokens.css';
 @source './';
-
 :root {
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -9,8 +8,38 @@
 body {
   margin: 0;
 }
-button {
+button,
+select {
   font: inherit;
+}
+button,
+select {
+  color: var(--color-ink);
+  background: var(--color-elevated);
+  border: 1px solid var(--color-control-border);
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+}
+button {
+  cursor: pointer;
+}
+button:hover {
+  background: var(--color-panel);
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+.app-shell {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 .app-header {
   display: flex;
@@ -29,6 +58,10 @@ button {
 .brand > svg {
   color: var(--color-accent);
 }
+h1 {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
 .build-label {
   color: var(--color-muted);
   font-size: 0.75rem;
@@ -40,107 +73,54 @@ button {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--color-ink);
-  background: var(--color-elevated);
-  border: 1px solid var(--color-control-border);
-  border-radius: 0.375rem;
-  padding: 0.5rem 0.75rem;
-  cursor: pointer;
-  font-size: 0.8125rem;
-}
-.documentation-button:hover {
-  background: var(--color-panel);
-}
-:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 3px;
 }
 .workspace {
-  max-width: 46rem;
-  margin: 0 auto;
-  padding: 2.5rem 2rem;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  gap: 1rem;
 }
-.eyebrow {
-  color: var(--color-accent);
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 0.5rem;
+.session-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.8125rem;
 }
-h1 {
-  font-size: 2rem;
-  font-weight: 600;
-  letter-spacing: -0.035em;
+.terminal-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
 }
-.intro {
-  color: var(--color-muted);
-  margin-top: 0.5rem;
-}
-.foundation-panel {
-  margin-top: 1.75rem;
-  padding: 1.5rem;
-}
-.panel-heading {
+.terminal-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1rem;
-}
-h2 {
-  font-size: 0.9375rem;
-  font-weight: 500;
-}
-.phase-label {
-  color: var(--color-muted);
+  padding: 0.5rem 0.75rem;
+  background: var(--color-panel);
   font-size: 0.75rem;
-  white-space: nowrap;
-}
-.status {
   color: var(--color-muted);
-  font-size: 0.875rem;
-  margin-top: 0.5rem;
-  line-height: 1.6;
 }
-.type-sample {
-  background: var(--color-canvas);
-  border-radius: 0.375rem;
-  padding: 1rem 1.25rem;
-  margin-top: 1.5rem;
+.terminal-surface {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  padding: 0.5rem;
+  overflow: hidden;
 }
-.sample-label {
-  color: var(--color-muted);
-  font-size: 0.6875rem;
-  margin-bottom: 0.75rem;
-}
-.sample-detail {
-  color: var(--color-muted);
-  margin-top: 0.25rem;
-}
-.ansi-palette {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-  margin-top: 1.25rem;
-}
-.ansi-swatch {
-  display: block;
-  width: 1.25rem;
-  height: 0.75rem;
-  border-radius: 0.125rem;
-}
-.palette-label,
-.foundation-note {
-  color: var(--color-muted);
-  font-size: 0.75rem;
-  margin-top: 0.75rem;
-  line-height: 1.6;
-}
-.foundation-note {
-  margin-top: 1.25rem;
+.terminal-surface > .xterm {
+  height: 100%;
 }
 .error-message {
   color: var(--ansi-red);
-  margin-top: 1rem;
+  font-size: 0.8125rem;
+  padding: 0.5rem;
 }
 @media (max-width: 700px) {
   .app-header {
@@ -149,59 +129,4 @@ h2 {
   .build-label {
     display: none;
   }
-  .workspace {
-    padding: 2rem 1rem;
-  }
-  .foundation-panel {
-    padding: 1.25rem;
-  }
-}
-
-.ansi-black {
-  background: var(--ansi-black);
-}
-.ansi-red {
-  background: var(--ansi-red);
-}
-.ansi-green {
-  background: var(--ansi-green);
-}
-.ansi-yellow {
-  background: var(--ansi-yellow);
-}
-.ansi-blue {
-  background: var(--ansi-blue);
-}
-.ansi-magenta {
-  background: var(--ansi-magenta);
-}
-.ansi-cyan {
-  background: var(--ansi-cyan);
-}
-.ansi-white {
-  background: var(--ansi-white);
-}
-.ansi-bright-black {
-  background: var(--ansi-bright-black);
-}
-.ansi-bright-red {
-  background: var(--ansi-bright-red);
-}
-.ansi-bright-green {
-  background: var(--ansi-bright-green);
-}
-.ansi-bright-yellow {
-  background: var(--ansi-bright-yellow);
-}
-.ansi-bright-blue {
-  background: var(--ansi-bright-blue);
-}
-.ansi-bright-magenta {
-  background: var(--ansi-bright-magenta);
-}
-.ansi-bright-cyan {
-  background: var(--ansi-bright-cyan);
-}
-.ansi-bright-white {
-  background: var(--ansi-bright-white);
 }

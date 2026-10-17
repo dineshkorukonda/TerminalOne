@@ -48,11 +48,16 @@ for (const mode of ['built', 'development'] as const) {
             window.getByRole('heading', { name: 'Terminal One' })
           ).toBeVisible()
           await expect(
-            window.getByText('The application window is ready.')
+            window.getByRole('combobox', { name: 'Shell' })
           ).toBeVisible()
-          await expect(
-            window.getByText('Shell sessions arrive in the next phase.')
-          ).toBeVisible()
+          if (process.platform === 'win32') {
+            await expect(window.locator('.xterm')).toBeVisible()
+            await expect(window.getByRole('status')).toHaveText('running')
+          } else {
+            await expect(window.getByRole('alert')).toContainText(
+              'require Windows'
+            )
+          }
           expect(window.url()).toMatch(
             mode === 'built' ? /^file:/ : /^http:\/\/127\.0\.0\.1:5173/
           )
@@ -73,7 +78,17 @@ for (const mode of ['built', 'development'] as const) {
                 Reflect.get(globalThis, 'desktop') as DesktopApi
               ).sort()
             )
-          ).toEqual(['getAppInfo', 'openExternal'])
+          ).toEqual([
+            'acknowledgeSession',
+            'closeSession',
+            'createSession',
+            'getAppInfo',
+            'listShells',
+            'onSessionEvent',
+            'openExternal',
+            'resizeSession',
+            'writeSession'
+          ])
           expect(
             await window.evaluate(() =>
               (Reflect.get(globalThis, 'desktop') as DesktopApi).getAppInfo()
@@ -108,7 +123,7 @@ for (const mode of ['built', 'development'] as const) {
           const documentation = window.getByRole('button', {
             name: 'Project documentation'
           })
-          await window.keyboard.press('Tab')
+          await documentation.focus()
           await expect(documentation).toBeFocused()
           await expect(documentation).toHaveCSS('outline-width', '2px')
           await expect(documentation).toHaveCSS('outline-style', 'solid')
@@ -120,15 +135,6 @@ for (const mode of ['built', 'development'] as const) {
             'background-color',
             'rgb(16, 17, 20)'
           )
-          await expect(window.getByTestId('font-sample')).toHaveCSS(
-            'font-size',
-            '14px'
-          )
-          await expect(window.getByTestId('font-sample')).toHaveCSS(
-            'line-height',
-            '21px'
-          )
-          await expect(window.locator('.ansi-swatch')).toHaveCount(16)
           expect(
             await window.evaluate(() => {
               const element = Reflect.get(

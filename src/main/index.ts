@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { createDesktopWindow } from '../infrastructure/window/create-desktop-window'
 import { registerDesktopIpc } from '../infrastructure/ipc/register-desktop-ipc'
+import { registerTerminalIpc } from '../infrastructure/ipc/register-terminal-ipc'
 import { validatePackagedArguments } from '../infrastructure/ipc/policy'
 
 if (app.isPackaged) {
@@ -18,6 +19,9 @@ if (app.isPackaged) {
     app.exit(1)
   }
 }
+
+const terminalDisposers = new Set<() => Promise<void>>()
+let quitting = false
 
 function createWindow(): void {
   const rendererUrl = !app.isPackaged
@@ -40,7 +44,17 @@ function createWindow(): void {
       version: app.getVersion()
     }
   )
-  window.once('closed', dispose)
+  const disposeTerminal = registerTerminalIpc(
+    window,
+    rendererUrl ? new URL(rendererUrl).href : pathToFileURL(rendererPath).href
+  )
+  terminalDisposers.add(disposeTerminal)
+  window.once('closed', () => {
+    dispose()
+    void disposeTerminal().finally(() =>
+      terminalDisposers.delete(disposeTerminal)
+    )
+  })
 }
 
 app.whenReady().then(() => {
@@ -52,4 +66,13 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
+})
+
+app.on('before-quit', (event) => {
+  if (quitting) return
+  event.preventDefault()
+  quitting = true
+  void Promise.allSettled(
+    [...terminalDisposers].map((dispose) => dispose())
+  ).then(() => app.quit())
 })
