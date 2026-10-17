@@ -1,5 +1,8 @@
 import { fileURLToPath } from 'node:url'
 import parser from '@typescript-eslint/parser'
+import js from '@eslint/js'
+import tseslint from 'typescript-eslint'
+import globals from 'globals'
 import { importX } from 'eslint-plugin-import-x'
 import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript'
 
@@ -23,6 +26,23 @@ export default [
       'playwright-report/**',
       'website/**'
     ]
+  },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
+    files: ['**/*.{js,mjs,cjs,ts,tsx}'],
+    languageOptions: { globals: globals.node },
+    linterOptions: { reportUnusedDisableDirectives: 'error' },
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
+      ]
+    }
+  },
+  {
+    files: ['src/renderer/**/*.{ts,tsx}'],
+    languageOptions: { globals: globals.browser }
   },
   {
     files: ['src/**/*.{ts,tsx}'],

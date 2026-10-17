@@ -6,6 +6,7 @@ import type { ViteDevServer } from 'vite'
 import type { DesktopApi } from '../src/contracts/desktop-api'
 
 for (const mode of ['built', 'development'] as const) {
+  // eslint-disable-next-line no-empty-pattern -- Playwright requires a destructured fixture argument.
   test(`launches the ${mode} React window with an isolated renderer`, async ({}, testInfo) => {
     const profile = await mkdtemp(join(tmpdir(), 'terminal-one-smoke-'))
     // Do not inherit an electron-vite development URL or Electron's Node mode.
