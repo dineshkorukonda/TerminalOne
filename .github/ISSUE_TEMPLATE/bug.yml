@@ -1,0 +1,48 @@
+name: Bug report
+description: Report reproducible behavior with environment details and expected results.
+title: "[Bug]: "
+labels: ["type:bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the bug and its impact. Remove secrets and private terminal output.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Provide numbered steps and the smallest safe reproduction.
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include app version or commit, OS edition/build, architecture, shell/version, and relevant display scale. For website bugs, include browser/version.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs and screenshots
+      description: Attach sanitized logs or screenshots if available. Do not include credentials, tokens, or private commands.
+  - type: textarea
+    id: related-issues
+    attributes:
+      label: Related issues
+      description: Link related issues or PRs, if any.
