@@ -33,6 +33,8 @@ Linux implementation checks: formatting, strict build/typecheck, lint, all 23 un
 
 Windows native and packaged execution is pending CI at this revision. Do not interpret source coverage or unit tests as executed native compatibility evidence. Tests use synthetic data, bounded event/process waits and cleanup in finally. The shared native probe waits for the post-Ctrl+C prompt before sending more input; directory cleanup retries transient Windows locks.
 
+Windows run `39042101081` passed the native probe and all 12 repeated renderer/lifecycle cases, then timed out in the first shell matrix session. The matrix now feeds output through the pinned xterm headless engine, returns terminal protocol replies to the shell, acknowledges parsed output, and waits for the initial prompt before commands. Failures identify the shell and expected condition without logging terminal contents. This correction still requires a Windows rerun; packaged execution was not reached in that run.
+
 The shared Windows renderer tests type ASCII keys and deliver Unicode through xterm's paste event path; input-only Playwright `insertText` events are deliberately ignored in xterm screen-reader mode. Physical IME entry is not claimed. Main-crash testing force-terminates Electron's actual main PID obtained from its runtime and retains that handle; the Playwright Windows launcher PID is a separate wrapper.
 
 ## Limits

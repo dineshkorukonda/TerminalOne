@@ -5,6 +5,7 @@ const path = require('node:path'),
   os = require('node:os')
 const assert = require('node:assert/strict')
 const { stripVTControlCharacters } = require('node:util')
+const { Terminal } = require('@xterm/headless')
 const watchProcesses = require('./process-watch.cjs')
 const { UtilityPtyPort } = require('../../out/main/pty-client.js')
 const { discoverShells } = require('../../out/main/shell-catalog.js')
@@ -33,7 +34,9 @@ app
       let handle,
         output = '',
         code = null
+      const terminal = new Terminal({ cols: 160, rows: 40, scrollback: 2000 })
       const early = [],
+        replies = [],
         waiters = new Set()
       const check = () => {
         for (const waiter of waiters) waiter()
@@ -42,6 +45,17 @@ app
         code = -1
         check()
       })
+      const reply = (data) => {
+        if (!handle) replies.push(data)
+        else
+          void handle.write(data).catch(() => {
+            code = -1
+            check()
+          })
+      }
+      // Interactive shells query terminal state (including cursor position).
+      // Parse with the same terminal engine as the UI and return its replies.
+      terminal.onData(reply)
       handle = await port.start(
         `matrix-${++sequence}`,
         shell,
@@ -49,9 +63,13 @@ app
         { cols: 160, rows: 40 },
         (event) => {
           if (event.type === 'data') {
-            output = (output + event.data).slice(-262144)
-            if (handle) void handle.acknowledge(event.sequence).catch(() => {})
-            else early.push(event.sequence)
+            terminal.write(event.data, () => {
+              output = (output + event.data).slice(-262144)
+              if (handle)
+                void handle.acknowledge(event.sequence).catch(() => {})
+              else early.push(event.sequence)
+              check()
+            })
           }
           if (event.type === 'exit') code = event.exitCode
           if (event.type === 'error') code = -1
@@ -59,10 +77,16 @@ app
         }
       )
       await Promise.all(early.map((value) => handle.acknowledge(value)))
-      const wait = (predicate) =>
+      for (const data of replies) await handle.write(data)
+      const wait = (predicate, condition) =>
         new Promise((resolve, reject) => {
           const timeout = setTimeout(
-            () => finish(new Error('Shell compatibility condition timed out')),
+            () =>
+              finish(
+                new Error(
+                  `${shell.id} session ${sequence}: timed out waiting for ${condition}`
+                )
+              ),
             20000
           )
           const finish = (error) => {
@@ -84,12 +108,20 @@ app
         position: () => output.length,
         text: () => stripVTControlCharacters(output),
         wait: (pattern, since = 0) =>
-          wait(() =>
-            pattern.test(stripVTControlCharacters(output.slice(since)))
+          wait(
+            () => pattern.test(stripVTControlCharacters(output.slice(since))),
+            String(pattern)
           ),
-        exited: () => wait(() => code !== null),
+        exited: () => wait(() => code !== null, 'process exit'),
+        resize: async (size) => {
+          terminal.resize(size.cols, size.rows)
+          await handle.resize(size)
+        },
         code: () => code,
-        detach
+        detach: () => {
+          detach()
+          terminal.dispose()
+        }
       }
     }
     try {
@@ -105,6 +137,13 @@ app
         for (let cycle = 0; cycle < 2; cycle++) {
           const session = await open(shell)
           try {
+            await session.wait(
+              family === 'cmd'
+                ? /Adapter matrix 空间-[^\r\n]*>/
+                : family === 'bash'
+                  ? /MATRIX_PROMPT>/
+                  : /PS [^\r\n]*>/
+            )
             await session.handle.write(
               emitCommand(family, 'QUOTE_', 'space 世界')
             )
@@ -141,7 +180,7 @@ app
                   : "'OK' | ForEach-Object { Write-Output ('PIPE_' + $_) }\r"
             await session.handle.write(pipeline)
             await session.wait(/PIPE_OK/)
-            await session.handle.resize({ cols: 120, rows: 35 })
+            await session.resize({ cols: 120, rows: 35 })
             await session.handle.write(
               emitCommand(family, 'INTERACTIVE_', 'READY')
             )
@@ -195,6 +234,9 @@ app
                 'cleanup'
               ]
             })
+            console.log(
+              `${shell.id} cycle ${cycle + 1}: compatibility checks passed`
+            )
           } finally {
             session.detach()
             await session.handle.close().catch(() => {})
