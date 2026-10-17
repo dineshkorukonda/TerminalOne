@@ -33,6 +33,8 @@ Linux implementation checks: formatting, strict build/typecheck, lint, all 23 un
 
 Windows native and packaged execution is pending CI at this revision. Do not interpret source coverage or unit tests as executed native compatibility evidence. Tests use synthetic data, bounded event/process waits and cleanup in finally. The shared native probe waits for the post-Ctrl+C prompt before sending more input; directory cleanup retries transient Windows locks.
 
+The shared Windows renderer tests type ASCII keys and deliver Unicode through xterm's paste event path; input-only Playwright `insertText` events are deliberately ignored in xterm screen-reader mode. Physical IME entry is not claimed. Main-crash testing force-terminates Electron's actual main PID obtained from its runtime and retains that handle; the Playwright Windows launcher PID is a separate wrapper.
+
 ## Limits
 
 A recognizer is not a parser, execution policy, threat model, or promise that arbitrary scripts behave equivalently. The compatibility suite covers its explicit synthetic cases, not arbitrary scripts or complete shell semantics. Unit tests validate UNC paths but no real network share is exercised in hosted CI. Hosted Windows Server results do not establish manual Windows 10/11 compatibility. No environment secrets or user terminal output are logged. Installing prompt hooks, exposing a user-facing analysis workflow, command history, settings persistence and production qualification remain separate work.

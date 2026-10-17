@@ -43,7 +43,25 @@ async function launch() {
 }
 async function command(page: Page, input: string) {
   await page.locator('.xterm-helper-textarea').focus()
-  await page.keyboard.type(input)
+  if ([...input].some((character) => character.codePointAt(0)! > 127)) {
+    // Screen-reader mode deliberately filters input-only insertText events.
+    // Exercise Unicode through the same paste event xterm receives from the OS.
+    await page
+      .locator('.xterm-helper-textarea:visible')
+      .evaluate((element, text) => {
+        const Transfer = Reflect.get(globalThis, 'DataTransfer')
+        const PasteEvent = Reflect.get(globalThis, 'ClipboardEvent')
+        const data = new Transfer()
+        data.setData('text/plain', text)
+        element.dispatchEvent(
+          new PasteEvent('paste', {
+            clipboardData: data,
+            bubbles: true,
+            cancelable: true
+          })
+        )
+      }, input)
+  } else await page.keyboard.type(input)
   await page.keyboard.press('Enter')
 }
 
@@ -173,9 +191,18 @@ for (const mode of [
     let watcher: Awaited<ReturnType<typeof watchProcesses>> | undefined
     try {
       const tree = await ownedTree(fixture.page)
-      watcher = await watchProcesses([tree.root, tree.child])
+      // On Windows, Playwright's process() is a cmd.exe launcher, not Electron.
+      const mainPid =
+        mode === 'main-crash'
+          ? await fixture.app.evaluate(() => process.pid)
+          : null
+      watcher = await watchProcesses([
+        tree.root,
+        tree.child,
+        ...(mainPid ? [mainPid] : [])
+      ])
       if (mode === 'main-crash') {
-        fixture.app.process().kill()
+        process.kill(mainPid!, 'SIGKILL')
       } else if (mode === 'renderer-crash') {
         await fixture.app.evaluate(({ BrowserWindow }) =>
           BrowserWindow.getAllWindows()[0]!.webContents.forcefullyCrashRenderer()
