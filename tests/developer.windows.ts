@@ -1,5 +1,5 @@
 import { _electron as electron, expect, test } from '@playwright/test'
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdtemp, rm, realpath } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { DesktopApi, SessionEvent } from '../src/contracts/desktop-api'
@@ -193,6 +193,7 @@ test('PowerShell complete-command history is opt-in and private sessions never r
 test('saved projects restore fresh sessions only after explicit confirmation', async () => {
   const profile = await mkdtemp(join(tmpdir(), 'terminal-restore-native-'))
   const folder = await mkdtemp(join(tmpdir(), 'Terminal project 世界 '))
+  const canonicalFolder = await realpath(folder)
   const env = Object.fromEntries(
     Object.entries(process.env).filter(
       (entry): entry is [string, string] => entry[1] !== undefined
@@ -270,7 +271,7 @@ test('saved projects restore fresh sessions only after explicit confirmation', a
     )
     await page.keyboard.press('Enter')
     await expect(panel.locator('.xterm-accessibility-tree')).toContainText(
-      `RESTORED_${folder}`
+      `RESTORED_${canonicalFolder}`
     )
     await expect(panel.locator('.xterm-accessibility-tree')).toContainText(
       'FRESH_OK'
