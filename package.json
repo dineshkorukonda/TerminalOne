@@ -27,15 +27,23 @@
     "prepare": "husky",
     "staged": "lint-staged",
     "commitlint": "commitlint",
-    "check:pr-title": "node scripts/check-pr-title.mjs"
+    "check:pr-title": "node scripts/check-pr-title.mjs",
+    "native:build": "npm run electron:install && node scripts/native-build.mjs",
+    "test:native": "electron tests/fixtures/native-probe.cjs",
+    "test:packaged": "node scripts/package-native-probe.mjs"
   },
   "dependencies": {
+    "@xterm/addon-fit": "0.11.0",
+    "@xterm/xterm": "6.0.0",
+    "node-pty": "1.1.0",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },
   "devDependencies": {
     "@commitlint/cli": "21.2.3",
     "@commitlint/config-conventional": "21.2.3",
+    "@electron/packager": "20.3.0",
+    "@electron/rebuild": "4.2.1",
     "@eslint/js": "10.0.1",
     "@playwright/test": "1.64.1",
     "@tailwindcss/vite": "4.3.3",

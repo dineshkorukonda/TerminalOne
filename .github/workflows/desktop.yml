@@ -46,8 +46,14 @@ jobs:
         run: npm run typecheck
       - name: Unit and tooling tests
         run: npm run test:unit
+      - name: Rebuild native addon for Electron
+        run: npm run native:build
       - name: Build and test Electron
         run: npm run test:smoke
+      - name: Verify real ConPTY in Electron utility process
+        run: npm run test:native
+      - name: Verify packaged native addon
+        run: npm run test:packaged
       - name: Audit dependencies
         run: npm audit --audit-level=moderate
       - name: Preserve launch screenshots and failure traces
