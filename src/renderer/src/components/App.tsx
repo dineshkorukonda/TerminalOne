@@ -1,12 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useStore } from 'zustand'
 import { Icon } from './Icon'
 import { CommandPalette, type PaletteAction } from './CommandPalette'
 import { DEFAULT_APPEARANCE, parseAppearance } from '../theme/appearance'
 import { FONT_FAMILIES } from '../theme/font'
 import { PaneLayout } from './PaneLayout'
-import { createWorkspaceStore } from '../workspace/store'
+import { createWorkspaceStore, type PaneNode } from '../workspace/store'
 import type { ShellInfo } from '../../../contracts/desktop-api'
+import {
+  defaultPreferences,
+  parsePreferences
+} from '../../../contracts/preferences'
+import type { Preferences } from '../../../contracts/preferences'
+import { DeveloperSettings } from './DeveloperSettings'
+import { CommandDraft } from './CommandDraft'
 
 export function App() {
   const [store] = useState(createWorkspaceStore)
@@ -14,20 +21,64 @@ export function App() {
   const [shells, setShells] = useState<ShellInfo[]>([])
   const [shellId, setShellId] = useState('')
   const [error, setError] = useState('')
-  const [appearance, setAppearance] = useState(DEFAULT_APPEARANCE)
+  const [appearance, setAppearanceState] = useState(DEFAULT_APPEARANCE)
+  const [preferences, setPreferences] = useState(defaultPreferences)
+  const [developer, setDeveloper] = useState(false)
+  const [draftOpen, setDraftOpen] = useState(false)
+  const [projectId, setProjectId] = useState('')
+  const [restoreOffered, setRestoreOffered] = useState(false)
+  const saving = useRef(0)
+  async function saveSettings(value: Preferences) {
+    const next = parsePreferences(value),
+      revision = ++saving.current
+    const result = await window.desktop.savePreferences(next)
+    if (revision === saving.current) {
+      setPreferences(result.settings)
+      setAppearanceState(result.settings.appearance)
+      setError(result.warning)
+    }
+  }
+  function setAppearance(value: typeof appearance) {
+    setAppearanceState(value)
+    void saveSettings({ ...preferences, appearance: value }).catch(() =>
+      setError('Appearance could not be saved. Check Developer settings.')
+    )
+  }
+  async function reloadPreferences() {
+    const result = await window.desktop.getPreferences()
+    setPreferences(result.settings)
+    setAppearanceState(result.settings.appearance)
+    setError(result.warning)
+  }
   const [palette, setPalette] = useState(false)
   const [settings, setSettings] = useState(false)
   useEffect(() => {
     let active = true
     void window.desktop
-      .listShells()
-      .then((available) => {
+      .getPreferences()
+      .then(async (result) => {
+        if (!active) return null
+        setPreferences(result.settings)
+        setAppearanceState(result.settings.appearance)
+        setError(result.warning)
+        const available = await window.desktop.listShells()
+        return {
+          available,
+          restore:
+            result.settings.restoration.enabled &&
+            result.settings.restoration.tabs.length > 0
+        }
+      })
+      .then((result) => {
+        if (!result) return
+        const { available, restore } = result
         if (!active) return
         setShells(available)
         const shell = available[0]
         if (shell) {
           setShellId(shell.id)
-          if (!store.getState().tabs.length)
+          setRestoreOffered(restore)
+          if (!restore && !store.getState().tabs.length)
             store.getState().newTab(shell.id, shell.name)
         } else
           setError(
@@ -44,10 +95,21 @@ export function App() {
       active = false
     }
   }, [store])
-  const newTab = () => {
+  const newTab = (privateSession = false) => {
     const shell = shells.find((shell) => shell.id === shellId)
     if (shell) {
-      workspace.newTab(shell.id, shell.name)
+      const project = preferences.projects.find((item) => item.id === projectId)
+      workspace.newTab(
+        shell.id,
+        (privateSession
+          ? `Private ${shell.name}`
+          : project
+            ? `${project.name} — ${shell.name}`
+            : shell.name
+        ).slice(0, 80),
+        project?.id ?? null,
+        privateSession
+      )
       focusTerminal()
     }
   }
@@ -82,6 +144,16 @@ export function App() {
   const activeTab = workspace.tabs.find(
     (tab) => tab.id === workspace.activeTabId
   )
+  function activeShell(node: PaneNode, id: string): string | null {
+    return node.kind === 'pane'
+      ? node.id === id
+        ? node.shellId
+        : null
+      : (activeShell(node.first, id) ?? activeShell(node.second, id))
+  }
+  const draftShell = activeTab
+    ? (activeShell(activeTab.root, activeTab.activePaneId) ?? shellId)
+    : shellId
   function switchTab(offset: number) {
     const index = workspace.tabs.findIndex(
       (tab) => tab.id === workspace.activeTabId
@@ -124,6 +196,16 @@ export function App() {
       label: 'Appearance settings',
       run: openSettings
     },
+    {
+      id: 'developer',
+      label: 'Developer settings',
+      run: () => setDeveloper(true)
+    },
+    {
+      id: 'draft',
+      label: 'History and command draft',
+      run: () => setDraftOpen(true)
+    },
     ...workspace.tabs.map((tab, index) => ({
       id: tab.id,
       label: `Switch to tab ${index + 1}: ${tab.title}`,
@@ -137,28 +219,31 @@ export function App() {
     const keydown = (event: KeyboardEvent) => {
       if (!event.ctrlKey || !event.shiftKey || event.altKey || event.metaKey)
         return
-      const key = event.key.toLowerCase()
-      const action = (
-        { t: 'new', w: 'close', e: 'right', o: 'down', f: 'search' } as Record<
-          string,
-          string
-        >
-      )[key]
-      if (key === 'p') {
+      if (
+        (event.target as HTMLElement | null)?.closest(
+          'dialog, .appearance-settings'
+        )
+      )
+        return
+      const key = event.key.toUpperCase()
+      const action = Object.entries(preferences.shortcuts).find(
+        ([, binding]) => binding === `Ctrl+Shift+${key}`
+      )?.[0]
+      if (action === 'palette') {
         event.preventDefault()
         setPalette((open) => !open)
         if (palette) focusTerminal()
         return
       }
-      if (key === 'c' || key === 'v') {
+      if (action === 'copy' || action === 'paste') {
         event.preventDefault()
-        paneAction(key === 'c' ? 'Copy selection' : 'Paste clipboard')
+        paneAction(action === 'copy' ? 'Copy selection' : 'Paste clipboard')
         return
       }
       if (action) {
         event.preventDefault()
         actions.find((item) => item.id === action)?.run()
-        if (key !== 'f') focusTerminal()
+        if (action !== 'search') focusTerminal()
       }
     }
     document.addEventListener('keydown', keydown)
@@ -187,6 +272,52 @@ export function App() {
         </button>
       </header>
       <main className="workspace">
+        {developer && (
+          <DeveloperSettings
+            settings={preferences}
+            save={saveSettings}
+            reload={reloadPreferences}
+            saveLayout={() =>
+              saveSettings({
+                ...preferences,
+                restoration: { enabled: true, tabs: workspace.snapshot() }
+              })
+            }
+            close={() => {
+              setDeveloper(false)
+              focusTerminal()
+            }}
+          />
+        )}
+        {draftOpen && (
+          <CommandDraft
+            shellId={draftShell}
+            explanations={preferences.explanations}
+            close={() => {
+              setDraftOpen(false)
+              focusTerminal()
+            }}
+          />
+        )}
+        {restoreOffered && (
+          <section className="restore-offer" aria-label="Saved workspace">
+            <p>
+              A saved layout is available. Restore fresh sessions in their saved
+              launch folders; no commands will be replayed.
+            </p>
+            <button
+              onClick={() => {
+                workspace.restore(preferences.restoration.tabs)
+                setRestoreOffered(false)
+              }}
+            >
+              Restore saved layout
+            </button>
+            <button onClick={() => setRestoreOffered(false)}>
+              Dismiss saved layout
+            </button>
+          </section>
+        )}
         {palette && (
           <CommandPalette
             actions={actions}
@@ -283,7 +414,7 @@ export function App() {
               </option>
             ))}
           </select>
-          <button disabled={!shellId} onClick={newTab}>
+          <button disabled={!shellId} onClick={() => newTab()}>
             New session
           </button>
           <button
@@ -311,6 +442,56 @@ export function App() {
           >
             Appearance
           </button>
+          <button onClick={() => setDeveloper(true)}>Developer settings</button>
+          <button onClick={() => setDraftOpen(true)}>History</button>
+          <button
+            disabled={!['powershell', 'pwsh'].includes(shellId)}
+            onClick={() => newTab(true)}
+          >
+            Private tab
+          </button>
+          <button
+            disabled={!shellId}
+            onClick={() => {
+              void window.desktop
+                .chooseProject(shellId)
+                .then(async (project) => {
+                  if (project) {
+                    await reloadPreferences()
+                    setProjectId(project.id)
+                    setShellId(project.shellId)
+                  }
+                })
+                .catch(() =>
+                  setError(
+                    'Could not add a project. Choose a normal local or UNC folder.'
+                  )
+                )
+            }}
+          >
+            Open project
+          </button>
+          <label>
+            Project
+            <select
+              aria-label="Project"
+              value={projectId}
+              onChange={(event) => {
+                setProjectId(event.target.value)
+                const project = preferences.projects.find(
+                  (item) => item.id === event.target.value
+                )
+                if (project) setShellId(project.shellId)
+              }}
+            >
+              <option value="">Home directory</option>
+              {preferences.projects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.name}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
         <div className="tab-strip" role="tablist" aria-label="Terminal tabs">
           {workspace.tabs.map((tab) => (
@@ -366,6 +547,7 @@ export function App() {
               focusTerminal()
             }}
             resizeSplit={workspace.resizeSplit}
+            shortcuts={preferences.shortcuts}
           />
         ))}
       </main>
