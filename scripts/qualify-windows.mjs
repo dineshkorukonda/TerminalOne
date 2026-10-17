@@ -14,7 +14,7 @@ const type = execFileSync(
   [
     '-NoProfile',
     '-Command',
-    '(Get-CimInstance Win32_OperatingSystem).ProductType'
+    "Import-Module (Join-Path $PSHOME 'Modules\\CimCmdlets\\CimCmdlets.psd1') -ErrorAction Stop; (Get-CimInstance Win32_OperatingSystem).ProductType"
   ],
   { encoding: 'utf8' }
 ).trim()
