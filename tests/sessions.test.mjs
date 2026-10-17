@@ -92,3 +92,42 @@ test('zero, fractional, oversized dimensions and large/non-string input fail', (
   assert.throws(() => validateInput({}))
   assert.equal(validateInput('\u0000\u001b[A\u0003'), '\u0000\u001b[A\u0003')
 })
+
+test('close during spawn waits for the handle, and disposal forbids new sessions', async () => {
+  let resolveStart
+  let closes = 0
+  const delayed = fixture(
+    () =>
+      new Promise((resolve) => {
+        resolveStart = resolve
+      })
+  )
+  const creating = delayed.sessions.create('owner', shell, 'cwd', grid)
+  const closing = delayed.sessions.close('owner', 'id-1')
+  resolveStart({
+    pid: 123,
+    close: async () => {
+      closes++
+    }
+  })
+  assert.equal((await creating).state, 'closed')
+  await closing
+  assert.equal(closes, 1)
+  await delayed.sessions.dispose()
+  await assert.rejects(
+    delayed.sessions.create('owner', shell, 'cwd', grid),
+    /closed/
+  )
+})
+
+test('owner cleanup closes only its sessions and bounds concurrent allocation', async () => {
+  const { sessions, calls } = fixture()
+  for (let index = 0; index < 4; index++)
+    await sessions.create('owner', shell, 'cwd', grid)
+  const other = await sessions.create('other', shell, 'cwd', grid)
+  await assert.rejects(sessions.create('owner', shell, 'cwd', grid), /limit/)
+  await sessions.closeOwner('owner')
+  assert.equal(calls.filter(([type]) => type === 'close').length, 4)
+  await sessions.write('other', other.id, 'still-owned')
+  await sessions.dispose()
+})

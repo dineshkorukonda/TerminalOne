@@ -26,6 +26,7 @@ interface RecordEntry extends SessionInfo {
 }
 
 export class Sessions {
+  private disposed = false
   private readonly records = new Map<string, RecordEntry>()
   private readonly detach: () => void
   private readonly port: PtyPort
@@ -76,6 +77,7 @@ export class Sessions {
     cwd: string,
     dimensions: Grid
   ): Promise<SessionInfo> {
+    if (this.disposed) throw new Error('Terminal service is closed')
     const grid = validateGrid(dimensions)
     if (
       this.records.size >= 256 ||
@@ -118,8 +120,8 @@ export class Sessions {
       })
       session.handle = await session.ready
       session.pid = session.handle.pid
-      if (session.state === 'closed' || session.state === 'failed')
-        await session.handle.close()
+      if (session.state === 'closed') await session.closing
+      else if (session.state === 'failed') await session.handle.close()
       else if (session.state === 'starting') session.state = 'running'
       return this.state(session)
     } catch {
@@ -184,6 +186,7 @@ export class Sessions {
     for (const record of records) this.records.delete(record.id)
   }
   async dispose(): Promise<void> {
+    this.disposed = true
     await Promise.allSettled(
       [...this.records.values()].map((record) =>
         this.close(record.owner, record.id)

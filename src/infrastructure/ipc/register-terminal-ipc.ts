@@ -10,6 +10,7 @@ import { authorizeSender, validateArguments } from './policy'
 export function registerTerminalIpc(window: BrowserWindow, trustedUrl: string) {
   const owner = String(window.webContents.id)
   let active = true
+  let generation = 0
   const sessions = new Sessions(
     new UtilityPtyPort(),
     randomUUID,
@@ -60,7 +61,10 @@ export function registerTerminalIpc(window: BrowserWindow, trustedUrl: string) {
       typeof options['shellId'] !== 'string'
     )
       throw new Error('Invalid terminal options')
+    const expected = generation
     const shell = selectShell(await discoverShells(), options['shellId'])
+    if (!active || generation !== expected || window.webContents.isDestroyed())
+      throw new Error('Terminal window is closing')
     return sessions.create(owner, shell, homedir(), {
       cols: options['cols'] as number,
       rows: options['rows'] as number
@@ -83,6 +87,7 @@ export function registerTerminalIpc(window: BrowserWindow, trustedUrl: string) {
     sessions.acknowledge(owner, id(sessionId), sequence as number)
   )
   const lost = () => {
+    generation++
     void sessions.closeOwner(owner)
   }
   window.webContents.on('render-process-gone', lost)

@@ -31,10 +31,11 @@ export interface PtyPort {
   dispose(): Promise<void>
 }
 export function validateGrid(value: unknown): Grid {
-  if (!value || typeof value !== 'object')
+  if (!value || typeof value !== 'object' || Array.isArray(value))
     throw new Error('Invalid terminal dimensions')
   const grid = value as Record<string, unknown>
   if (
+    Object.keys(grid).sort().join(',') !== 'cols,rows' ||
     !Number.isInteger(grid['cols']) ||
     !Number.isInteger(grid['rows']) ||
     Number(grid['cols']) < 2 ||

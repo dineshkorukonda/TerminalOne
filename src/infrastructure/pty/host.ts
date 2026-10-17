@@ -22,6 +22,7 @@ async function run() {
     buffered: number
     paused: boolean
     closed: boolean
+    reaped: boolean
     exitCode: number | null
   }
   const sessions = new Map<string, Entry>()
@@ -50,6 +51,7 @@ async function run() {
     }
     if (
       session.exitCode !== null &&
+      session.reaped &&
       !session.closed &&
       !session.pending.length &&
       !session.waiting.size
@@ -107,6 +109,7 @@ async function run() {
         buffered: 0,
         paused: false,
         closed: false,
+        reaped: false,
         exitCode: null
       }
       sessions.set(id, session)
@@ -140,10 +143,14 @@ async function run() {
         drain(id, session)
       })
       terminal.onExit(({ exitCode }) => {
+        if (session.closed) return
         session.exitCode = exitCode
         void jobs
           .close(id)
-          .then(() => drain(id, session))
+          .then(() => {
+            session.reaped = true
+            drain(id, session)
+          })
           .catch(() => process.exit(1))
       })
       try {

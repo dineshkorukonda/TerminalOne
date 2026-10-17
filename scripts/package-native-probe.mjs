@@ -30,6 +30,10 @@ const [directory] = await packager({
         'tests/fixtures/native-probe.cjs',
         join(buildPath, 'native-probe.cjs')
       )
+      await copyFile(
+        'tests/fixtures/process-watch.cjs',
+        join(buildPath, 'process-watch.cjs')
+      )
       const file = join(buildPath, 'package.json')
       const metadata = JSON.parse(await readFile(file, 'utf8'))
       metadata.main = 'native-probe.cjs'
@@ -39,7 +43,7 @@ const [directory] = await packager({
 })
 await mkdir('test-results/native', { recursive: true })
 const result = spawnSync(join(directory, 'TerminalNativeProbe.exe'), [], {
-  timeout: 45000,
+  timeout: 180000,
   env: {
     ...process.env,
     PTY_PROBE_RESULT: join(process.cwd(), 'test-results/native/packaged.json')

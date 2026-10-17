@@ -19,6 +19,7 @@ class PtyJobHost {
   [DllImport("kernel32.dll", SetLastError=true)] static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
   [DllImport("kernel32.dll", SetLastError=true)] static extern IntPtr OpenProcess(uint rights, bool inherit, int pid);
   [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr handle);
+  [DllImport("kernel32.dll")] static extern bool TerminateProcess(IntPtr process, uint code);
   static void Watch(int pid) {
     // Open/retain the process handle before starting to accept shell assignments.
     Process parent = Process.GetProcessById(pid);
@@ -45,7 +46,7 @@ class PtyJobHost {
               finally { Marshal.FreeHGlobal(memory); }
               IntPtr process = OpenProcess(0x0101, false, int.Parse(parts[2])); // SET_QUOTA | TERMINATE
               if (process == IntPtr.Zero) throw new Exception();
-              try { if (!AssignProcessToJobObject(job, process)) throw new Exception(); }
+              try { if (!AssignProcessToJobObject(job, process)) { TerminateProcess(process, 1); throw new Exception(); } }
               finally { CloseHandle(process); }
               jobs.Add(id, job); job = IntPtr.Zero;
             } finally { if (job != IntPtr.Zero) CloseHandle(job); }

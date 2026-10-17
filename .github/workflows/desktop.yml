@@ -51,6 +51,8 @@ jobs:
       - name: Build and test Electron
         run: npm run test:smoke
       - name: Verify real ConPTY in Electron utility process
+        env:
+          PTY_PROBE_RESULT: test-results/native/utility.json
         run: npm run test:native
       - name: Verify packaged native addon
         run: npm run test:packaged

@@ -29,7 +29,7 @@
     "commitlint": "commitlint",
     "check:pr-title": "node scripts/check-pr-title.mjs",
     "native:build": "npm run electron:install && node scripts/native-build.mjs",
-    "test:native": "electron tests/fixtures/native-probe.cjs",
+    "test:native": "electron tests/fixtures/native-probe.cjs && playwright test -c playwright.windows.config.ts",
     "test:packaged": "node scripts/package-native-probe.mjs"
   },
   "dependencies": {
