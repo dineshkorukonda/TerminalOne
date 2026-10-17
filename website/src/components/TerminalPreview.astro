@@ -1,85 +1,43 @@
 ---
-import { Terminal, Plus, Columns2, Circle } from '@lucide/astro';
+import { Terminal, Minus, Square, X } from '@lucide/astro';
 
 const shells = [
   {
     id: 'powershell',
     name: 'PowerShell',
     prompt: 'PS',
-    lines: [
-      { text: 'PowerShell 7 · a familiar place to start', tone: 'comment' },
-      { text: ' ', tone: '' },
-      { text: 'PS C:\\dev\\terminal-one> git status', tone: 'command' },
-      { text: 'On branch main', tone: '' },
-      { text: "Your branch is up to date with 'origin/main'.", tone: '' },
-      { text: ' ', tone: '' },
-      { text: 'PS C:\\dev\\terminal-one> Get-ChildItem', tone: 'command' },
-      { text: ' ', tone: '' },
-      { text: '    Directory: C:\\dev\\terminal-one', tone: 'comment' },
-      { text: ' ', tone: '' },
-      { text: '    docs/    src/    website/', tone: 'accent' },
-      { text: '    README.md    package.json', tone: '' },
-      { text: ' ', tone: '' },
-      { text: 'PS C:\\dev\\terminal-one> ▌', tone: 'command' },
-    ],
+    description: 'A familiar shell. A fresh perspective.',
   },
   {
     id: 'cmd',
     name: 'CMD',
-    prompt: '>',
-    lines: [
-      { text: 'Microsoft Windows · command prompt', tone: 'comment' },
-      { text: ' ', tone: '' },
-      { text: 'C:\\dev\\terminal-one> echo %COMSPEC%', tone: 'command' },
-      { text: 'C:\\Windows\\system32\\cmd.exe', tone: '' },
-      { text: ' ', tone: '' },
-      { text: 'C:\\dev\\terminal-one> dir /b', tone: 'command' },
-      { text: 'docs', tone: 'accent' },
-      { text: 'src', tone: 'accent' },
-      { text: 'website', tone: 'accent' },
-      { text: 'README.md', tone: '' },
-      { text: 'package.json', tone: '' },
-      { text: ' ', tone: '' },
-      { text: 'C:\\dev\\terminal-one> ▌', tone: 'command' },
-    ],
+    prompt: '>_',
+    description: 'The classics deserve a better home.',
   },
   {
     id: 'bash',
     name: 'Git Bash',
     prompt: '$',
-    lines: [
-      { text: 'you@windows MINGW64 ~/projects/terminal-one', tone: 'comment' },
-      { text: '$ git status --short', tone: 'command' },
-      { text: ' M README.md', tone: 'accent' },
-      { text: ' ', tone: '' },
-      { text: '$ ls', tone: 'command' },
-      { text: 'docs/  src/  website/  README.md  package.json', tone: '' },
-      { text: ' ', tone: '' },
-      { text: '$ pwd', tone: 'command' },
-      { text: '/c/Users/you/projects/terminal-one', tone: '' },
-      { text: ' ', tone: '' },
-      { text: 'you@windows MINGW64 ~/projects/terminal-one', tone: 'comment' },
-      { text: '$ ▌', tone: 'command' },
-    ],
+    description: 'Your everyday tools. All together.',
   },
 ];
 ---
 
 <div class="preview-composition">
   <div class="preview-topline">
-    <span class="status-dot"></span> Interactive concept preview{' '}
-    <span class="preview-index">01 — 03</span>
+    <span>YOUR NEXT WORKSPACE</span>
+    <span class="preview-index">DESIGN CONCEPT</span>
   </div>
   <div class="terminal-window" data-terminal-preview>
     <div class="terminal-titlebar">
       <div class="terminal-title">
-        <Terminal size={13} aria-hidden="true" />
-        <span>terminal-one</span>
+        <Terminal size={14} aria-hidden="true" />
+        <span>TerminalOne</span>
       </div>
       <div class="window-marks" aria-hidden="true">
-        <span>−</span>
-        <span>□</span>
-        <span>×</span>
+        <Minus size={12} />
+        <Square size={10} />
+        <X size={12} />
       </div>
     </div>
     <div class="terminal-tabbar">
@@ -106,38 +64,31 @@ const shells = [
           </button>
         ))}
       </div>
-      <span class="terminal-extra" aria-hidden="true">
-        <Plus size={14} />
-      </span>
     </div>
     {shells.map((shell, index) => (
       <div
+        class="shell-workspace"
         id={'panel-' + shell.id}
         role="tabpanel"
-        aria-label={shell.name + ' sample output'}
         aria-labelledby={'tab-' + shell.id}
         tabindex="0"
         hidden={index !== 0}
       >
-        <pre class="terminal-output"><code>{shell.lines.map((line) => <span class={'output-line ' + line.tone}>{line.text}</span>)}</code></pre>
+        <span class="workspace-symbol" aria-hidden="true">
+          {shell.prompt}
+        </span>
+        <h2>{shell.name}</h2>
+        <p>{shell.description}</p>
+        <span class="workspace-hint">Room for your next idea.</span>
       </div>
     ))}
     <div class="terminal-statusbar">
-      <span>
-        <Circle size={7} fill="currentColor" aria-hidden="true" /> Sample output
-      </span>
-      <span>
-        <Columns2 size={11} aria-hidden="true" /> UTF-8
-      </span>
+      <span>One workspace. Every possibility.</span>
+      <span>Windows</span>
     </div>
   </div>
   <div class="preview-caption">
-    <span class="corner-line" aria-hidden="true"></span>
-    <span>
-      Your shells. A new home.
-      <br />
-      <strong>No commands are executed in this preview.</strong>
-    </span>
+    <span>Less noise. More space to build.</span>
   </div>
 </div>
 
