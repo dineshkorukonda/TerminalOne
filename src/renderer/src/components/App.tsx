@@ -312,39 +312,50 @@ export function App() {
             Appearance
           </button>
         </div>
-        <div className="tab-strip" role="tablist" aria-label="Terminal tabs">
-          {workspace.tabs.map((tab) => (
-            <div className="tab-item" key={tab.id}>
-              <button
-                id={`tab-${tab.id}`}
-                role="tab"
-                aria-selected={tab.id === workspace.activeTabId}
-                tabIndex={tab.id === workspace.activeTabId ? 0 : -1}
-                onKeyDown={(event) => {
-                  if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
-                    event.preventDefault()
-                    switchTab(event.key === 'ArrowRight' ? 1 : -1)
-                  }
-                }}
-                aria-controls={`panel-${tab.id}`}
-                onClick={() => {
-                  workspace.selectTab(tab.id)
-                  focusTerminal()
-                }}
-              >
-                {tab.title}
-              </button>
-              <button
-                aria-label={`Close tab ${tab.title}`}
-                onClick={() => {
-                  workspace.closeTab(tab.id)
-                  focusTerminal()
-                }}
-              >
-                ×
-              </button>
-            </div>
-          ))}
+        <div className="tab-chrome">
+          <div
+            className="tab-strip"
+            role={workspace.tabs.length ? 'tablist' : undefined}
+            aria-label={workspace.tabs.length ? 'Terminal tabs' : undefined}
+          >
+            {workspace.tabs.map((tab) => (
+              <div className="tab-item" key={tab.id}>
+                <button
+                  id={`tab-${tab.id}`}
+                  role="tab"
+                  aria-selected={tab.id === workspace.activeTabId}
+                  tabIndex={tab.id === workspace.activeTabId ? 0 : -1}
+                  onKeyDown={(event) => {
+                    if (
+                      event.key === 'ArrowRight' ||
+                      event.key === 'ArrowLeft'
+                    ) {
+                      event.preventDefault()
+                      switchTab(event.key === 'ArrowRight' ? 1 : -1)
+                    }
+                  }}
+                  aria-controls={`panel-${tab.id}`}
+                  onClick={() => {
+                    workspace.selectTab(tab.id)
+                    focusTerminal()
+                  }}
+                >
+                  {tab.title}
+                </button>
+              </div>
+            ))}
+          </div>
+          {activeTab && (
+            <button
+              aria-label={`Close tab ${activeTab.title}`}
+              onClick={() => {
+                workspace.closeTab(activeTab.id)
+                focusTerminal()
+              }}
+            >
+              Close tab
+            </button>
+          )}
         </div>
         {(error || workspace.error) && (
           <p role="alert" className="error-message">

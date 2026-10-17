@@ -12,9 +12,11 @@ export function CommandPalette({
   close(restore?: boolean): void
 }) {
   const dialog = useRef<HTMLDialogElement>(null)
+  const filterInput = useRef<HTMLInputElement>(null)
   const [filter, setFilter] = useState('')
   useEffect(() => {
     dialog.current?.showModal()
+    filterInput.current?.focus()
   }, [])
   const matches = actions.filter((action) =>
     action.label.toLowerCase().includes(filter.toLowerCase())
@@ -36,6 +38,7 @@ export function CommandPalette({
         </button>
       </div>
       <input
+        ref={filterInput}
         aria-label="Filter application commands"
         autoFocus
         maxLength={128}
