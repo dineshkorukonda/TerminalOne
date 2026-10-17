@@ -70,3 +70,7 @@ Use a conventional header, a body explaining why (at least 20 characters), and a
 The Desktop workflow runs on Windows for PRs targeting `main` and issue branches used by the review stack, on pushes to `main`, and on manual dispatch. It installs the locked dependencies using `.node-version`, validates PR titles, and runs formatting, lint, typecheck, unit/tooling tests, the production build and Electron smoke tests, and a dependency audit. Failures propagate; tests are never replaced by success-on-skip scripts. The only event-specific omission is PR-title validation outside PR events. Hook installation is disabled in CI because the complete checks run directly.
 
 Actions are pinned to immutable commits and the GitHub token has read-only repository contents access. The workflow uploads launch screenshots and failure traces for seven days. It does not package, sign, publish, or deploy desktop releases. Required-check settings must be configured by the repository owner; a workflow file alone does not enable branch protection.
+
+## Contributing and security
+
+Follow [CONTRIBUTING.md](CONTRIBUTING.md) for beginner-friendly Windows setup, the complete check sequence, issue branches/commit bodies, review gates, and owner-managed repository settings. [AGENTS.md](AGENTS.md) records persistent engineering rules. See [SECURITY.md](SECURITY.md) for reporting without exposing sensitive terminal data and [CHANGELOG.md](CHANGELOG.md) for delivered changes and release limitations. The project retains the [MIT license](LICENSE).
