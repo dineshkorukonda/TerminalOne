@@ -2,17 +2,17 @@
 
 The renderer consumes Tailwind v4 theme tokens from `src/renderer/src/theme/tokens.css`, compiled locally through the Vite plugin. Tokens cover near-black canvas/panel/elevated surfaces, text, muted text, decorative/control borders, focus/accent colors, system font stacks, radius, and sixteen ANSI colors. Only renderer sources are scanned for utilities. No remote CSS, font service, or image is loaded.
 
-The current view demonstrates startup status, typography, and the ANSI palette. It is not a terminal emulator or a dashboard; shell sessions, settings, tabs, and terminal themes are later issues. The Project documentation button uses the existing allowlisted external-link capability. Icons use a shared 24×24 SVG component with consistent 1.5px strokes and inherit text color; decorative SVGs are hidden from assistive technology.
+Phase 1 replaces the original typography/palette sample with a live xterm terminal. It uses the same typography and 16 ANSI tokens; settings, tabs, and theme selection remain later issues. The Project documentation button uses the existing allowlisted external-link capability. Icons use a shared 24×24 SVG component with consistent 1.5px strokes and inherit text color; decorative SVGs are hidden from assistive technology.
 
 ## Font model
 
-`TerminalFontConfig` has a whitelisted family, integer size 10–32px, finite line height 1–2, and a boolean ligature setting. Defaults are Cascadia Mono, 14px, line height 1.5, ligatures disabled. Available families are Cascadia Mono, Consolas, and Liberation Mono, with local monospace fallbacks. Missing fonts use the fallback; no font installation or download is implied. The font sample consumes the typed model. No settings persistence or user font picker is shipped.
+`TerminalFontConfig` has a whitelisted family, integer size 10–32px, finite line height 1–2, and a boolean ligature setting. Defaults are Cascadia Mono, 14px, line height 1.5, ligatures disabled. Available families are Cascadia Mono, Consolas, and Liberation Mono, with local monospace fallbacks. Missing fonts use the fallback; no font installation or download is implied. The xterm component consumes the typed model. No settings persistence or user font picker is shipped.
 
 The parser rejects missing/extra fields, unknown families, non-finite/fractional/out-of-range metrics, and invalid ligature values. Unit tests exercise the boundary, including CSS-injection-shaped family values.
 
 ## Focus and contrast
 
-All keyboard-focused controls use a 2px solid `focus` outline, offset 3px from the control. The documentation button is reachable by Tab and has a visible text label. The Electron component tests verify focus, outline width/style/color, shared canvas color, computed font metrics, all sixteen swatches, and absence of horizontal overflow. ANSI swatches are decorative color samples with accessible color names, not low-contrast text content.
+All keyboard-focused controls use a 2px solid `focus` outline, offset 3px from the control. The documentation button is reachable by Tab and has a visible text label. The Electron component tests verify focus, outline width/style/color, shared canvas color, absence of horizontal overflow, and live terminal startup on Windows. Font validation and token contrast remain unit checks; Windows integration verifies ANSI and Unicode terminal output.
 
 Measured sRGB contrast from the actual token definitions:
 

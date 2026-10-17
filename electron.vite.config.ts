@@ -1,9 +1,20 @@
 import { defineConfig } from 'electron-vite'
+import { resolve } from 'node:path'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
-  main: {},
+  main: {
+    build: {
+      rollupOptions: {
+        input: {
+          index: resolve('src/main/index.ts'),
+          'pty-host': resolve('src/infrastructure/pty/host.ts'),
+          'pty-client': resolve('src/infrastructure/pty/client.ts')
+        }
+      }
+    }
+  },
   // Sandboxed preloads must be CommonJS and contain only bundled code.
   preload: {},
   renderer: {

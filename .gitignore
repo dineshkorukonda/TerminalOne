@@ -6,3 +6,5 @@ playwright-report/
 *.log
 .DS_Store
 .husky/_/
+artifacts/
+native/*.exe

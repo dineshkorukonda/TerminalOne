@@ -22,6 +22,7 @@ export default [
     ignores: [
       'node_modules/**',
       'out/**',
+      'artifacts/**',
       'test-results/**',
       'playwright-report/**',
       'website/**'

@@ -2,7 +2,7 @@
 
 - Desktop commands run from the repository root with Node 24.21.0 and npm 11.19.0. The independent website has its own instructions and package under `website/`.
 - Follow `docs/architecture/0001-dependency-direction.md` and `docs/ipc-security.md`. Main composes adapters; pure core code must not depend on Electron, React, Node, or transport implementations. Do not create placeholder layers or generic IPC APIs.
-- Keep each PR scoped to a linked issue. Use issue-numbered branches, except the established `feat/project-bootstrap` exception. For a stack, review each layer against its parent and merge in dependency order.
+- Use one PR per phase targeting main, with separate issue-linked commits and closing references for every delivered issue. Use issue-numbered phase branches. Do not create stacks for a phase; the established bootstrap branch remains an exception.
 - Use Conventional Commit headers, a meaningful body explaining why, and `Refs #<issue>`; PRs use `Closes #<issue>`. No emoji in code-facing text, documentation, or commit messages.
 - Preserve MIT licensing. Never include credentials or private terminal output.
 - Keep TypeScript strict. Avoid explicit `any`; a necessary narrow suppression requires a reason and review.

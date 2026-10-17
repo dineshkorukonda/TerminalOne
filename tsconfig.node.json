@@ -12,11 +12,13 @@
     "noUnusedParameters": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "allowImportingTsExtensions": true
   },
   "include": [
     "electron.vite.config.ts",
     "playwright.config.ts",
+    "playwright.windows.config.ts",
     "src/main/**/*.ts",
     "src/infrastructure/**/*.ts",
     "src/contracts/**/*.ts",

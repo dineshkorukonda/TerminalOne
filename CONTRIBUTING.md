@@ -1,19 +1,19 @@
 # Contributing
 
-The desktop is a foundation build. Shell sessions, installers, signing, updates, and compatibility qualification are future work tracked in GitHub. The MIT license remains in [LICENSE](LICENSE).
+The desktop supports native Windows terminal sessions. Installers, signing, updates, and broad compatibility qualification remain future work tracked in GitHub. The MIT license remains in [LICENSE](LICENSE).
 
 ## Windows setup
 
 1. Install Git for Windows and Node.js **24.21.0 LTS**, including npm **11.19.0**. Check `git --version`, `node --version`, and `npm --version` in PowerShell. If script execution policy blocks `npm.ps1`, use `npm.cmd` for the same commands; no policy change is required.
 2. Clone the repository and open PowerShell in its root. The marketing website is a separate package; do not run desktop commands inside `website/`.
 3. Run `npm ci`. In a normal clone this also installs Husky hooks. Electron's binary is downloaded on first launch via the explicit installation command in the npm scripts. Network access to npm and GitHub releases is required.
-4. Run `npm run dev` in an interactive desktop session. Keep port 5173 free. Close the window to stop the app. Run `npm run build` followed by `npm start` to check built content.
+4. Run `npm run native:build`, then `npm run dev` in an interactive desktop session. Keep port 5173 free. Close the window to stop the app. Run `npm run build` followed by `npm start` to check built content.
 
-No Python, Visual Studio C++ workload, or native PTY build toolchain is needed for the current bootstrap. Native terminal dependencies and any required toolchain will be documented when delivered. Do not infer Windows 10/11 compatibility from a hosted Windows CI runner.
+Native development requires Visual Studio Build Tools with Desktop development with C++, a Windows SDK, and .NET Framework 4.x tooling; node-gyp may also require Python as documented by the installed build tools. Built diagnostics already include the native components and need no compiler. See [Phase 1 verification](docs/phase-1-verification.md). Do not infer Windows 10/11 compatibility from a hosted Windows CI runner.
 
 ## Issue and review workflow
 
-Start with an issue's acceptance criteria and dependencies. Use branches such as `feat/3-secure-ipc`, `chore/4-quality-tooling`, or `docs/8-engineering-guide`; the bootstrap branch is the existing exception. Keep unrelated website work separate. For dependent changes, create a stack of focused PRs targeting their parent branch, and retarget/merge from the bottom after approval.
+Start with an issue's acceptance criteria and dependencies. Use branches such as `feat/3-secure-ipc`, `chore/4-quality-tooling`, or `docs/8-engineering-guide`; the bootstrap branch is the existing exception. Keep unrelated website work separate. Use one PR per phase targeting main, with separate issue-linked commits for its issues. Do not stack the phase across multiple PRs.
 
 Commit example:
 
@@ -41,6 +41,8 @@ npm run lint
 npm run typecheck
 npm run test:unit
 npm run test:smoke
+npm run test:native
+npm run test:packaged
 npm audit --audit-level=moderate
 ```
 
