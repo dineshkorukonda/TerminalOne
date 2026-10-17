@@ -41,6 +41,8 @@ The Phase 3 native matrix exposed a shared CMD discovery defect: `/q` disabled e
 
 Windows run `39042102056` passed all four built-workspace scale checks and the seven bootstrap checks, but the development-workspace check found no elements at its initial assertion. The fixture now awaits navigation to the expected renderer URL and DOM loading before checking session state, and reports navigation failures explicitly. The status assertion retains its existing timeout. A Windows rerun is required; native and packaged gates were not reached in that run.
 
+Run `39042730374` passed all 12 Electron smoke checks, all 14 repeated native renderer/lifecycle checks, and the three-cycle utility probe on Windows Server 10.0.26100, Electron 44.9.0 / ABI 149. Packaged startup then failed. A local archive reproduction confirmed that `native/**` did not match the absolute helper filename, leaving the Job Object executable inside ASAR. The corrected `**/native/**` rule physically unpacks it; packaging now checks that executable exists before launch. A synthetic archive check verified the helper, native addon and worker are unpacked. Actual packaged Windows execution remains pending.
+
 The built CSP still prohibits inline/eval scripts and remote resources. It allows inline styles because xterm's DOM renderer injects trusted dimension/theme stylesheets. This is necessary for real font metrics, ANSI colors and layout; stylesheet values come from validated font config and fixed palette tokens. It does not allow terminal output to become HTML or execute scripts. Existing navigation, sender authorization and Node isolation remain enforced.
 
 ## Limits
