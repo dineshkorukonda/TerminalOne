@@ -7,3 +7,4 @@ website/
 .github/workflows/website.yml
 .husky/_/
 artifacts/
+native/*.exe

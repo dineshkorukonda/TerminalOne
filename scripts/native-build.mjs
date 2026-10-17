@@ -14,3 +14,24 @@ await rebuild({
   force: true,
   onlyModules: ['node-pty']
 })
+
+const { spawnSync } = await import('node:child_process')
+const { join } = await import('node:path')
+const compiler = join(
+  process.env['SystemRoot'] ?? 'C:\\Windows',
+  'Microsoft.NET/Framework64/v4.0.30319/csc.exe'
+)
+const compiled = spawnSync(
+  compiler,
+  [
+    '/nologo',
+    '/target:exe',
+    '/platform:x64',
+    '/out:native/pty-job-host.exe',
+    'native/PtyJobHost.cs'
+  ],
+  { stdio: 'inherit' }
+)
+if (compiled.error) throw compiled.error
+if (compiled.status !== 0)
+  throw new Error('Windows process-owner compilation failed')

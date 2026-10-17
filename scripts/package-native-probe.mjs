@@ -1,4 +1,4 @@
-import packager from '@electron/packager'
+import { packager } from '@electron/packager'
 import { copyFile, readFile, writeFile, mkdir } from 'node:fs/promises'
 import { spawnSync } from 'node:child_process'
 import { join } from 'node:path'
@@ -17,7 +17,7 @@ const [directory] = await packager({
   electronVersion: version,
   overwrite: true,
   prune: true,
-  asar: { unpack: '**/node-pty/**' },
+  asar: { unpack: '{**/node-pty/**,native/**}' },
   ignore: [
     /^\/website(?:\/|$)/,
     /^\/artifacts(?:\/|$)/,
