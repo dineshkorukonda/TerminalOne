@@ -1,6 +1,6 @@
 # Pre-beta security review
 
-Issue #44 reviews the current terminal architecture, packaging changes in this PR, and the Phase 4 developer-data boundary in PR #65. Final qualification must use the integrated source commit and actual artifact. This is a focused engineering review, not an independent penetration test or a security certification.
+Issue #44 reviews the current terminal architecture, packaging changes in this PR, and the Phase 4 developer-data boundary merged in PR #65 (main commit 78f177e). Phase 5 now integrates that source; final qualification must use its exact integrated source commit and actual artifact. This is a focused engineering review, not an independent penetration test or a security certification.
 
 ## Assets, actors and boundaries
 

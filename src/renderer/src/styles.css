@@ -327,3 +327,101 @@ input {
   flex: 1;
   min-width: 0;
 }
+
+.developer-dialog {
+  width: min(720px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  color: var(--color-ink);
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 20px;
+}
+.developer-dialog::backdrop {
+  background: #000b;
+}
+.developer-dialog fieldset {
+  border: 1px solid var(--color-border);
+  padding: 12px;
+  margin: 12px 0;
+  display: grid;
+  gap: 10px;
+}
+.developer-dialog label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+.developer-dialog label > input:not([type='checkbox']),
+.developer-dialog textarea {
+  flex: 1;
+  min-width: 120px;
+  padding: 6px;
+}
+.developer-dialog textarea {
+  display: block;
+  width: 100%;
+  min-height: 90px;
+  font-family: Consolas, monospace;
+}
+.developer-dialog p {
+  margin: 10px 0;
+}
+.developer-operations,
+.workspace-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.history-results {
+  max-height: 180px;
+  overflow: auto;
+  list-style: none;
+  padding: 0;
+}
+.history-results li,
+.project-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 8px 0;
+}
+.history-results code,
+.project-row span {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.restore-offer {
+  border: 1px solid var(--color-border);
+  padding: 12px;
+}
+.session-privacy {
+  color: var(--color-muted);
+  font-size: 11px;
+}
+
+.workspace-actions {
+  position: static;
+}
+.session-controls {
+  padding-right: 0;
+}
+
+.terminal-panel {
+  position: relative;
+}
+.terminal-search {
+  position: absolute;
+  top: 2.8rem;
+  left: 0.5rem;
+  right: 0.5rem;
+  z-index: 3;
+  background: var(--color-panel);
+  border: 1px solid var(--color-control-border);
+  border-radius: 0.25rem;
+}

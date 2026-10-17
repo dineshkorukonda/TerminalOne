@@ -112,6 +112,9 @@ for (const { scale, mode } of [
         .last()
         .click()
       await expect(panel.locator('.xterm')).toHaveCount(1)
+      const terminalHeight = await panel
+        .locator('.terminal-surface')
+        .evaluate((element) => element.clientHeight)
       await page.keyboard.press('Control+Shift+P')
       await expect(
         page.getByRole('dialog', { name: 'Application commands' })
@@ -124,6 +127,11 @@ for (const { scale, mode } of [
         name: 'Search terminal output'
       })
       await expect(search).toBeVisible()
+      expect(
+        await panel
+          .locator('.terminal-surface')
+          .evaluate((element) => element.clientHeight)
+      ).toBe(terminalHeight)
       await search.fill('search match')
       await panel
         .getByRole('button', { name: 'Next match', exact: true })

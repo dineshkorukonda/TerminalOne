@@ -97,6 +97,20 @@ test('terminal chrome passes automated accessibility checks and keyboard workflo
     await expect(
       page.locator('.tab-viewport:not([hidden]) .xterm-helper-textarea')
     ).toBeFocused()
+    await page
+      .getByRole('button', { name: 'Developer settings', exact: true })
+      .click()
+    await expect(
+      page.getByRole('dialog', { name: 'Developer settings', exact: true })
+    ).toBeVisible()
+    await audit('developer-settings')
+    await page.getByRole('button', { name: 'Close developer settings' }).click()
+    await page.getByRole('button', { name: 'History', exact: true }).click()
+    await expect(
+      page.getByRole('textbox', { name: 'Search command history' })
+    ).toBeFocused()
+    await audit('history-draft')
+    await page.getByRole('button', { name: 'Close command draft' }).click()
     await page.keyboard.press('Control+Shift+W')
     await page.keyboard.press('Control+Shift+W')
     await expect(page.getByRole('tab')).toHaveCount(0)

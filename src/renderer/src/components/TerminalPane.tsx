@@ -7,14 +7,24 @@ import { Terminal } from '@xterm/xterm'
 import '@xterm/xterm/css/xterm.css'
 import type { SessionEvent } from '../../../contracts/desktop-api'
 import { terminalFontStyle } from '../theme/font'
+import type { Preferences } from '../../../contracts/preferences'
 
 export function TerminalPane({
   shellId,
-  appearance
+  appearance,
+  projectId,
+  privateSession,
+  shortcuts
 }: {
   shellId: string
   appearance: Appearance
+  projectId: string | null
+  privateSession: boolean
+  shortcuts: Preferences['shortcuts']
 }) {
+  const shortcutRef = useRef(shortcuts)
+  shortcutRef.current = shortcuts
+  const [integrated, setIntegrated] = useState(false)
   const terminalInstance = useRef<Terminal | null>(null)
   const searchInstance = useRef<SearchAddon | null>(null)
   const refit = useRef<() => void>(() => {})
@@ -65,6 +75,7 @@ export function TerminalPane({
     let buffered = 0
     let input = Promise.resolve()
     let queuedInput = 0
+    let integrationReady = false
     const colors = getComputedStyle(element)
     const theme = terminalTheme(appearance, (name) =>
       colors.getPropertyValue(name).trim()
@@ -104,8 +115,10 @@ export function TerminalPane({
         !(
           event.ctrlKey &&
           event.shiftKey &&
-          ['p', 't', 'w', 'e', 'o', 'f', 'c', 'v'].includes(
-            event.key.toLowerCase()
+          !event.altKey &&
+          !event.metaKey &&
+          Object.values(shortcutRef.current).includes(
+            `Ctrl+Shift+${event.key.toUpperCase()}`
           )
         )
     )
@@ -159,11 +172,17 @@ export function TerminalPane({
                 fail('Terminal output connection stopped. Start a new session.')
               )
         })
+      } else if (event.type === 'integration') {
+        integrationReady = event.ready
+        setIntegrated(event.ready)
+        if (privateSession && integrationReady && !stopping)
+          terminal.options.disableStdin = false
       } else if (event.type === 'state') {
         setStatus(
           event.state === 'exited' ? `Exited (${event.exitCode})` : event.state
         )
-        terminal.options.disableStdin = event.state !== 'running'
+        terminal.options.disableStdin =
+          event.state !== 'running' || (privateSession && !integrationReady)
       } else if (event.type === 'error') fail(event.message)
     }
     const unsubscribe = window.desktop.onSessionEvent((event) => {
@@ -228,6 +247,8 @@ export function TerminalPane({
           ? null
           : window.desktop.createSession({
               shellId,
+              projectId,
+              private: privateSession,
               cols: terminal.cols,
               rows: terminal.rows
             })
@@ -242,12 +263,13 @@ export function TerminalPane({
         for (const event of pending) receive(event)
         pending = []
         setStatus(session.state)
-        terminal.options.disableStdin = session.state !== 'running'
+        terminal.options.disableStdin =
+          session.state !== 'running' || (privateSession && !integrationReady)
         scheduleFit()
       })
       .catch(() =>
         fail(
-          'Could not start the shell. Verify it is installed and the Windows native components were built.'
+          'Could not start this shell or project folder. Verify shell installation, project availability, and the Windows native components.'
         )
       )
     return () => {
@@ -264,7 +286,7 @@ export function TerminalPane({
       terminal.dispose()
       if (id) void window.desktop.closeSession(id).catch(() => {})
     }
-  }, [shellId])
+  }, [shellId, projectId, privateSession])
   useEffect(() => {
     const terminal = terminalInstance.current
     const element = container.current
@@ -282,6 +304,10 @@ export function TerminalPane({
     <section className="terminal-panel" aria-label="Terminal session">
       <div className="terminal-toolbar">
         <span role="status">{status}</span>
+        {privateSession && <span className="session-privacy">Private tab</span>}
+        {integrated && !privateSession && (
+          <span className="session-privacy">History integration ready</span>
+        )}
         <div className="terminal-tools">
           <button
             aria-label="Search terminal"

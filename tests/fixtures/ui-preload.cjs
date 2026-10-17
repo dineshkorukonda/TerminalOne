@@ -7,7 +7,77 @@ const listeners = new Set(),
 const emit = (event) => {
   for (const listener of listeners) listener(event)
 }
+let settings = {
+  version: 1,
+  appearance: {
+    theme: 'midnight',
+    font: {
+      family: 'Cascadia Mono',
+      size: 14,
+      lineHeight: 1.5,
+      ligatures: false
+    }
+  },
+  history: { enabled: false, limit: 200 },
+  shortcuts: {
+    palette: 'Ctrl+Shift+P',
+    new: 'Ctrl+Shift+T',
+    close: 'Ctrl+Shift+W',
+    right: 'Ctrl+Shift+E',
+    down: 'Ctrl+Shift+O',
+    search: 'Ctrl+Shift+F',
+    copy: 'Ctrl+Shift+C',
+    paste: 'Ctrl+Shift+V'
+  },
+  projects: [],
+  restoration: { enabled: false, tabs: [] },
+  explanations: false
+}
 contextBridge.exposeInMainWorld('desktop', {
+  getPreferences: async () => ({ settings, warning: '' }),
+  savePreferences: async (value) => {
+    settings = value
+    return { settings, warning: '' }
+  },
+  resetPreferences: async () => ({ settings, warning: '' }),
+  chooseProject: async (shellId) => {
+    const project = {
+      id: 'fixture-project',
+      name: 'Fixture project',
+      cwd: 'C:\\Fixture Spaces\\世界',
+      shellId
+    }
+    settings = { ...settings, projects: [project] }
+    return project
+  },
+  importPreferences: async () => null,
+  exportPreferences: async () => false,
+  searchHistory: async (query, shell) =>
+    settings.history.enabled
+      ? [
+          {
+            id: 'sample-1',
+            shellId: 'powershell',
+            command: "Get-ChildItem 'C:\\Fixture Spaces'",
+            time: 1
+          },
+          {
+            id: 'sample-2',
+            shellId: 'powershell',
+            command: 'Get-Location',
+            time: 2
+          }
+        ].filter(
+          (item) =>
+            (shell === 'all' || shell === item.shellId) &&
+            item.command.toLowerCase().includes(query.toLowerCase())
+        )
+      : [],
+  clearHistory: async () => {},
+  explainCommand: async () => {
+    if (!settings.explanations) throw new Error('Disabled')
+    return 'Synthetic local reference. Nothing executed.'
+  },
   getAppInfo: async () => ({ name: 'Terminal One', version: '0.1.0' }),
   openExternal: async () => {},
   listShells: async () => [

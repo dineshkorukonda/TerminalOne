@@ -3,6 +3,7 @@ import { useRef } from 'react'
 import type { Tab } from '../workspace/store'
 import { layout, minimum } from '../workspace/layout'
 import { TerminalPane } from './TerminalPane'
+import type { Preferences } from '../../../contracts/preferences'
 
 export function PaneLayout({
   tab,
@@ -10,7 +11,8 @@ export function PaneLayout({
   active,
   focusPane,
   closePane,
-  resizeSplit
+  resizeSplit,
+  shortcuts
 }: {
   tab: Tab
   appearance: Appearance
@@ -18,6 +20,7 @@ export function PaneLayout({
   focusPane(id: string): void
   closePane(id: string): void
   resizeSplit(id: string, ratio: number): void
+  shortcuts: Preferences['shortcuts']
 }) {
   const space = useRef<HTMLDivElement>(null)
   const bounds = minimum(tab.root)
@@ -54,6 +57,9 @@ export function PaneLayout({
                   <TerminalPane
                     shellId={node.shellId}
                     appearance={appearance}
+                    projectId={node.projectId}
+                    privateSession={node.private}
+                    shortcuts={shortcuts}
                   />
                   <button
                     className="pane-close"

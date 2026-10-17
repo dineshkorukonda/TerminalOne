@@ -38,6 +38,52 @@ const shell = {
 }
 const grid = { cols: 80, rows: 24 }
 
+test('complete-command metadata reaches only the opt-in non-private history sink', async () => {
+  let emit
+  let sequence = 0
+  const captured = [],
+    events = []
+  const sessions = new Sessions(
+    {
+      start: async (_id, _shell, _cwd, _grid, callback) => {
+        emit = callback
+        return { pid: 42, close: async () => {}, write: async () => {} }
+      },
+      onFailure: () => () => {},
+      dispose: async () => {}
+    },
+    () => `metadata-${++sequence}`,
+    (_owner, event) => events.push(event),
+    (...entry) => captured.push(entry)
+  )
+  for (const policy of [
+    { historyIntegration: false },
+    { historyIntegration: true, privateHistory: true },
+    { historyIntegration: true, privateHistory: false }
+  ]) {
+    const session = await sessions.create(
+      'owner',
+      { ...shell, id: 'pwsh', ...policy },
+      'cwd',
+      grid
+    )
+    if (policy.privateHistory) {
+      await assert.rejects(
+        sessions.write('owner', session.id, 'private command'),
+        /policy is not ready/
+      )
+      emit({ type: 'integration', ready: true })
+      await sessions.write('owner', session.id, 'private command')
+    }
+    emit({ type: 'command', command: 'Get-Location' })
+    await sessions.close('owner', session.id)
+    emit({ type: 'command', command: 'late' })
+  }
+  assert.deepEqual(captured, [['pwsh', 'Get-Location']])
+  assert(!events.some((event) => event.type === 'command'))
+  await sessions.dispose()
+})
+
 test('sessions validate ownership, preserve raw input, resize, and close idempotently', async () => {
   const { sessions, calls } = fixture()
   const session = await sessions.create('owner', shell, 'C:\\Users\\Test', grid)

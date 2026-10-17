@@ -54,7 +54,11 @@ export function CommandPalette({
           if (event.key === 'Enter' && matches[0]) {
             event.preventDefault()
             matches[0].run()
-            close(matches[0].id !== 'search' && matches[0].id !== 'settings')
+            close(
+              !['search', 'settings', 'developer', 'draft'].includes(
+                matches[0].id
+              )
+            )
           }
         }}
       />
@@ -65,7 +69,11 @@ export function CommandPalette({
             key={action.id}
             onClick={() => {
               action.run()
-              close(action.id !== 'search' && action.id !== 'settings')
+              close(
+                !['search', 'settings', 'developer', 'draft'].includes(
+                  action.id
+                )
+              )
             }}
           >
             {action.label}

@@ -71,7 +71,26 @@ export class UtilityPtyPort implements PtyPort {
             child.kill()
             return
           }
-          if (event && ['data', 'exit', 'error'].includes(event.type))
+          if (
+            event?.type === 'integration' &&
+            typeof event.ready !== 'boolean'
+          ) {
+            child.kill()
+            return
+          }
+          if (
+            event?.type === 'command' &&
+            (typeof event.command !== 'string' || event.command.length > 4096)
+          ) {
+            child.kill()
+            return
+          }
+          if (
+            event &&
+            ['data', 'exit', 'error', 'command', 'integration'].includes(
+              event.type
+            )
+          )
             this.events.get(data['id'])?.(event)
           return
         }

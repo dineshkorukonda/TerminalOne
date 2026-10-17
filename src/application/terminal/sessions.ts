@@ -19,6 +19,8 @@ export interface SessionInfo {
 export type SessionEvent =
   ({ type: 'state' } & SessionInfo) | ({ id: string } & PtyEvent)
 interface RecordEntry extends SessionInfo {
+  privateHistory: boolean
+  integrationReady: boolean
   owner: string
   ready: Promise<PtyHandle> | null
   handle: PtyHandle | null
@@ -32,14 +34,17 @@ export class Sessions {
   private readonly port: PtyPort
   private readonly nextId: () => string
   private readonly emit: (owner: string, event: SessionEvent) => void
+  private readonly captureCommand: (shellId: string, command: string) => void
   constructor(
     port: PtyPort,
     nextId: () => string,
-    emit: (owner: string, event: SessionEvent) => void
+    emit: (owner: string, event: SessionEvent) => void,
+    captureCommand: (shellId: string, command: string) => void = () => {}
   ) {
     this.port = port
     this.nextId = nextId
     this.emit = emit
+    this.captureCommand = captureCommand
     this.detach = port.onFailure(() => {
       for (const session of this.records.values()) {
         if (session.state === 'running' || session.state === 'starting') {
@@ -95,6 +100,8 @@ export class Sessions {
       )
     const id = this.nextId()
     const session: RecordEntry = {
+      privateHistory: shell.privateHistory === true,
+      integrationReady: false,
       id,
       owner,
       state: 'starting',
@@ -110,6 +117,12 @@ export class Sessions {
     try {
       session.ready = this.port.start(id, shell, cwd, grid, (event) => {
         if (session.state === 'closed' || session.state === 'failed') return
+        if (event.type === 'command') {
+          if (shell.historyIntegration && !shell.privateHistory)
+            this.captureCommand(shell.id, event.command)
+          return
+        }
+        if (event.type === 'integration') session.integrationReady = event.ready
         if (event.type === 'exit') {
           session.state = 'exited'
           session.exitCode = event.exitCode
@@ -145,6 +158,8 @@ export class Sessions {
     const data = validateInput(value)
     if (session.state !== 'running' || !session.handle)
       throw new Error('Terminal session is not running')
+    if (session.privateHistory && !session.integrationReady)
+      throw new Error('Private history policy is not ready')
     await session.handle.write(data)
   }
   async resize(owner: string, id: string, dimensions: Grid): Promise<void> {

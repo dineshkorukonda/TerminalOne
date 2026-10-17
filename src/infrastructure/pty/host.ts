@@ -2,6 +2,7 @@ import type { ParentPort } from 'electron'
 import { spawn, type IPty } from 'node-pty'
 import { release } from 'node:os'
 import { createJobOwner } from './jobs'
+import { historyIntegration } from '../shells/history-integration'
 import { validateGrid, validateInput } from '../../domain/terminal/pty'
 import type { Grid, Shell } from '../../domain/terminal/pty'
 
@@ -94,13 +95,27 @@ async function run() {
             ].includes(key)
         )
       ) as Record<string, string>
-      const terminal = spawn(shell.executable, shell.args, {
-        ...grid,
-        cwd: String(message['cwd']),
-        env,
-        useConpty: true,
-        name: 'xterm-256color'
-      })
+      const integration =
+        shell.historyIntegration && ['powershell', 'pwsh'].includes(shell.id)
+          ? historyIntegration(
+              (command) => event(id, { type: 'command', command }),
+              () => event(id, { type: 'integration', ready: true }),
+              shell.privateHistory === true
+            )
+          : null
+      const terminal = spawn(
+        shell.executable,
+        integration
+          ? [...shell.args, '-EncodedCommand', integration.encoded]
+          : shell.args,
+        {
+          ...grid,
+          cwd: String(message['cwd']),
+          env,
+          useConpty: true,
+          name: 'xterm-256color'
+        }
+      )
       const session: Entry = {
         terminal,
         pending: [],
@@ -113,8 +128,20 @@ async function run() {
         exitCode: null
       }
       sessions.set(id, session)
-      terminal.onData((data) => {
+      terminal.onData((raw) => {
         if (session.closed) return
+        let data: string
+        try {
+          data = integration ? integration.feed(raw) : raw
+        } catch {
+          void close(id)
+          event(id, {
+            type: 'error',
+            message:
+              'Shell integration exceeded its bounded buffer. Start a new session.'
+          })
+          return
+        }
         if (session.buffered + data.length > 262144) {
           void close(id)
           event(id, {

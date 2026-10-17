@@ -65,7 +65,7 @@ Phase 2 adds independent tabs, horizontal/vertical splits, live appearance setti
 
 The [architecture decision](docs/architecture/0001-dependency-direction.md) defines import direction and feature ownership. `lint:boundaries` checks production source; `test:architecture` verifies allowed and forbidden imports using temporary fixtures. Run the architecture test before typechecking or building, rather than concurrently with them. Domain and application code stays platform-free; native and transport details remain in infrastructure.
 
-Desktop work starts with [Phase 0: Repository Foundation](https://github.com/dineshkorukonda/TerminalOne/milestone/1), followed by the native terminal engine, terminal UI, shell adapter, developer experience, and production readiness. Track dependencies and acceptance criteria in [GitHub issues](https://github.com/dineshkorukonda/TerminalOne/issues). Phase 0 provides the repository foundation; Phase 1 adds the native terminal engine (#10–#16). Tabs, splits, appearance, search and application actions are implemented in Phase 2. Persistent settings, shell integration, installers, signing and production qualification remain later roadmap work. The Windows Server CI runner has passed the desktop checks; Windows 10/11 manual compatibility remains unverified, and no installer or release is available.
+Desktop work starts with [Phase 0: Repository Foundation](https://github.com/dineshkorukonda/TerminalOne/milestone/1), followed by the native terminal engine, terminal UI, shell adapter, developer experience, and production readiness. Track dependencies and acceptance criteria in [GitHub issues](https://github.com/dineshkorukonda/TerminalOne/issues). Phase 0 provides the repository foundation; Phase 1 adds the native terminal engine (#10–#16). Tabs, splits, appearance, search and application actions are implemented in Phase 2. Phase 4 implements local settings and opt-in PowerShell history integration. Installers, signing and production qualification remain production-readiness work. The Windows Server CI runner has passed the desktop checks; Windows 10/11 manual compatibility remains unverified, and no installer or release is available.
 
 ## Code quality
 
@@ -88,6 +88,10 @@ Actions are pinned to immutable commits and the GitHub token has read-only repos
 ## Shell adapter boundary
 
 Phase 3 adds conservative shell recognition, explicit execution-strategy decisions, and trusted session-state metadata without intercepting the live terminal. See [Phase 3 verification](docs/phase-3-verification.md) and the [architecture decision](docs/architecture/0002-shell-adapter.md). On Windows, `npm run test:shells` checks synthetic compatibility cases twice per detected shell and records optional-shell availability. There is no automatic command translation or state migration.
+
+## Developer experience
+
+Phase 4 adds opt-in PowerShell command history, explicit command drafts, local projects, saved launch layouts, configurable shortcuts and settings import/export. Developer settings explains the local data policy; private history integration currently requires PowerShell. The optional explanation surface is an offline static reference and executes nothing. See [Phase 4 verification](docs/phase-4-verification.md) for coverage, privacy controls and pending Windows evidence.
 
 ## Contributing and security
 
