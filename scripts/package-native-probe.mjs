@@ -1,5 +1,5 @@
 import { packager } from '@electron/packager'
-import { copyFile, readFile, writeFile, mkdir } from 'node:fs/promises'
+import { access, copyFile, readFile, writeFile, mkdir } from 'node:fs/promises'
 import { spawnSync } from 'node:child_process'
 import { join } from 'node:path'
 
@@ -17,7 +17,7 @@ const [directory] = await packager({
   electronVersion: version,
   overwrite: true,
   prune: true,
-  asar: { unpack: '{**/node-pty/**,native/**}' },
+  asar: { unpack: '{**/node-pty/**,**/native/**}' },
   ignore: [
     /^\/website(?:\/|$)/,
     /^\/artifacts(?:\/|$)/,
@@ -41,6 +41,10 @@ const [directory] = await packager({
     }
   ]
 })
+// The helper is spawned by its physical path; an archive entry cannot run.
+await access(
+  join(directory, 'resources/app.asar.unpacked/native/pty-job-host.exe')
+)
 await mkdir('test-results/native', { recursive: true })
 const result = spawnSync(join(directory, 'TerminalNativeProbe.exe'), [], {
   timeout: 180000,
