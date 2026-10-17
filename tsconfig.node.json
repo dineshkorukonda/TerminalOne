@@ -12,7 +12,8 @@
     "noUnusedParameters": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "allowImportingTsExtensions": true
   },
   "include": [
     "electron.vite.config.ts",
