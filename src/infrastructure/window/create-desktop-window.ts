@@ -1,4 +1,5 @@
 import { BrowserWindow } from 'electron'
+import { pathToFileURL } from 'node:url'
 
 interface DesktopWindowOptions {
   preloadPath: string
@@ -46,7 +47,9 @@ export function createDesktopWindow(
   if ('url' in options.content) {
     void window.loadURL(options.content.url)
   } else {
-    void window.loadFile(options.content.filePath)
+    // Use the same WHATWG file URL encoding as IPC authorization. loadFile's
+    // legacy formatter can leave literal percent characters unescaped.
+    void window.loadURL(pathToFileURL(options.content.filePath).href)
   }
 
   return window
