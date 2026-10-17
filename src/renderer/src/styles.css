@@ -1,0 +1,31 @@
+:root {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: #e7e9ee;
+  background: #111318;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  max-width: 44rem;
+  padding: 4rem 2.5rem;
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: 600;
+}
+p {
+  line-height: 1.6;
+}
+.eyebrow {
+  color: #a6b5d4;
+  font-size: 0.875rem;
+}
+.status {
+  color: #b0b5c0;
+}
