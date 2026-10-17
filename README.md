@@ -64,3 +64,9 @@ Desktop work starts with [Phase 0: Repository Foundation](https://github.com/din
 Use a conventional header, a body explaining why (at least 20 characters), and an issue reference such as `Refs #5`. Empty bodies, missing issue references, invalid headers, and emoji are rejected. Configure the optional editor template with `git config commit.template .gitmessage`. PR titles use the same header rules via `npm run check:pr-title` with the `PR_TITLE` environment variable, without requiring a body.
 
 `npm run test:unit` exercises valid/invalid commit messages and lint-staged against a temporary alternate Git index, preserving the real staging area. Hooks are a convenience and do not replace CI. In CI set `HUSKY=0` and run the full checks explicitly. In a linked worktree, hook installation changes shared Git configuration; run prepare with `HUSKY=0` if another checkout owns the hook configuration, then run the checks explicitly.
+
+## Desktop CI
+
+The Desktop workflow runs on Windows for PRs targeting `main` and issue branches used by the review stack, on pushes to `main`, and on manual dispatch. It installs the locked dependencies using `.node-version`, validates PR titles, and runs formatting, lint, typecheck, unit/tooling tests, the production build and Electron smoke tests, and a dependency audit. Failures propagate; tests are never replaced by success-on-skip scripts. The only event-specific omission is PR-title validation outside PR events. Hook installation is disabled in CI because the complete checks run directly.
+
+Actions are pinned to immutable commits and the GitHub token has read-only repository contents access. The workflow uploads launch screenshots and failure traces for seven days. It does not package, sign, publish, or deploy desktop releases. Required-check settings must be configured by the repository owner; a workflow file alone does not enable branch protection.
