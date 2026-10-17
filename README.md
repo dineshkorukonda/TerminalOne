@@ -85,6 +85,10 @@ The Desktop workflow runs on Windows for PRs targeting `main` and issue branches
 
 Actions are pinned to immutable commits and the GitHub token has read-only repository contents access. The workflow uploads launch screenshots and failure traces for seven days. It packages an unsigned native diagnostic solely for verification; it does not sign, publish, or deploy desktop releases. Required-check settings must be configured by the repository owner; a workflow file alone does not enable branch protection.
 
+## Shell adapter boundary
+
+Phase 3 adds conservative shell recognition, explicit execution-strategy decisions, and trusted session-state metadata without intercepting the live terminal. See [Phase 3 verification](docs/phase-3-verification.md) and the [architecture decision](docs/architecture/0002-shell-adapter.md). On Windows, `npm run test:shells` checks synthetic compatibility cases twice per detected shell and records optional-shell availability. There is no automatic command translation or state migration.
+
 ## Contributing and security
 
 Follow [CONTRIBUTING.md](CONTRIBUTING.md) for beginner-friendly Windows setup, the complete check sequence, issue branches/commit bodies, review gates, and owner-managed repository settings. [AGENTS.md](AGENTS.md) records persistent engineering rules. See [SECURITY.md](SECURITY.md) for reporting without exposing sensitive terminal data and [CHANGELOG.md](CHANGELOG.md) for delivered changes and release limitations. The project retains the [MIT license](LICENSE).

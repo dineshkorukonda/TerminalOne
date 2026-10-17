@@ -30,7 +30,8 @@
     "check:pr-title": "node scripts/check-pr-title.mjs",
     "native:build": "npm run electron:install && node scripts/native-build.mjs",
     "test:native": "electron tests/fixtures/native-probe.cjs && playwright test -c playwright.windows.config.ts",
-    "test:packaged": "node scripts/package-native-probe.mjs"
+    "test:packaged": "node scripts/package-native-probe.mjs",
+    "test:shells": "electron tests/fixtures/shell-compat.cjs"
   },
   "dependencies": {
     "@xterm/addon-fit": "0.11.0",
@@ -54,6 +55,7 @@
     "@types/react-dom": "19.3.0",
     "@typescript-eslint/parser": "8.71.2",
     "@vitejs/plugin-react": "6.1.2",
+    "@xterm/headless": "6.0.0",
     "electron": "44.9.0",
     "electron-vite": "6.0.0",
     "eslint": "10.13.0",

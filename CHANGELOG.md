@@ -23,3 +23,6 @@ No desktop release has been published. These entries describe implementation cha
 - Add a pinned Windows CI workflow with launch artifacts and read-only permissions (#6).
 - Document setup, architecture, contribution/review gates, security reporting limitations, and persistent agent instructions (#8).
 - Add shared Tailwind theme/ANSI tokens, a validated terminal font model, consistent SVG icons, keyboard focus, and contrast/scale checks (#9).
+- Define conservative shell adapter contracts and architecture (#24, #25).
+- Add narrow PowerShell/CMD/Bash evidence, explicit fallback and strategy resolution, and trusted per-session state observations without environment values (#26–#30, #32).
+- Add an installed-shell Windows ConPTY compatibility matrix with explicit availability and cleanup evidence (#31).

@@ -54,6 +54,8 @@ jobs:
         env:
           PTY_PROBE_RESULT: test-results/native/utility.json
         run: npm run test:native
+      - name: Verify installed shell compatibility
+        run: npm run test:shells
       - name: Verify packaged native addon
         run: npm run test:packaged
       - name: Audit dependencies
