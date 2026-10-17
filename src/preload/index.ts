@@ -3,6 +3,10 @@ import type { DesktopApi, SessionEvent } from '../contracts/desktop-api'
 import { IPC_CHANNELS } from '../contracts/desktop-api'
 
 const api: DesktopApi = Object.freeze({
+  readClipboard: (...args: unknown[]) =>
+    ipcRenderer.invoke(IPC_CHANNELS.readClipboard, ...args),
+  writeClipboard: (...args: unknown[]) =>
+    ipcRenderer.invoke(IPC_CHANNELS.writeClipboard, ...args),
   getAppInfo: (...args: unknown[]) =>
     ipcRenderer.invoke(IPC_CHANNELS.getAppInfo, ...args),
   openExternal: (url: string, ...extra: unknown[]) =>

@@ -1,3 +1,4 @@
+import type { Appearance } from '../theme/appearance'
 import { useRef } from 'react'
 import type { Tab } from '../workspace/store'
 import { layout, minimum } from '../workspace/layout'
@@ -5,12 +6,14 @@ import { TerminalPane } from './TerminalPane'
 
 export function PaneLayout({
   tab,
+  appearance,
   active,
   focusPane,
   closePane,
   resizeSplit
 }: {
   tab: Tab
+  appearance: Appearance
   active: boolean
   focusPane(id: string): void
   closePane(id: string): void
@@ -48,7 +51,10 @@ export function PaneLayout({
                   onFocusCapture={() => focusPane(id)}
                   onPointerDown={() => focusPane(id)}
                 >
-                  <TerminalPane shellId={node.shellId} />
+                  <TerminalPane
+                    shellId={node.shellId}
+                    appearance={appearance}
+                  />
                   <button
                     className="pane-close"
                     aria-label="Close pane"

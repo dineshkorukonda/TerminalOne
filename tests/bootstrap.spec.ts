@@ -86,7 +86,9 @@ for (const mode of ['built', 'development'] as const) {
             'listShells',
             'onSessionEvent',
             'openExternal',
+            'readClipboard',
             'resizeSession',
+            'writeClipboard',
             'writeSession'
           ])
           expect(

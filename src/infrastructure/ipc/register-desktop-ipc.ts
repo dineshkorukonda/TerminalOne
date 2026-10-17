@@ -1,4 +1,4 @@
-import { ipcMain, shell } from 'electron'
+import { ipcMain, shell, clipboard } from 'electron'
 import type { BrowserWindow, IpcMainInvokeEvent } from 'electron'
 import type { AppInfo } from '../../contracts/desktop-api'
 import { IPC_CHANNELS } from '../../contracts/desktop-api'
@@ -43,7 +43,27 @@ export function registerDesktopIpc(
     }
   )
 
+  ipcMain.handle(
+    IPC_CHANNELS.readClipboard,
+    async (event, ...args: unknown[]) => {
+      authorize(event)
+      validateArguments(args, 0)
+      const text = await clipboard.readText()
+      if (text.length > 262144)
+        throw new Error('Clipboard text exceeds 262144 characters')
+      return text
+    }
+  )
+  ipcMain.handle(IPC_CHANNELS.writeClipboard, (event, ...args: unknown[]) => {
+    authorize(event)
+    validateArguments(args, 1)
+    if (typeof args[0] !== 'string' || args[0].length > 262144)
+      throw new Error('Invalid clipboard text')
+    return clipboard.writeText(args[0])
+  })
   return () => {
+    ipcMain.removeHandler(IPC_CHANNELS.readClipboard)
+    ipcMain.removeHandler(IPC_CHANNELS.writeClipboard)
     ipcMain.removeHandler(IPC_CHANNELS.getAppInfo)
     ipcMain.removeHandler(IPC_CHANNELS.openExternal)
   }

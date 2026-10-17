@@ -212,3 +212,107 @@ h1 {
   color: var(--color-muted);
   padding: 2rem;
 }
+.terminal-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  justify-content: flex-end;
+}
+.terminal-tools button {
+  font-size: 0.6875rem;
+  padding: 0.25rem 0.35rem;
+}
+.terminal-toolbar {
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+.terminal-search,
+.appearance-settings,
+.workspace-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+}
+input {
+  font: inherit;
+  color: var(--color-ink);
+  background: var(--color-canvas);
+  border: 1px solid var(--color-control-border);
+  border-radius: 0.25rem;
+  padding: 0.375rem;
+  min-width: 0;
+}
+.terminal-search {
+  padding: 0.5rem;
+}
+.terminal-search input {
+  width: 10rem;
+}
+.appearance-settings {
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+}
+.appearance-settings input {
+  width: 4rem;
+}
+.workspace-actions {
+  position: absolute;
+  right: 0.75rem;
+  top: 3.3rem;
+}
+.session-controls {
+  padding-right: 11rem;
+}
+.command-palette {
+  color: var(--color-ink);
+  background: var(--color-panel);
+  border: 1px solid var(--color-control-border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  width: min(32rem, calc(100vw - 2rem));
+  max-height: 75vh;
+  margin: 15vh auto 0;
+}
+.command-palette::backdrop {
+  background: #0008;
+}
+.dialog-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+.command-palette input {
+  width: 100%;
+}
+.palette-results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.75rem;
+  max-height: 45vh;
+  overflow-y: auto;
+}
+.palette-action {
+  text-align: left;
+}
+.theme-contrast {
+  --color-canvas: #000000;
+  --color-panel: #141414;
+  --color-ink: #ffffff;
+  --color-muted: #cccccc;
+  --color-focus: #ffff80;
+}
+@media (max-width: 800px) {
+  .workspace-actions {
+    position: static;
+  }
+  .session-controls {
+    padding-right: 0;
+  }
+  .documentation-button span {
+    display: none;
+  }
+}
