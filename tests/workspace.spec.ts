@@ -42,6 +42,12 @@ for (const { scale, mode } of [
       const page = await app.firstWindow()
       const errors: string[] = []
       page.on('pageerror', (error) => errors.push(error.message))
+      await page.waitForURL(
+        mode === 'development'
+          ? 'http://127.0.0.1:5173/'
+          : /\/out\/renderer\/index\.html$/,
+        { waitUntil: 'domcontentloaded' }
+      )
       const panel = page.locator('.tab-viewport:not([hidden])')
       await expect(panel.getByRole('status')).toHaveText('running')
       await expect(panel.locator('.xterm-accessibility-tree')).toContainText(

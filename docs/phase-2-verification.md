@@ -37,6 +37,8 @@ Windows integration additionally exercises real independent tabs, inactive outpu
 
 Windows input automation types ASCII keys and sends Unicode through xterm's paste event path. xterm screen-reader mode deliberately ignores input-only `insertText` events, so those are not physical IME coverage. Manual IME entry remains unverified. The main-crash probe retrieves Electron's actual main PID and retains that process handle before force termination; Playwright's Windows process handle belongs to a launcher wrapper.
 
+Windows run `39042102056` passed all four built-workspace scale checks and the seven bootstrap checks, but the development-workspace check found no elements at its initial assertion. The fixture now awaits navigation to the expected renderer URL and DOM loading before checking session state, and reports navigation failures explicitly. The status assertion retains its existing timeout. A Windows rerun is required; native and packaged gates were not reached in that run.
+
 The built CSP still prohibits inline/eval scripts and remote resources. It allows inline styles because xterm's DOM renderer injects trusted dimension/theme stylesheets. This is necessary for real font metrics, ANSI colors and layout; stylesheet values come from validated font config and fixed palette tokens. It does not allow terminal output to become HTML or execute scripts. Existing navigation, sender authorization and Node isolation remain enforced.
 
 ## Limits
