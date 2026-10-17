@@ -1,0 +1,322 @@
+---
+import {
+  AppWindow,
+  Layers,
+  ShieldCheck,
+  ArrowUpRight,
+  ArrowRight,
+  Check,
+  GitBranch,
+  ChevronRight,
+} from '@lucide/astro';
+
+const principles = [
+  {
+    number: '01',
+    icon: AppWindow,
+    title: 'Windows, first class.',
+    text: 'A native Windows 10/11 direction. Real PowerShell, CMD, and Git Bash sessions through ConPTY. No WSL detour.',
+  },
+  {
+    number: '02',
+    icon: Layers,
+    title: 'Space to find your flow.',
+    text: 'An iTerm2-inspired experience with thoughtful tabs, split panes, and typography. Built to put your work in focus.',
+  },
+  {
+    number: '03',
+    icon: ShieldCheck,
+    title: 'Your machine. Your control.',
+    text: 'A local-first foundation. No mandatory account, no remote backend, and no telemetry in the initial application scope.',
+  },
+];
+const questions = [
+  {
+    question: 'Can I download Terminal One today?',
+    answer: 'Not yet. Terminal One is in development.',
+    detail:
+      'There is no published installer at this stage. Follow the GitHub roadmap for implementation progress and future release information.',
+  },
+  {
+    question: 'Will I need WSL or a cloud account?',
+    answer: 'Neither is part of the core application requirements.',
+    detail:
+      'The goal is a Windows-native application that runs your installed shells locally. A developer toolchain may be needed to build the desktop app from source.',
+  },
+  {
+    question: 'Does it automatically translate Bash into PowerShell?',
+    answer: 'No. The intelligent shell adapter is a planned capability.',
+    detail:
+      'The approach is conservative: recognize supported intent at safe command boundaries, respect shell state, and offer explicit fallbacks. Arbitrary scripts will not be automatically rewritten.',
+  },
+  {
+    question: 'Is Terminal One open source?',
+    answer: 'Terminal One uses the MIT license.',
+    detail:
+      'The repository is currently private while the foundation is being established. GitHub links require repository access until the owner makes the project public.',
+  },
+];
+---
+
+<section
+  class="shell-strip container"
+  aria-label="Planned native shell support"
+>
+  <span class="section-kicker">
+    Different shells.
+    <br />
+    <span>Same place to build.</span>
+  </span>
+  <div class="shell-name">
+    <span class="shell-monogram ps-mark" aria-hidden="true">
+      &gt;_
+    </span>{' '}
+    PowerShell
+  </div>
+  <div class="shell-name">
+    <span class="shell-monogram cmd-mark" aria-hidden="true">
+      C:\
+    </span>{' '}
+    Command Prompt
+  </div>
+  <div class="shell-name">
+    <GitBranch size={23} stroke-width={1.5} aria-hidden="true" /> Git Bash
+  </div>
+  <span class="shell-strip-note">Planned native support</span>
+</section>
+
+<section id="vision" class="section container vision-section" tabindex="-1">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">
+        <span class="tiny-square"></span> THE VISION
+      </span>
+      <h2>
+        Less friction.
+        <br />
+        <span class="muted-text">More flow.</span>
+      </h2>
+    </div>
+    <p>
+      Great tools get out of your way.
+      <br />
+      We’re building a terminal that feels
+      <br class="desktop-break" /> like it belongs in your workflow.
+    </p>
+  </div>
+  <div class="principle-grid">
+    {principles.map(({ number, icon: Icon, title, text }) => (
+      <article class="principle-card">
+        <div class="card-top">
+          <Icon size={23} stroke-width={1.5} aria-hidden="true" />
+          <span>{number}</span>
+        </div>
+        <h3>{title}</h3>
+        <p>{text}</p>
+        <span class="card-note">Product direction</span>
+      </article>
+    ))}
+  </div>
+</section>
+
+<section id="adapter" class="section container" tabindex="-1">
+  <div class="adapter-panel">
+    <div class="adapter-copy">
+      <span class="eyebrow">
+        <span class="tiny-square"></span> THE NEXT CHAPTER
+      </span>
+      <h2>
+        A smarter shell.
+        <br />
+        <span class="muted-text">A careful approach.</span>
+      </h2>
+      <p class="philosophy">
+        The terminal should adapt to the developer, not the developer to the
+        shell.
+      </p>
+      <p>
+        That’s the idea behind our future intelligent shell adapter. Understand
+        supported command intent, respect the environment, and choose a safe
+        path forward.
+      </p>
+      <a
+        class="text-link"
+        href="https://github.com/dineshkorukonda/Terminal/milestone/4"
+      >
+        Explore the adapter roadmap{' '}
+        <ArrowUpRight size={15} aria-hidden="true" />
+      </a>
+    </div>
+    <div class="adapter-diagram">
+      <span class="planned-label">
+        <span class="status-dot"></span> Planned capability
+      </span>
+      <div class="diagram-input">
+        <span class="diagram-dollar" aria-hidden="true">
+          &gt;
+        </span>
+        <code>Your command. Your intent.</code>
+      </div>
+      <div class="diagram-track" aria-hidden="true">
+        <span></span>
+        <ChevronRight size={16} />
+        <span></span>
+      </div>
+      <div class="adapter-core">
+        <span class="core-symbol" aria-hidden="true">
+          t1
+        </span>
+        <div>
+          <strong>Understand. Then resolve.</strong>
+          <small>Shell awareness · explicit fallbacks</small>
+        </div>
+      </div>
+      <div class="diagram-branches" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div class="adapter-shells">
+        <span>PowerShell</span>
+        <span>CMD</span>
+        <span>Git Bash</span>
+      </div>
+      <p class="diagram-footnote">
+        <ShieldCheck size={13} aria-hidden="true" /> No arbitrary script
+        rewriting. No silent state switching.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="roadmap" class="section container roadmap-section" tabindex="-1">
+  <div class="roadmap-intro">
+    <span class="eyebrow">
+      <span class="tiny-square"></span> BUILT WITH INTENTION
+    </span>
+    <h2>
+      Good foundations.
+      <br />
+      <span class="muted-text">Then, what’s next.</span>
+    </h2>
+    <p>
+      A focused roadmap, one reviewable step at a time. Follow the work from the
+      first foundation to a future public beta.
+    </p>
+    <a
+      class="text-link"
+      href="https://github.com/dineshkorukonda/Terminal/milestones"
+    >
+      See the full roadmap <ArrowUpRight size={15} aria-hidden="true" />
+    </a>
+  </div>
+  <ol class="roadmap-list">
+    <li>
+      <a href="https://github.com/dineshkorukonda/Terminal/milestone/1">
+        <span class="roadmap-number">01</span>
+        <div>
+          <h3>The foundation</h3>
+          <p>Architecture, security, tooling, and CI.</p>
+        </div>
+        <span class="phase-label">Phase 0</span>
+        <ArrowUpRight class="roadmap-arrow" size={17} aria-hidden="true" />
+      </a>
+    </li>
+    <li>
+      <a href="https://github.com/dineshkorukonda/Terminal/milestone/2">
+        <span class="roadmap-number">02</span>
+        <div>
+          <h3>A real native terminal</h3>
+          <p>ConPTY sessions, shell discovery, and lifecycle.</p>
+        </div>
+        <span class="phase-label">Phase 1</span>
+        <ArrowUpRight class="roadmap-arrow" size={17} aria-hidden="true" />
+      </a>
+    </li>
+    <li>
+      <a href="https://github.com/dineshkorukonda/Terminal/milestone/3">
+        <span class="roadmap-number">03</span>
+        <div>
+          <h3>A place for your workflow</h3>
+          <p>Terminal tabs, splits, themes, and navigation.</p>
+        </div>
+        <span class="phase-label">Phase 2</span>
+        <ArrowUpRight class="roadmap-arrow" size={17} aria-hidden="true" />
+      </a>
+    </li>
+    <li>
+      <a href="https://github.com/dineshkorukonda/Terminal/milestone/4">
+        <span class="roadmap-number">04</span>
+        <div>
+          <h3>Intelligence, thoughtfully</h3>
+          <p>Conservative recognition and safe shell strategies.</p>
+        </div>
+        <span class="phase-label">Phase 3</span>
+        <ArrowUpRight class="roadmap-arrow" size={17} aria-hidden="true" />
+      </a>
+    </li>
+  </ol>
+</section>
+
+<section class="section container faq-section" aria-labelledby="faq-title">
+  <div>
+    <span class="eyebrow">
+      <span class="tiny-square"></span> A FEW ANSWERS
+    </span>
+    <h2 id="faq-title">
+      Before the
+      <br />
+      <span class="muted-text">first command.</span>
+    </h2>
+  </div>
+  <div class="faq-list">
+    {questions.map(({ question, answer, detail }) => (
+      <details>
+        <summary>
+          {question}
+          <span class="faq-toggle" aria-hidden="true">
+            +
+          </span>
+        </summary>
+        <div class="faq-answer">
+          <p>{answer}</p>
+          <p>{detail}</p>
+        </div>
+      </details>
+    ))}
+  </div>
+</section>
+
+<section class="container final-cta">
+  <div class="cta-code" aria-hidden="true">
+    &gt;_
+  </div>
+  <span class="eyebrow">A BETTER COMMAND LINE STARTS HERE.</span>
+  <h2>
+    Make room for
+    <br />
+    <span>what’s next.</span>
+  </h2>
+  <p>
+    Follow the build. Explore the ideas.
+    <br />
+    Help shape the terminal you want to use.
+  </p>
+  <a
+    class="button button-primary"
+    href="https://github.com/dineshkorukonda/Terminal/milestones"
+  >
+    Follow the build <ArrowRight size={16} aria-hidden="true" />
+  </a>
+  <div class="cta-notes">
+    <span>
+      <Check size={12} aria-hidden="true" /> MIT licensed
+    </span>
+    <span>
+      <Check size={12} aria-hidden="true" /> Windows-native direction
+    </span>
+    <span>
+      <Check size={12} aria-hidden="true" /> In development
+    </span>
+  </div>
+</section>

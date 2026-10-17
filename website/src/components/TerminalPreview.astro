@@ -1,0 +1,192 @@
+---
+import { Terminal, Plus, Columns2, Circle } from '@lucide/astro';
+
+const shells = [
+  {
+    id: 'powershell',
+    name: 'PowerShell',
+    prompt: 'PS',
+    lines: [
+      { text: 'PowerShell 7 · a familiar place to start', tone: 'comment' },
+      { text: ' ', tone: '' },
+      { text: 'PS C:\\dev\\terminal-one> git status', tone: 'command' },
+      { text: 'On branch main', tone: '' },
+      { text: "Your branch is up to date with 'origin/main'.", tone: '' },
+      { text: ' ', tone: '' },
+      { text: 'PS C:\\dev\\terminal-one> Get-ChildItem', tone: 'command' },
+      { text: ' ', tone: '' },
+      { text: '    Directory: C:\\dev\\terminal-one', tone: 'comment' },
+      { text: ' ', tone: '' },
+      { text: '    docs/    src/    website/', tone: 'accent' },
+      { text: '    README.md    package.json', tone: '' },
+      { text: ' ', tone: '' },
+      { text: 'PS C:\\dev\\terminal-one> ▌', tone: 'command' },
+    ],
+  },
+  {
+    id: 'cmd',
+    name: 'CMD',
+    prompt: '>',
+    lines: [
+      { text: 'Microsoft Windows · command prompt', tone: 'comment' },
+      { text: ' ', tone: '' },
+      { text: 'C:\\dev\\terminal-one> echo %COMSPEC%', tone: 'command' },
+      { text: 'C:\\Windows\\system32\\cmd.exe', tone: '' },
+      { text: ' ', tone: '' },
+      { text: 'C:\\dev\\terminal-one> dir /b', tone: 'command' },
+      { text: 'docs', tone: 'accent' },
+      { text: 'src', tone: 'accent' },
+      { text: 'website', tone: 'accent' },
+      { text: 'README.md', tone: '' },
+      { text: 'package.json', tone: '' },
+      { text: ' ', tone: '' },
+      { text: 'C:\\dev\\terminal-one> ▌', tone: 'command' },
+    ],
+  },
+  {
+    id: 'bash',
+    name: 'Git Bash',
+    prompt: '$',
+    lines: [
+      { text: 'you@windows MINGW64 ~/projects/terminal-one', tone: 'comment' },
+      { text: '$ git status --short', tone: 'command' },
+      { text: ' M README.md', tone: 'accent' },
+      { text: ' ', tone: '' },
+      { text: '$ ls', tone: 'command' },
+      { text: 'docs/  src/  website/  README.md  package.json', tone: '' },
+      { text: ' ', tone: '' },
+      { text: '$ pwd', tone: 'command' },
+      { text: '/c/Users/you/projects/terminal-one', tone: '' },
+      { text: ' ', tone: '' },
+      { text: 'you@windows MINGW64 ~/projects/terminal-one', tone: 'comment' },
+      { text: '$ ▌', tone: 'command' },
+    ],
+  },
+];
+---
+
+<div class="preview-composition">
+  <div class="preview-topline">
+    <span class="status-dot"></span> Interactive concept preview{' '}
+    <span class="preview-index">01 — 03</span>
+  </div>
+  <div class="terminal-window" data-terminal-preview>
+    <div class="terminal-titlebar">
+      <div class="terminal-title">
+        <Terminal size={13} aria-hidden="true" />
+        <span>terminal-one</span>
+      </div>
+      <div class="window-marks" aria-hidden="true">
+        <span>−</span>
+        <span>□</span>
+        <span>×</span>
+      </div>
+    </div>
+    <div class="terminal-tabbar">
+      <div
+        class="shell-tabs"
+        role="tablist"
+        aria-label="Shell concept examples"
+        hidden
+      >
+        {shells.map((shell, index) => (
+          <button
+            id={'tab-' + shell.id}
+            role="tab"
+            type="button"
+            aria-selected={index === 0 ? 'true' : 'false'}
+            aria-controls={'panel-' + shell.id}
+            tabindex={index === 0 ? 0 : -1}
+            data-shell={shell.id}
+          >
+            <span class="shell-tab-symbol" aria-hidden="true">
+              {shell.prompt}
+            </span>
+            {shell.name}
+          </button>
+        ))}
+      </div>
+      <span class="terminal-extra" aria-hidden="true">
+        <Plus size={14} />
+      </span>
+    </div>
+    {shells.map((shell, index) => (
+      <div
+        id={'panel-' + shell.id}
+        role="tabpanel"
+        aria-label={shell.name + ' sample output'}
+        aria-labelledby={'tab-' + shell.id}
+        tabindex="0"
+        hidden={index !== 0}
+      >
+        <pre class="terminal-output"><code>{shell.lines.map((line) => <span class={'output-line ' + line.tone}>{line.text}</span>)}</code></pre>
+      </div>
+    ))}
+    <div class="terminal-statusbar">
+      <span>
+        <Circle size={7} fill="currentColor" aria-hidden="true" /> Sample output
+      </span>
+      <span>
+        <Columns2 size={11} aria-hidden="true" /> UTF-8
+      </span>
+    </div>
+  </div>
+  <div class="preview-caption">
+    <span class="corner-line" aria-hidden="true"></span>
+    <span>
+      Your shells. A new home.
+      <br />
+      <strong>No commands are executed in this preview.</strong>
+    </span>
+  </div>
+</div>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-terminal-preview]');
+  if (root) {
+    const tabs = Array.from(
+      root.querySelectorAll<HTMLButtonElement>('[role="tab"]'),
+    );
+    const panels = Array.from(
+      root.querySelectorAll<HTMLElement>('[role="tabpanel"]'),
+    );
+    const select = (index: number, focus = false) => {
+      tabs.forEach((tab, position) => {
+        const active = position === index;
+        tab.setAttribute('aria-selected', String(active));
+        tab.tabIndex = active ? 0 : -1;
+        if (active && focus) tab.focus();
+      });
+      panels.forEach((panel, position) => {
+        panel.hidden = position !== index;
+      });
+    };
+
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => select(index));
+      tab.addEventListener('keydown', (event) => {
+        let next: number;
+        switch (event.key) {
+          case 'ArrowRight':
+            next = (index + 1) % tabs.length;
+            break;
+          case 'ArrowLeft':
+            next = (index - 1 + tabs.length) % tabs.length;
+            break;
+          case 'Home':
+            next = 0;
+            break;
+          case 'End':
+            next = tabs.length - 1;
+            break;
+          default:
+            return;
+        }
+        event.preventDefault();
+        select(next, true);
+      });
+    });
+    const tablist = root.querySelector<HTMLElement>('[role="tablist"]');
+    if (tablist) tablist.hidden = false;
+  }
+</script>
