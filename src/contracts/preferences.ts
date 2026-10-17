@@ -84,7 +84,9 @@ export function text(value: unknown, max: number): string {
   if (
     typeof value !== 'string' ||
     value.length > max ||
-    /[\x00-\x1f\x7f]/.test(value)
+    [...value].some(
+      (char) => char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127
+    )
   )
     throw new Error('Invalid settings text')
   return value
@@ -159,7 +161,7 @@ export function parsePreferences(value: unknown): Preferences {
       !/^[a-zA-Z0-9-]{1,80}$/.test(id) ||
       ids.has(id) ||
       !name.trim() ||
-      !/^(?:[a-zA-Z]:[\\/]|\\\\[^\\/]+[\\/][^\\/]+[\\/])/.test(cwd) ||
+      !/^(?:[a-zA-Z]:[\\/]|\\\\[^\\/]+[\\/][^\\/]+(?:[\\/]|$))/.test(cwd) ||
       /^\\\\[?.]\\/.test(cwd)
     )
       throw new Error('Invalid project path or identity')
@@ -181,7 +183,9 @@ export function parsePreferences(value: unknown): Preferences {
       const item = object(value, 'kind,shellId,projectId')
       if (
         ++panes > 4 ||
-        (item['projectId'] !== null && !ids.has(String(item['projectId'])))
+        (item['projectId'] !== null &&
+          (typeof item['projectId'] !== 'string' ||
+            !ids.has(item['projectId'])))
       )
         throw new Error('Invalid saved project')
       return {

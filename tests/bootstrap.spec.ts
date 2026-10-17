@@ -80,14 +80,23 @@ for (const mode of ['built', 'development'] as const) {
             )
           ).toEqual([
             'acknowledgeSession',
+            'chooseProject',
+            'clearHistory',
             'closeSession',
             'createSession',
+            'explainCommand',
+            'exportPreferences',
             'getAppInfo',
+            'getPreferences',
+            'importPreferences',
             'listShells',
             'onSessionEvent',
             'openExternal',
             'readClipboard',
+            'resetPreferences',
             'resizeSession',
+            'savePreferences',
+            'searchHistory',
             'writeClipboard',
             'writeSession'
           ])

@@ -7,8 +7,12 @@ export interface Shell {
   name: string
   executable: string
   args: string[]
+  historyIntegration?: boolean
+  privateHistory?: boolean
 }
 export type PtyEvent =
+  | { type: 'command'; command: string }
+  | { type: 'integration'; ready: boolean }
   | { type: 'data'; data: string; sequence: number }
   | { type: 'exit'; exitCode: number }
   | { type: 'error'; message: string }

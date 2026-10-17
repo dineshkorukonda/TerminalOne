@@ -12,6 +12,8 @@ export class PreferenceRepository {
   private history: HistoryEntry[] = []
   private blocked = false
   private queue = Promise.resolve()
+  private historyWriting: Promise<void> | null = null
+  private historyDirty = false
   warning = ''
   private readonly directory: string
   constructor(directory: string) {
@@ -84,7 +86,7 @@ export class PreferenceRepository {
     this.history = settings.history.enabled
       ? this.history.slice(-settings.history.limit)
       : []
-    await this.persist('history.json', this.history)
+    await this.storeHistory()
     return this.current()
   }
   async reset() {
@@ -93,7 +95,7 @@ export class PreferenceRepository {
     this.history = []
     this.blocked = false
     this.warning = ''
-    await this.persist('history.json', [])
+    await this.storeHistory()
     return this.current()
   }
   search(query: unknown, shell: unknown): HistoryEntry[] {
@@ -125,13 +127,34 @@ export class PreferenceRepository {
     if (previous?.command === command && previous.shellId === shellId) return
     this.history.push({ id: randomUUID(), shellId, command, time: Date.now() })
     this.history = this.history.slice(-this.settings.history.limit)
-    await this.persist('history.json', this.history)
+    let characters = this.history.reduce(
+      (sum, item) => sum + item.command.length,
+      0
+    )
+    while (characters > 262144) {
+      characters -= this.history.shift()!.command.length
+    }
+    await this.storeHistory()
+  }
+  private storeHistory(): Promise<void> {
+    this.historyDirty = true
+    if (this.historyWriting) return this.historyWriting
+    this.historyWriting = (async () => {
+      while (this.historyDirty) {
+        this.historyDirty = false
+        await this.persist('history.json', this.history)
+      }
+    })().finally(() => {
+      this.historyWriting = null
+    })
+    return this.historyWriting
   }
   async clearHistory() {
     this.history = []
-    await this.persist('history.json', [])
+    await this.storeHistory()
   }
   async flush() {
+    await this.historyWriting
     await this.queue
   }
 }
@@ -140,7 +163,11 @@ function validCommand(value: unknown): value is string {
     typeof value === 'string' &&
     value.trim().length > 0 &&
     value.length <= 4096 &&
-    !/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(value) &&
+    ![...value].some(
+      (char) =>
+        (char.charCodeAt(0) < 32 && !['\t', '\r', '\n'].includes(char)) ||
+        char.charCodeAt(0) === 127
+    ) &&
     !/^\s/.test(value) &&
     !/(?:password|passwd|secret|token|api[_-]?key|authorization|credential)/i.test(
       value
