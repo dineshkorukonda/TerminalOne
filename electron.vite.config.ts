@@ -10,7 +10,8 @@ export default defineConfig({
         input: {
           index: resolve('src/main/index.ts'),
           'pty-host': resolve('src/infrastructure/pty/host.ts'),
-          'pty-client': resolve('src/infrastructure/pty/client.ts')
+          'pty-client': resolve('src/infrastructure/pty/client.ts'),
+          'shell-catalog': resolve('src/infrastructure/shells/discover.ts')
         }
       }
     }
