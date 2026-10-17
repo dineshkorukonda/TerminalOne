@@ -20,7 +20,10 @@ test('architecture lint permits inward imports and rejects prohibited dependenci
   ]
   const created = []
   const missingParents = []
-  const eslint = new ESLint({ cwd: root })
+  const eslint = new ESLint({
+    cwd: root,
+    overrideConfig: { rules: { '@typescript-eslint/no-unused-vars': 'off' } }
+  })
 
   try {
     for (const layer of layers) {
@@ -41,10 +44,22 @@ test('architecture lint permits inward imports and rejects prohibited dependenci
     }
 
     const cases = [
-      ['renderer', 'import type { DesktopApi } from "../../contracts/desktop-api"', null],
-      ['preload', 'import { IPC_CHANNELS } from "../../contracts/desktop-api"', null],
+      [
+        'renderer',
+        'import type { DesktopApi } from "../../contracts/desktop-api"',
+        null
+      ],
+      [
+        'preload',
+        'import { IPC_CHANNELS } from "../../contracts/desktop-api"',
+        null
+      ],
       ['contracts', 'import { app } from "electron"', 'no-restricted-imports'],
-      ['domain', 'import type { DesktopApi } from "../../contracts/desktop-api"', 'import-x/no-restricted-paths'],
+      [
+        'domain',
+        'import type { DesktopApi } from "../../contracts/desktop-api"',
+        'import-x/no-restricted-paths'
+      ],
 
       ['domain', 'import { probe } from "./target"', null],
       [
@@ -194,12 +209,10 @@ test('architecture lint permits inward imports and rejects prohibited dependenci
     for (const directory of created)
       await rm(directory, { recursive: true, force: true })
     for (const directory of missingParents) {
-      try {
-        await rmdir(directory)
-      } catch (error) {
+      await rmdir(directory).catch((error) => {
         // Preserve anything another process created while the check ran.
         if (error.code !== 'ENOTEMPTY') throw error
-      }
+      })
     }
   }
 })

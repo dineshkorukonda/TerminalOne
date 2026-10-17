@@ -19,8 +19,9 @@ To check and launch the production bundle:
 
 ```powershell
 npm run typecheck
-npm run lint:boundaries
-npm run test:architecture
+npm run lint
+npm run format:check
+npm run test:unit
 npm run build
 npm start
 ```
@@ -50,4 +51,8 @@ Run desktop checks in an interactive Windows session. Linux automation needs the
 
 The [architecture decision](docs/architecture/0001-dependency-direction.md) defines import direction and feature ownership. `lint:boundaries` checks production source; `test:architecture` verifies allowed and forbidden imports using temporary fixtures. Run the architecture test before typechecking or building, rather than concurrently with them. Domain and application directories are reserved for future core behavior and are not created as placeholders.
 
-Desktop work starts with [Phase 0: Repository Foundation](https://github.com/dineshkorukonda/TerminalOne/milestone/1), followed by the native terminal engine, terminal UI, shell adapter, developer experience, and production readiness. Track dependencies and acceptance criteria in [GitHub issues](https://github.com/dineshkorukonda/TerminalOne/issues). The current desktop provides the bootstrap and architecture foundation from #1 and #2. Typed IPC is described in the security document; broad quality tooling, CI, and theme tokens have their own issues. Windows execution is not yet verified here, and no installer or release is available.
+Desktop work starts with [Phase 0: Repository Foundation](https://github.com/dineshkorukonda/TerminalOne/milestone/1), followed by the native terminal engine, terminal UI, shell adapter, developer experience, and production readiness. Track dependencies and acceptance criteria in [GitHub issues](https://github.com/dineshkorukonda/TerminalOne/issues). The current desktop provides the bootstrap and architecture foundation from #1 and #2. Typed IPC is described in the security document; quality checks are available below; CI and theme tokens have their own issues. Windows execution is not yet verified here, and no installer or release is available.
+
+## Code quality
+
+`npm run lint` checks desktop source, tests, and tooling with flat ESLint and TypeScript recommended rules, including dependency boundaries. `npm run lint:fix` applies safe fixes. `npm run format` and `npm run format:check` use Prettier. Generated output, dependencies, lockfiles, and the separate website toolchain are excluded as appropriate. TypeScript strict mode remains enabled for both runtime configurations. Explicit `any` is rejected; any necessary exception requires a narrow ESLint suppression with a written justification and reviewer approval. `npm run test:unit` verifies that real lint/type violations fail and removes its fixtures.

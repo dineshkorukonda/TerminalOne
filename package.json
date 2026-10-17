@@ -19,13 +19,18 @@
     "test:smoke": "npm run electron:install && npm run build && playwright test",
     "lint:boundaries": "eslint src --max-warnings 0",
     "test:architecture": "node --test tests/architecture.test.mjs",
-    "test:unit": "node --test \"tests/*.test.mjs\""
+    "test:unit": "node --test --test-concurrency=1 \"tests/*.test.mjs\"",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix --max-warnings 0",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check"
   },
   "dependencies": {
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },
   "devDependencies": {
+    "@eslint/js": "10.0.1",
     "@playwright/test": "1.64.1",
     "@types/node": "24.19.2",
     "@types/react": "19.3.0",
@@ -37,7 +42,10 @@
     "eslint": "10.13.0",
     "eslint-import-resolver-typescript": "4.4.5",
     "eslint-plugin-import-x": "4.17.1",
+    "globals": "17.13.0",
+    "prettier": "3.9.10",
     "typescript": "6.0.3",
+    "typescript-eslint": "8.71.2",
     "vite": "8.3.4"
   }
 }
