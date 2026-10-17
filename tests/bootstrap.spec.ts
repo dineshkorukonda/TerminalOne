@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test'
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { spawnSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { ViteDevServer } from 'vite'
@@ -227,3 +228,40 @@ for (const mode of ['built', 'development'] as const) {
     })
   }
 }
+
+test('packaged startup policy exits on debugging flags without an error dialog', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'terminal-packaged-policy-'))
+  const env = { ...process.env }
+  delete env['ELECTRON_RUN_AS_NODE']
+  try {
+    const entry = join(directory, 'entry.cjs')
+    const main = join(process.cwd(), 'out/main/index.js')
+    await writeFile(
+      entry,
+      `const { app } = require('electron'); Object.defineProperty(app, 'isPackaged', { value: true }); require(${JSON.stringify(main)});`
+    )
+    const result = spawnSync(
+      process.execPath,
+      [
+        join(process.cwd(), 'node_modules/electron/cli.js'),
+        entry,
+        '--no-sandbox',
+        '--inspect=0',
+        '--remote-debugging-port=0'
+      ],
+      { env, timeout: 10_000, encoding: 'utf8' }
+    )
+    expect(result.error).toBeUndefined()
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain(
+      'Debugging flags are disabled in packaged builds'
+    )
+  } finally {
+    await rm(directory, {
+      recursive: true,
+      force: true,
+      maxRetries: 5,
+      retryDelay: 200
+    })
+  }
+})
