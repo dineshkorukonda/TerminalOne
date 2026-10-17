@@ -17,4 +17,3 @@ Recorded 2026-10-17 before website implementation.
 - Superpowers 6.3.0 is available locally. frontend-design was not found in installed skill caches.
 
 The user described an existing working desktop application. That application is absent from this inspected revision. This website must not imply desktop regression checks were executed. Final verification compares all changes with origin/main and confirms that existing README.md and LICENSE are untouched.
-

@@ -1,0 +1,70 @@
+---
+import { Terminal, GitBranch, ArrowUpRight, Menu, X } from '@lucide/astro';
+---
+
+<header class="site-header" data-site-header>
+  <div class="container header-inner">
+    <a href="#main" class="brand" aria-label="Terminal One home">
+      <span class="brand-symbol">
+        <Terminal size={19} stroke-width={2.2} aria-hidden="true" />
+      </span>
+      <span>
+        terminal<span class="brand-one">one</span>
+        <span class="brand-period">.</span>
+      </span>
+    </a>
+    <button
+      class="menu-toggle icon-button"
+      type="button"
+      aria-label="Toggle navigation"
+      aria-expanded="false"
+      aria-controls="main-navigation"
+      data-menu-toggle
+      hidden
+    >
+      <Menu class="menu-open-icon" size={22} aria-hidden="true" />
+      <X class="menu-close-icon" size={22} aria-hidden="true" />
+    </button>
+    <nav id="main-navigation" class="site-nav" aria-label="Main">
+      <a href="#vision">The vision</a>
+      <a href="#adapter">Shell adapter</a>
+      <a href="#roadmap">Roadmap</a>
+      <a class="nav-github" href="https://github.com/dineshkorukonda/Terminal">
+        <GitBranch size={15} aria-hidden="true" /> GitHub{' '}
+        <ArrowUpRight size={13} aria-hidden="true" />
+      </a>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-site-header]');
+  const toggle = header?.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const nav = header?.querySelector<HTMLElement>('nav');
+
+  if (header && toggle && nav) {
+    const setOpen = (open: boolean) => {
+      toggle.setAttribute('aria-expanded', String(open));
+      nav.toggleAttribute('data-open', open);
+    };
+
+    toggle.addEventListener('click', () => {
+      setOpen(toggle.getAttribute('aria-expanded') !== 'true');
+    });
+    nav.addEventListener('click', (event) => {
+      if (event.target instanceof Element && event.target.closest('a'))
+        setOpen(false);
+    });
+    document.addEventListener('keydown', (event) => {
+      if (
+        event.key === 'Escape' &&
+        toggle.getAttribute('aria-expanded') === 'true'
+      ) {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+    toggle.hidden = false;
+    header.dataset['enhanced'] = 'true';
+  }
+</script>

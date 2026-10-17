@@ -57,4 +57,3 @@ Run independent npm installation, formatting, lint, Astro/TypeScript checks, pro
 ## Delivery
 
 Branch: feat/49-marketing-website. Conventional Commits have meaningful bodies and Refs #49. A focused PR uses Closes #49, documents validation and screenshots, is registered with T3 Code and is not merged without owner authorization.
-

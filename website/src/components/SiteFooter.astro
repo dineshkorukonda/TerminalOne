@@ -1,0 +1,36 @@
+---
+import { Terminal, ArrowUpRight } from '@lucide/astro';
+---
+
+<footer class="site-footer container">
+  <div class="footer-top">
+    <a href="#main" class="brand" aria-label="Terminal One home">
+      <span class="brand-symbol">
+        <Terminal size={18} stroke-width={2.2} aria-hidden="true" />
+      </span>
+      <span>
+        terminal<span class="brand-one">one</span>
+        <span class="brand-period">.</span>
+      </span>
+    </a>
+    <p>One terminal. Every shell.</p>
+    <nav aria-label="Footer">
+      <a href="https://github.com/dineshkorukonda/Terminal">
+        GitHub <ArrowUpRight size={12} aria-hidden="true" />
+      </a>
+      <a href="https://github.com/dineshkorukonda/Terminal/releases">
+        Releases <ArrowUpRight size={12} aria-hidden="true" />
+      </a>
+      <a href="https://github.com/dineshkorukonda/Terminal/blob/main/LICENSE">
+        MIT license <ArrowUpRight size={12} aria-hidden="true" />
+      </a>
+    </nav>
+  </div>
+  <div class="footer-bottom">
+    <span>Built for Windows. Made for developers.</span>
+    <span>Independent project. Not affiliated with iTerm2 or Microsoft.</span>
+  </div>
+  <div class="footer-wordmark" aria-hidden="true">
+    terminalone<span>.</span>
+  </div>
+</footer>
