@@ -1,6 +1,6 @@
 # Desktop bootstrap verification
 
-Issue: [#1](https://github.com/dineshkorukonda/Terminal/issues/1).
+Issue: [#1](https://github.com/dineshkorukonda/TerminalOne/issues/1).
 
 ## Checks executed
 
