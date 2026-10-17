@@ -14,6 +14,9 @@ app.whenReady().then(() => {
       preload: path.join(__dirname, 'ui-preload.cjs')
     }
   })
-  void window.loadFile(path.join(__dirname, '../../out/renderer/index.html'))
+  if (process.env.UI_FIXTURE_RENDERER_URL)
+    void window.loadURL(process.env.UI_FIXTURE_RENDERER_URL)
+  else
+    void window.loadFile(path.join(__dirname, '../../out/renderer/index.html'))
 })
 app.on('window-all-closed', () => app.quit())

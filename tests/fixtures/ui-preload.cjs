@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld('desktop', {
     { id: 'cmd', name: 'CMD fixture' }
   ],
   createSession: async ({ shellId }) => {
+    if (sessions.size >= 4) throw new Error('Fixture owner limit reached')
     const id = `fixture-${++sequence}`,
       session = { id, shellId, pid: sequence, state: 'running', exitCode: null }
     sessions.set(id, session)

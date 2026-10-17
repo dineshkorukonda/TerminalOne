@@ -46,7 +46,10 @@ export function App() {
   }, [store])
   const newTab = () => {
     const shell = shells.find((shell) => shell.id === shellId)
-    if (shell) workspace.newTab(shell.id, shell.name)
+    if (shell) {
+      workspace.newTab(shell.id, shell.name)
+      focusTerminal()
+    }
   }
   function focusTerminal() {
     requestAnimationFrame(() =>
@@ -54,6 +57,18 @@ export function App() {
         .querySelector<HTMLTextAreaElement>(
           '.tab-viewport:not([hidden]) .pane-active .xterm-helper-textarea'
         )
+        ?.focus()
+    )
+  }
+  function split(direction: 'horizontal' | 'vertical') {
+    workspace.split(direction, shellId)
+    focusTerminal()
+  }
+  function openSettings() {
+    setSettings(true)
+    requestAnimationFrame(() =>
+      document
+        .querySelector<HTMLSelectElement>('.appearance-settings select')
         ?.focus()
     )
   }
@@ -92,12 +107,12 @@ export function App() {
     {
       id: 'right',
       label: 'Split right',
-      run: () => workspace.split('horizontal', shellId)
+      run: () => split('horizontal')
     },
     {
       id: 'down',
       label: 'Split down',
-      run: () => workspace.split('vertical', shellId)
+      run: () => split('vertical')
     },
     {
       id: 'search',
@@ -107,12 +122,15 @@ export function App() {
     {
       id: 'settings',
       label: 'Appearance settings',
-      run: () => setSettings(true)
+      run: openSettings
     },
     ...workspace.tabs.map((tab, index) => ({
       id: tab.id,
       label: `Switch to tab ${index + 1}: ${tab.title}`,
-      run: () => workspace.selectTab(tab.id)
+      run: () => {
+        workspace.selectTab(tab.id)
+        focusTerminal()
+      }
     }))
   ]
   useEffect(() => {
@@ -129,6 +147,7 @@ export function App() {
       if (key === 'p') {
         event.preventDefault()
         setPalette((open) => !open)
+        if (palette) focusTerminal()
         return
       }
       if (key === 'c' || key === 'v') {
@@ -156,6 +175,7 @@ export function App() {
         </div>
         <button
           className="documentation-button"
+          aria-label="Project documentation"
           onClick={() => {
             void window.desktop
               .openExternal('https://github.com/dineshkorukonda/TerminalOne')
@@ -268,20 +288,27 @@ export function App() {
           </button>
           <button
             disabled={!workspace.activeTabId}
-            onClick={() => workspace.split('horizontal', shellId)}
+            onClick={() => split('horizontal')}
           >
             Split right
           </button>
           <button
             disabled={!workspace.activeTabId}
-            onClick={() => workspace.split('vertical', shellId)}
+            onClick={() => split('vertical')}
           >
             Split down
           </button>
         </div>
         <div className="workspace-actions">
           <button onClick={() => setPalette(true)}>Commands</button>
-          <button onClick={() => setSettings((open) => !open)}>
+          <button
+            onClick={() => {
+              if (settings) {
+                setSettings(false)
+                focusTerminal()
+              } else openSettings()
+            }}
+          >
             Appearance
           </button>
         </div>
@@ -300,13 +327,19 @@ export function App() {
                   }
                 }}
                 aria-controls={`panel-${tab.id}`}
-                onClick={() => workspace.selectTab(tab.id)}
+                onClick={() => {
+                  workspace.selectTab(tab.id)
+                  focusTerminal()
+                }}
               >
                 {tab.title}
               </button>
               <button
                 aria-label={`Close tab ${tab.title}`}
-                onClick={() => workspace.closeTab(tab.id)}
+                onClick={() => {
+                  workspace.closeTab(tab.id)
+                  focusTerminal()
+                }}
               >
                 ×
               </button>
@@ -328,7 +361,10 @@ export function App() {
             appearance={appearance}
             active={tab.id === workspace.activeTabId}
             focusPane={workspace.focusPane}
-            closePane={workspace.closePane}
+            closePane={(id) => {
+              workspace.closePane(id)
+              focusTerminal()
+            }}
             resizeSplit={workspace.resizeSplit}
           />
         ))}

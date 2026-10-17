@@ -21,10 +21,19 @@ export function TerminalPane({
   const [searchOpen, setSearchOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [searchResult, setSearchResult] = useState('')
+  const [searchSummary, setSearchSummary] = useState('')
+  const searchOptions = {
+    decorations: {
+      matchBackground: '#34415b',
+      activeMatchBackground: '#536b94',
+      matchOverviewRuler: '#91bfff',
+      activeMatchColorOverviewRuler: '#b8d5ff'
+    }
+  }
   function search(reverse = false) {
     const found = reverse
-      ? searchInstance.current?.findPrevious(query)
-      : searchInstance.current?.findNext(query)
+      ? searchInstance.current?.findPrevious(query, searchOptions)
+      : searchInstance.current?.findNext(query, searchOptions)
     setSearchResult(found ? 'Match selected' : 'No matches')
   }
   async function clipboard(action: 'copy' | 'paste') {
@@ -69,6 +78,7 @@ export function TerminalPane({
       fontSize: appearance.font.size,
       lineHeight: appearance.font.lineHeight,
       cursorBlink: true,
+      allowProposedApi: true,
       screenReaderMode: true,
       theme
     })
@@ -76,6 +86,16 @@ export function TerminalPane({
     terminal.loadAddon(fit)
     const searchAddon = new SearchAddon({ highlightLimit: 500 })
     terminal.loadAddon(searchAddon)
+    const searchResults = searchAddon.onDidChangeResults(
+      ({ resultIndex, resultCount }) => {
+        if (!disposed)
+          setSearchSummary(
+            resultIndex >= 0
+              ? `Match ${resultIndex + 1} of ${resultCount}`
+              : `${resultCount} matches`
+          )
+      }
+    )
     searchInstance.current = searchAddon
     terminal.open(element)
     terminalInstance.current = terminal
@@ -200,9 +220,20 @@ export function TerminalPane({
             )
           )
     }
-    void window.desktop
-      .createSession({ shellId, cols: terminal.cols, rows: terminal.rows })
+    // React development effect replay can dispose this view before the microtask.
+    // Avoid allocating a native session for that discarded mount.
+    void Promise.resolve()
+      .then(() =>
+        disposed
+          ? null
+          : window.desktop.createSession({
+              shellId,
+              cols: terminal.cols,
+              rows: terminal.rows
+            })
+      )
       .then(async (session) => {
+        if (!session) return
         id = session.id
         if (disposed || stopping) {
           await window.desktop.closeSession(id)
@@ -227,6 +258,7 @@ export function TerminalPane({
       grids.dispose()
       onData.dispose()
       pending = []
+      searchResults.dispose()
       terminalInstance.current = null
       searchInstance.current = null
       terminal.dispose()
@@ -304,6 +336,7 @@ export function TerminalPane({
           </button>
           <button type="submit">Next match</button>
           <span aria-live="polite">{searchResult}</span>
+          <span aria-live="polite">{searchSummary}</span>
           <button
             type="button"
             aria-label="Close search"
