@@ -51,7 +51,7 @@ Run desktop checks in an interactive Windows session. Linux automation needs the
 
 The [architecture decision](docs/architecture/0001-dependency-direction.md) defines import direction and feature ownership. `lint:boundaries` checks production source; `test:architecture` verifies allowed and forbidden imports using temporary fixtures. Run the architecture test before typechecking or building, rather than concurrently with them. Domain and application directories are reserved for future core behavior and are not created as placeholders.
 
-Desktop work starts with [Phase 0: Repository Foundation](https://github.com/dineshkorukonda/TerminalOne/milestone/1), followed by the native terminal engine, terminal UI, shell adapter, developer experience, and production readiness. Track dependencies and acceptance criteria in [GitHub issues](https://github.com/dineshkorukonda/TerminalOne/issues). The current desktop provides the bootstrap and architecture foundation from #1 and #2. Typed IPC is described in the security document; quality checks are available below; CI and theme tokens have their own issues. Windows execution is not yet verified here, and no installer or release is available.
+Desktop work starts with [Phase 0: Repository Foundation](https://github.com/dineshkorukonda/TerminalOne/milestone/1), followed by the native terminal engine, terminal UI, shell adapter, developer experience, and production readiness. Track dependencies and acceptance criteria in [GitHub issues](https://github.com/dineshkorukonda/TerminalOne/issues). The current desktop provides the bootstrap and architecture foundation from #1 and #2. Typed IPC is described in the security document; quality checks are available below; CI and theme tokens have their own issues. The Windows Server CI runner has passed the desktop checks; Windows 10/11 manual compatibility remains unverified, and no installer or release is available.
 
 ## Code quality
 
@@ -74,3 +74,7 @@ Actions are pinned to immutable commits and the GitHub token has read-only repos
 ## Contributing and security
 
 Follow [CONTRIBUTING.md](CONTRIBUTING.md) for beginner-friendly Windows setup, the complete check sequence, issue branches/commit bodies, review gates, and owner-managed repository settings. [AGENTS.md](AGENTS.md) records persistent engineering rules. See [SECURITY.md](SECURITY.md) for reporting without exposing sensitive terminal data and [CHANGELOG.md](CHANGELOG.md) for delivered changes and release limitations. The project retains the [MIT license](LICENSE).
+
+## Theme foundation
+
+The renderer consumes shared Tailwind surface, typography, focus, border, and ANSI tokens. Its font sample uses a validated typed font configuration; the foundation view does not open shell sessions. See [theme tokens, contrast, focus, and scale limits](docs/theme-foundation.md). Electron component checks retain screenshots at 100%, 150%, and 200% renderer scale for both built and development content.

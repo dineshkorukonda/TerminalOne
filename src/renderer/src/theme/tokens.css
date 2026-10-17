@@ -1,0 +1,34 @@
+@theme static {
+  --color-canvas: #101114;
+  --color-panel: #181b21;
+  --color-elevated: #222733;
+  --color-ink: #eef0f6;
+  --color-muted: #a8adb9;
+  --color-border: #343944;
+  --color-control-border: #68758b;
+  --color-focus: #a3c9ff;
+  --color-accent: #b8d5ff;
+  --font-ui: 'Segoe UI', system-ui, sans-serif;
+  --font-terminal: 'Cascadia Mono', Consolas, 'Liberation Mono', monospace;
+  --radius-panel: 0.75rem;
+}
+
+:root {
+  color-scheme: dark;
+  --ansi-black: #20232b;
+  --ansi-red: #f0838c;
+  --ansi-green: #a4d68c;
+  --ansi-yellow: #e6cb8b;
+  --ansi-blue: #91bfff;
+  --ansi-magenta: #c6a0ee;
+  --ansi-cyan: #8bd5ca;
+  --ansi-white: #c7cbd6;
+  --ansi-bright-black: #747e94;
+  --ansi-bright-red: #ffacb3;
+  --ansi-bright-green: #c3e8b1;
+  --ansi-bright-yellow: #f4e2b5;
+  --ansi-bright-blue: #b8d5ff;
+  --ansi-bright-magenta: #dec5fa;
+  --ansi-bright-cyan: #b1ece3;
+  --ansi-bright-white: #eef0f6;
+}

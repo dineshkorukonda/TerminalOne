@@ -12,3 +12,4 @@ No desktop release has been published. These entries describe implementation cha
 - Add staged checks, Conventional Commit body/reference validation, hooks, and a commit template (#5).
 - Add a pinned Windows CI workflow with launch artifacts and read-only permissions (#6).
 - Document setup, architecture, contribution/review gates, security reporting limitations, and persistent agent instructions (#8).
+- Add shared Tailwind theme/ANSI tokens, a validated terminal font model, consistent SVG icons, keyboard focus, and contrast/scale checks (#9).
