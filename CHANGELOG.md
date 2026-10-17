@@ -4,6 +4,10 @@ No desktop release has been published. These entries describe implementation cha
 
 ## Unreleased
 
+- Define conservative shell adapter contracts and architecture (#24, #25).
+- Add narrow PowerShell/CMD/Bash evidence, explicit fallback and strategy resolution, and trusted per-session state observations without environment values (#26–#30, #32).
+- Add an installed-shell Windows ConPTY compatibility matrix with explicit availability and cleanup evidence (#31).
+
 - Add a rebuilt node-pty utility host and ASAR native diagnostic (#10).
 - Add owner-scoped terminal lifecycle and detected Windows shell profiles (#11, #12).
 - Render live ANSI/Unicode sessions in xterm with raw input, Ctrl+C, fitted grids, and bounded stream backpressure (#13, #14).
