@@ -67,7 +67,8 @@ export async function discoverShells(
     {
       id: 'cmd',
       name: 'Command Prompt',
-      args: ['/d', '/q'],
+      // Keep the interactive prompt visible; /q disables echo and hides it.
+      args: ['/d'],
       paths: [win32.join(root, 'System32/cmd.exe')]
     },
     {

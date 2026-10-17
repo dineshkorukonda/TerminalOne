@@ -4,6 +4,7 @@ const path = require('node:path')
 const fs = require('node:fs')
 const os = require('node:os')
 const assert = require('node:assert/strict')
+const { stripVTControlCharacters } = require('node:util')
 const { EventEmitter } = require('node:events')
 const watchProcesses = require('./process-watch.cjs')
 const root = app.isPackaged
@@ -64,10 +65,12 @@ app
       await Promise.all(early.map((value) => handle.acknowledge(value)))
       return {
         handle,
-        wait(pattern) {
+        wait(pattern, since = 0) {
           return new Promise((resolve, reject) => {
             const check = () => {
-              const match = output.match(pattern)
+              const match = stripVTControlCharacters(output.slice(since)).match(
+                pattern
+              )
               if (match) {
                 cleanup()
                 resolve(match)
@@ -120,6 +123,7 @@ app
           })
         },
         output: () => output,
+        position: () => output.length,
         dispose: detach
       }
     }
@@ -150,7 +154,9 @@ app
           "Write-Output ('BUSY_' + 'READY'); Start-Sleep -Seconds 90\r"
         )
         await current.wait(/BUSY_READY/)
+        const beforeInterrupt = current.position()
         await current.handle.write('\x03')
+        await current.wait(/PS [^\r\n]*>/, beforeInterrupt)
         await current.handle.write("Write-Output ('CTRL_' + 'OK')\r")
         await current.wait(/CTRL_OK/)
         const exited = current.exited()
@@ -225,12 +231,22 @@ app
       }
       console.log(JSON.stringify(evidence))
       clearTimeout(timer)
-      fs.rmSync(directory, { recursive: true, force: true })
+      await fs.promises.rm(directory, {
+        recursive: true,
+        force: true,
+        maxRetries: 10,
+        retryDelay: 100
+      })
       app.exit(0)
     } catch (error) {
       console.error(error.message)
       await port.dispose().catch(() => {})
-      fs.rmSync(directory, { recursive: true, force: true })
+      await fs.promises.rm(directory, {
+        recursive: true,
+        force: true,
+        maxRetries: 10,
+        retryDelay: 100
+      })
       app.exit(1)
     }
   })
