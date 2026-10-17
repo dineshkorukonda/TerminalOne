@@ -56,3 +56,11 @@ Desktop work starts with [Phase 0: Repository Foundation](https://github.com/din
 ## Code quality
 
 `npm run lint` checks desktop source, tests, and tooling with flat ESLint and TypeScript recommended rules, including dependency boundaries. `npm run lint:fix` applies safe fixes. `npm run format` and `npm run format:check` use Prettier. Generated output, dependencies, lockfiles, and the separate website toolchain are excluded as appropriate. TypeScript strict mode remains enabled for both runtime configurations. Explicit `any` is rejected; any necessary exception requires a narrow ESLint suppression with a written justification and reviewer approval. `npm run test:unit` verifies that real lint/type violations fail and removes its fixtures.
+
+## Local Git checks
+
+`npm ci` runs Husky's prepare script in a normal Git clone. The pre-commit hook runs `npm run staged` (ESLint and Prettier checks on staged desktop files); commit-msg runs commitlint. Git for Windows provides the hook shell; all task commands use Node/npm and also run from PowerShell. Website files retain their own quality commands.
+
+Use a conventional header, a body explaining why (at least 20 characters), and an issue reference such as `Refs #5`. Empty bodies, missing issue references, invalid headers, and emoji are rejected. Configure the optional editor template with `git config commit.template .gitmessage`. PR titles use the same header rules via `npm run check:pr-title` with the `PR_TITLE` environment variable, without requiring a body.
+
+`npm run test:unit` exercises valid/invalid commit messages and lint-staged against a temporary alternate Git index, preserving the real staging area. Hooks are a convenience and do not replace CI. In CI set `HUSKY=0` and run the full checks explicitly. In a linked worktree, hook installation changes shared Git configuration; run prepare with `HUSKY=0` if another checkout owns the hook configuration, then run the checks explicitly.
