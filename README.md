@@ -44,10 +44,6 @@ The smoke suite installs Electron if needed, builds the application, and launche
 
 Run native checks in an interactive Windows session with ConPTY (Windows 10 build 18309 or later). `test:native` exercises real Electron utility sessions repeatedly and tests renderer/window/app cleanup. `test:packaged` creates an unsigned ASAR diagnostic under `artifacts/native-probe/` and runs the same native suite; it is not an installer or release. See [Phase 1 verification](docs/phase-1-verification.md) for scope, commands, and evidence. Linux shows an unsupported-platform message and cannot run native integration. Linux automation needs the Electron system libraries and a display server (for example, `xvfb-run -a npm run test:smoke` on a suitably provisioned machine). Playwright's Electron launcher disables the Chromium sandbox for automation, so passing these tests does not verify OS sandbox enforcement. See [bootstrap verification](docs/bootstrap-verification.md) for actual results and remaining Windows checks.
 
-## Shell adapter boundary
-
-Phase 3 adds conservative shell recognition, explicit execution-strategy decisions, and trusted session-state metadata without intercepting the live terminal. See [Phase 3 verification](docs/phase-3-verification.md) and the [architecture decision](docs/architecture/0002-shell-adapter.md). On Windows, `npm run test:shells` checks synthetic compatibility cases twice per detected shell and records optional-shell availability. There is no automatic command translation or state migration.
-
 ## Source layout and roadmap
 
 - `src/main/`: composition root, asset selection, and Electron application lifecycle.
@@ -84,6 +80,10 @@ Use a conventional header, a body explaining why (at least 20 characters), and a
 The Desktop workflow runs on Windows for PRs targeting `main` and issue branches used by the review stack, on pushes to `main`, and on manual dispatch. It installs the locked dependencies using `.node-version`, validates PR titles, and runs formatting, lint, typecheck, unit/tooling tests, the native Electron rebuild, production build, Electron smoke tests, native/session cleanup integration, ASAR diagnostic checks, and a dependency audit. Failures propagate; tests are never replaced by success-on-skip scripts. The only event-specific omission is PR-title validation outside PR events. Hook installation is disabled in CI because the complete checks run directly.
 
 Actions are pinned to immutable commits and the GitHub token has read-only repository contents access. The workflow uploads launch screenshots and failure traces for seven days. It packages an unsigned native diagnostic solely for verification; it does not sign, publish, or deploy desktop releases. Required-check settings must be configured by the repository owner; a workflow file alone does not enable branch protection.
+
+## Shell adapter boundary
+
+Phase 3 adds conservative shell recognition, explicit execution-strategy decisions, and trusted session-state metadata without intercepting the live terminal. See [Phase 3 verification](docs/phase-3-verification.md) and the [architecture decision](docs/architecture/0002-shell-adapter.md). On Windows, `npm run test:shells` checks synthetic compatibility cases twice per detected shell and records optional-shell availability. There is no automatic command translation or state migration.
 
 ## Contributing and security
 

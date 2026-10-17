@@ -27,7 +27,7 @@ npm run test:shells
 npm run test:packaged
 ```
 
-Linux implementation checks: strict build, lint and all 23 unit/tooling tests passed. Renderer smoke and final formatting checks are run before handoff. Linux cannot verify native Windows behavior.
+Linux implementation checks: formatting, strict build/typecheck, lint, all 23 unit/tooling tests, seven Electron smoke checks and audit (zero vulnerabilities) passed. Linux cannot verify native Windows behavior.
 
 `test:shells` is a real Electron ConPTY compatibility matrix (#31), using production discovery and the utility adapter. Windows PowerShell and CMD must exist. PowerShell 7 and Git Bash run when installed; missing optional shells appear explicitly in JSON evidence. Each available shell runs twice, checking synthetic quoted Unicode text, cwd containing spaces/Unicode, fresh-session environment isolation, shell-native pipelines, resize, an interactive blocking command, raw Ctrl+C with observed-prompt synchronization, exit status 7, and retained-process-handle cleanup. It performs no script rewriting. CI fails on errors and writes `test-results/shells/compatibility.json` with actual OS/Electron and shell availability.
 
