@@ -228,19 +228,22 @@ app
                 pipelining,
                 'Bash prompt after pipeline'
               )
+            if (family === 'bash') {
+              // Do not race input against MSYS readline's resize handling:
+              // observe the size from a running command, then wait for its
+              // fresh prompt before sending the next interactive command.
+              // The fixture's 20-second deadline bounds this polling workload.
+              await session.handle.write(
+                "printf '%s%s\\n' 'RESIZE_' 'WAITING'; until [ \"$(stty size)\" = '35 120' ]; do read -r -t 0.05 matrix_resize_wait; done; printf '%s%s\\n' 'SIZE_' \"$(stty size)\"\r"
+              )
+              await session.wait(/^RESIZE_WAITING$/m)
+            }
             await session.resize({ cols: 120, rows: 35 })
             if (family === 'bash') {
-              // ConPTY/MSYS can defer WINCH traps while readline is idle.
-              // Query the actual terminal geometry instead of requiring a
-              // particular signal-delivery schedule. Keep the output marker
-              // split so echoed commands cannot satisfy the assertion.
-              await session.handle.write(
-                "printf '%s%s\\n' 'SIZE_' \"$(stty size)\"\r"
-              )
               await session.wait(
-                /^SIZE_35 120$/m,
+                /^SIZE_35 120\nMATRIX_PROMPT>\s*$/m,
                 0,
-                'Bash terminal dimensions after resize'
+                'Bash terminal dimensions and fresh prompt after resize'
               )
             }
             await session.handle.write(
