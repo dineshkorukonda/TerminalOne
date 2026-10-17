@@ -2,6 +2,7 @@ import { BrowserWindow } from 'electron'
 
 interface DesktopWindowOptions {
   preloadPath: string
+  allowDevTools: boolean
   content: { url: string } | { filePath: string }
 }
 
@@ -22,13 +23,18 @@ export function createDesktopWindow(
       nodeIntegration: false,
       sandbox: true,
       webSecurity: true,
-      webviewTag: false
+      webviewTag: false,
+      devTools: options.allowDevTools
     }
   })
 
   window.once('ready-to-show', () => window.show())
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
   window.webContents.on('will-navigate', (event) => event.preventDefault())
+  window.webContents.on('will-frame-navigate', (event) =>
+    event.preventDefault()
+  )
+  window.webContents.on('will-redirect', (event) => event.preventDefault())
   window.webContents.on('will-attach-webview', (event) =>
     event.preventDefault()
   )

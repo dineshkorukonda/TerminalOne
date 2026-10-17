@@ -1,16 +1,20 @@
 import { fileURLToPath } from 'node:url'
 import parser from '@typescript-eslint/parser'
+import js from '@eslint/js'
+import tseslint from 'typescript-eslint'
+import globals from 'globals'
 import { importX } from 'eslint-plugin-import-x'
 import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript'
 
 const root = fileURLToPath(new URL('.', import.meta.url))
 const layers = {
+  contracts: ['contracts'],
   domain: ['domain'],
   application: ['application', 'domain'],
-  infrastructure: ['infrastructure', 'application', 'domain'],
+  infrastructure: ['infrastructure', 'application', 'domain', 'contracts'],
   main: ['main', 'infrastructure', 'application', 'domain'],
-  preload: ['preload'],
-  renderer: ['renderer']
+  preload: ['preload', 'contracts'],
+  renderer: ['renderer', 'contracts']
 }
 
 export default [
@@ -22,6 +26,23 @@ export default [
       'playwright-report/**',
       'website/**'
     ]
+  },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
+    files: ['**/*.{js,mjs,cjs,ts,tsx}'],
+    languageOptions: { globals: globals.node },
+    linterOptions: { reportUnusedDisableDirectives: 'error' },
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
+      ]
+    }
+  },
+  {
+    files: ['src/renderer/**/*.{ts,tsx}'],
+    languageOptions: { globals: globals.browser }
   },
   {
     files: ['src/**/*.{ts,tsx}'],
@@ -56,7 +77,7 @@ export default [
               from: '.',
               except: [
                 ...allowed.map((dependency) => `src/${dependency}`),
-                ...(['domain', 'application'].includes(layer)
+                ...(['domain', 'application', 'contracts'].includes(layer)
                   ? []
                   : ['node_modules'])
               ],
@@ -106,7 +127,7 @@ export default [
     }
   },
   {
-    files: ['src/{domain,application}/**/*.{ts,tsx}'],
+    files: ['src/{domain,application,contracts}/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-globals': [
         'error',
@@ -133,7 +154,9 @@ export default [
     }
   },
   {
-    files: ['src/{domain,application,renderer,preload}/**/*.{ts,tsx}'],
+    files: [
+      'src/{domain,application,contracts,renderer,preload}/**/*.{ts,tsx}'
+    ],
     rules: {
       'import-x/no-nodejs-modules': 'error'
     }

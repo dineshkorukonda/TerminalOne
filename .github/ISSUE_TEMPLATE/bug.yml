@@ -1,7 +1,7 @@
 name: Bug report
 description: Report reproducible behavior with environment details and expected results.
-title: "[Bug]: "
-labels: ["type:bug"]
+title: '[Bug]: '
+labels: ['type:bug']
 body:
   - type: textarea
     id: description

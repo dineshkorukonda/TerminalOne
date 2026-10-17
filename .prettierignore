@@ -1,0 +1,8 @@
+node_modules/
+out/
+test-results/
+playwright-report/
+package-lock.json
+website/
+.github/workflows/website.yml
+.husky/_/
