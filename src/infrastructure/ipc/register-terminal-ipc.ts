@@ -1,13 +1,19 @@
 import { ipcMain, type BrowserWindow } from 'electron'
 import { randomUUID } from 'node:crypto'
 import { homedir } from 'node:os'
+import { stat } from 'node:fs/promises'
+import type { PreferenceRepository } from '../preferences/repository'
 import { Sessions } from '../../application/terminal/sessions'
 import { UtilityPtyPort } from '../pty/client'
 import { discoverShells, selectShell } from '../shells/discover'
 import { IPC_CHANNELS } from '../../contracts/desktop-api'
 import { authorizeSender, validateArguments } from './policy'
 
-export function registerTerminalIpc(window: BrowserWindow, trustedUrl: string) {
+export function registerTerminalIpc(
+  window: BrowserWindow,
+  trustedUrl: string,
+  preferences: PreferenceRepository
+) {
   const owner = String(window.webContents.id)
   let active = true
   let generation = 0
@@ -18,6 +24,9 @@ export function registerTerminalIpc(window: BrowserWindow, trustedUrl: string) {
     (_owner, event) => {
       if (active && rendererAvailable && !window.webContents.isDestroyed())
         window.webContents.send(IPC_CHANNELS.sessionEvent, event)
+    },
+    (shell, command) => {
+      void preferences.record(shell, command).catch(() => {})
     }
   )
   const channels: string[] = []
@@ -58,15 +67,49 @@ export function registerTerminalIpc(window: BrowserWindow, trustedUrl: string) {
       throw new Error('Invalid terminal options')
     const options = value as Record<string, unknown>
     if (
-      Object.keys(options).sort().join(',') !== 'cols,rows,shellId' ||
-      typeof options['shellId'] !== 'string'
+      !['cols', 'rows', 'shellId'].every((key) =>
+        Object.hasOwn(options, key)
+      ) ||
+      Object.keys(options).some(
+        (key) =>
+          !['cols', 'rows', 'shellId', 'projectId', 'private'].includes(key)
+      ) ||
+      typeof options['shellId'] !== 'string' ||
+      (options['private'] !== undefined &&
+        typeof options['private'] !== 'boolean') ||
+      (options['projectId'] !== undefined &&
+        options['projectId'] !== null &&
+        typeof options['projectId'] !== 'string')
     )
       throw new Error('Invalid terminal options')
     const expected = generation
     const shell = selectShell(await discoverShells(), options['shellId'])
+    const settings = preferences.current().settings
+    const project = options['projectId']
+      ? settings.projects.find((project) => project.id === options['projectId'])
+      : null
+    if (options['projectId'] && !project)
+      throw new Error('Project is unavailable. Choose a valid project folder.')
+    const cwd = project?.cwd ?? homedir()
+    try {
+      if (!(await stat(cwd)).isDirectory()) throw new Error('Not a directory')
+    } catch {
+      throw new Error(
+        'Project folder is missing or unavailable. Choose another project.'
+      )
+    }
+    const privateHistory = options['private'] === true
+    if (privateHistory && !['powershell', 'pwsh'].includes(shell.id))
+      throw new Error(
+        'Private shell-history integration currently requires PowerShell.'
+      )
+    shell.historyIntegration =
+      (settings.history.enabled || privateHistory) &&
+      ['powershell', 'pwsh'].includes(shell.id)
+    shell.privateHistory = privateHistory
     if (!active || generation !== expected || window.webContents.isDestroyed())
       throw new Error('Terminal window is closing')
-    return sessions.create(owner, shell, homedir(), {
+    return sessions.create(owner, shell, cwd, {
       cols: options['cols'] as number,
       rows: options['rows'] as number
     })

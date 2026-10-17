@@ -4,6 +4,11 @@ No desktop release has been published. These entries describe implementation cha
 
 ## Unreleased
 
+- Add opt-in complete-command PowerShell history, private-session safeguards and bounded local retention/search.
+- Add explicit history suggestions and offline command-reference drafts without automatic execution.
+- Add local project folders, opt-in launch-layout restoration, validated shortcuts and versioned settings import/export.
+- Preserve corrupt settings and exclude command history, output, environments and live process identifiers from exported configuration.
+
 - Add compact independent terminal tabs and stable resizable split panes (#17–#19).
 - Add validated live appearance, application command palette/shortcuts, and bounded search/copy/paste (#20–#22).
 - Verify workspace behavior at 100/125/150/200% renderer scale and the minimum window size; document manual DPI limits (#23).

@@ -12,9 +12,11 @@ export function CommandPalette({
   close(restore?: boolean): void
 }) {
   const dialog = useRef<HTMLDialogElement>(null)
+  const filterInput = useRef<HTMLInputElement>(null)
   const [filter, setFilter] = useState('')
   useEffect(() => {
     dialog.current?.showModal()
+    filterInput.current?.focus()
   }, [])
   const matches = actions.filter((action) =>
     action.label.toLowerCase().includes(filter.toLowerCase())
@@ -36,6 +38,7 @@ export function CommandPalette({
         </button>
       </div>
       <input
+        ref={filterInput}
         aria-label="Filter application commands"
         autoFocus
         maxLength={128}
@@ -51,7 +54,11 @@ export function CommandPalette({
           if (event.key === 'Enter' && matches[0]) {
             event.preventDefault()
             matches[0].run()
-            close(matches[0].id !== 'search' && matches[0].id !== 'settings')
+            close(
+              !['search', 'settings', 'developer', 'draft'].includes(
+                matches[0].id
+              )
+            )
           }
         }}
       />
@@ -62,7 +69,11 @@ export function CommandPalette({
             key={action.id}
             onClick={() => {
               action.run()
-              close(action.id !== 'search' && action.id !== 'settings')
+              close(
+                !['search', 'settings', 'developer', 'draft'].includes(
+                  action.id
+                )
+              )
             }}
           >
             {action.label}

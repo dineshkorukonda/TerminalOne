@@ -185,12 +185,6 @@ app
               0,
               'initial prompt'
             )
-            if (family === 'bash') {
-              await session.handle.write(
-                "trap 'printf \"%s%s\\n\" \"RESIZE_\" \"READY\"' WINCH; printf '%s%s\\n' 'RESIZE_' 'ARMED'\r"
-              )
-              await session.wait(/RESIZE_ARMED/)
-            }
             await session.handle.write(
               emitCommand(family, 'QUOTE_', 'space 世界')
             )
@@ -234,14 +228,21 @@ app
                 pipelining,
                 'Bash prompt after pipeline'
               )
-            const resizing = session.position()
             await session.resize({ cols: 120, rows: 35 })
-            if (family === 'bash')
-              await session.wait(
-                /RESIZE_READY/,
-                resizing,
-                'Bash handled resize signal'
+            if (family === 'bash') {
+              // ConPTY/MSYS can defer WINCH traps while readline is idle.
+              // Query the actual terminal geometry instead of requiring a
+              // particular signal-delivery schedule. Keep the output marker
+              // split so echoed commands cannot satisfy the assertion.
+              await session.handle.write(
+                "printf '%s%s\\n' 'SIZE_' \"$(stty size)\"\r"
               )
+              await session.wait(
+                /^SIZE_35 120$/m,
+                0,
+                'Bash terminal dimensions after resize'
+              )
+            }
             await session.handle.write(
               emitCommand(family, 'INTERACTIVE_', 'READY')
             )
