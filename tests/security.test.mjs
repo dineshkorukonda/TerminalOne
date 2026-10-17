@@ -56,7 +56,9 @@ test('packaged startup rejects inspector and remote debugging arguments', () => 
     '--remote-debugging-address=0.0.0.0',
     '--inspect',
     '--inspect-brk=9229',
-    '--inspect-port=9229'
+    '--inspect-port=9229',
+    '--inspect-wait=9229',
+    '--inspect-brk-node=9229'
   ]) {
     assert.throws(
       () => validatePackagedArguments(['app.exe', flag]),

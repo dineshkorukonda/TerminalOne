@@ -30,8 +30,7 @@ export function authorizeSender(actual: Sender, expected: Sender): void {
 }
 
 export function validatePackagedArguments(args: string[]): void {
-  const forbidden =
-    /^--(?:remote-debugging(?:-port|-pipe|-address)?|inspect(?:-brk|-port|-publish-uid)?)(?:=|$)/
+  const forbidden = /^--(?:remote-debugging|inspect)(?:[-=]|$)/
   if (args.some((arg) => forbidden.test(arg))) {
     throw new Error('Debugging flags are disabled in packaged builds')
   }

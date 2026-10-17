@@ -6,9 +6,17 @@ import { registerDesktopIpc } from '../infrastructure/ipc/register-desktop-ipc'
 import { validatePackagedArguments } from '../infrastructure/ipc/policy'
 
 if (app.isPackaged) {
-  validatePackagedArguments(process.argv)
-  if (process.env['NODE_OPTIONS'])
-    throw new Error('NODE_OPTIONS is disabled in packaged builds')
+  try {
+    validatePackagedArguments(process.argv)
+    if (process.env['NODE_OPTIONS']) {
+      throw new Error('NODE_OPTIONS is disabled in packaged builds')
+    }
+  } catch (error) {
+    console.error(
+      error instanceof Error ? error.message : 'Invalid packaged runtime'
+    )
+    app.exit(1)
+  }
 }
 
 function createWindow(): void {
