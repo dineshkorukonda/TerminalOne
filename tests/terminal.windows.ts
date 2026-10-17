@@ -7,7 +7,7 @@ import { createRequire } from 'node:module'
 import type { DesktopApi } from '../src/contracts/desktop-api'
 
 const require = createRequire(join(process.cwd(), 'package.json'))
-const watchProcesses = require('./fixtures/process-watch.cjs') as (
+const watchProcesses = require('./tests/fixtures/process-watch.cjs') as (
   pids: number[]
 ) => Promise<{ done: Promise<void>; cancel(): void }>
 async function launch() {
