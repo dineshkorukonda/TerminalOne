@@ -19,6 +19,8 @@ To check and launch the production bundle:
 
 ```powershell
 npm run typecheck
+npm run lint:boundaries
+npm run test:architecture
 npm run build
 npm start
 ```
@@ -38,10 +40,13 @@ Run desktop checks in an interactive Windows session. Linux automation needs the
 
 ## Source layout and roadmap
 
-- `src/main/`: Electron application lifecycle and window creation.
+- `src/main/`: composition root, asset selection, and Electron application lifecycle.
+- `src/infrastructure/window/`: Electron window creation and configuration.
 - `src/preload/`: sandbox-compatible preload entry point.
 - `src/renderer/`: React renderer with a separate DOM-only TypeScript configuration.
 - `tests/`: Electron launch smoke tests.
 - `website/`: independent marketing website; follow its [README](website/README.md) and run its npm commands from that directory.
 
-Desktop work starts with [Phase 0: Repository Foundation](https://github.com/dineshkorukonda/TerminalOne/milestone/1), followed by the native terminal engine, terminal UI, shell adapter, developer experience, and production readiness. Track dependencies and acceptance criteria in [GitHub issues](https://github.com/dineshkorukonda/TerminalOne/issues). This bootstrap implements issue #1 only; architecture enforcement, typed IPC, quality tooling, CI, and theme tokens have their own issues. Windows execution is not yet verified, and no installer or release is available.
+The [architecture decision](docs/architecture/0001-dependency-direction.md) defines import direction and feature ownership. `lint:boundaries` checks production source; `test:architecture` verifies allowed and forbidden imports using temporary fixtures. Run the architecture test before typechecking or building, rather than concurrently with them. Domain and application directories are reserved for future core behavior and are not created as placeholders.
+
+Desktop work starts with [Phase 0: Repository Foundation](https://github.com/dineshkorukonda/TerminalOne/milestone/1), followed by the native terminal engine, terminal UI, shell adapter, developer experience, and production readiness. Track dependencies and acceptance criteria in [GitHub issues](https://github.com/dineshkorukonda/TerminalOne/issues). The current desktop provides the bootstrap and architecture foundation from #1 and #2. Typed IPC, broad quality tooling, CI, and theme tokens have their own issues. Windows execution is not yet verified here, and no installer or release is available.
