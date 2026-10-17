@@ -12,6 +12,7 @@ const { discoverShells } = require('../../out/main/shell-catalog.js')
 const timer = setTimeout(() => app.exit(1), 180000)
 delete process.env.TERMINAL_ONE_MATRIX
 process.env.PS1 = 'MATRIX_PROMPT> '
+process.env.PROMPT = 'MATRIX_PROMPT$G '
 app
   .whenReady()
   .then(async () => {
@@ -139,7 +140,7 @@ app
           try {
             await session.wait(
               family === 'cmd'
-                ? /Adapter matrix 空间-[^\r\n]*>/
+                ? /MATRIX_PROMPT>/
                 : family === 'bash'
                   ? /MATRIX_PROMPT>/
                   : /PS [^\r\n]*>/
@@ -199,7 +200,7 @@ app
             await session.handle.write('\x03')
             await session.wait(
               family === 'cmd'
-                ? /Adapter matrix 空间-[^\r\n]*>/
+                ? /MATRIX_PROMPT>/
                 : family === 'bash'
                   ? /MATRIX_PROMPT>/
                   : /PS [^\r\n]*>/,
