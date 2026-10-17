@@ -4,6 +4,10 @@ No desktop release has been published. These entries describe implementation cha
 
 ## Unreleased
 
+- Add compact independent terminal tabs and stable resizable split panes (#17–#19).
+- Add validated live appearance, application command palette/shortcuts, and bounded search/copy/paste (#20–#22).
+- Verify workspace behavior at 100/125/150/200% renderer scale and the minimum window size; document manual DPI limits (#23).
+
 - Add a rebuilt node-pty utility host and ASAR native diagnostic (#10).
 - Add owner-scoped terminal lifecycle and detected Windows shell profiles (#11, #12).
 - Render live ANSI/Unicode sessions in xterm with raw input, Ctrl+C, fitted grids, and bounded stream backpressure (#13, #14).
