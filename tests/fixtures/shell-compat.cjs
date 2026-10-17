@@ -185,6 +185,12 @@ app
               0,
               'initial prompt'
             )
+            if (family === 'bash') {
+              await session.handle.write(
+                "trap 'printf \"%s%s\\n\" \"RESIZE_\" \"READY\"' WINCH; printf '%s%s\\n' 'RESIZE_' 'ARMED'\r"
+              )
+              await session.wait(/RESIZE_ARMED/)
+            }
             await session.handle.write(
               emitCommand(family, 'QUOTE_', 'space 世界')
             )
@@ -219,9 +225,23 @@ app
                 : family === 'bash'
                   ? "printf '%s%s\\n' 'PIPE_' 'OK' | cat\r"
                   : "'OK' | ForEach-Object { Write-Output ('PIPE_' + $_) }\r"
+            const pipelining = session.position()
             await session.handle.write(pipeline)
             await session.wait(/PIPE_OK/)
+            if (family === 'bash')
+              await session.wait(
+                /MATRIX_PROMPT>\s*$/,
+                pipelining,
+                'Bash prompt after pipeline'
+              )
+            const resizing = session.position()
             await session.resize({ cols: 120, rows: 35 })
+            if (family === 'bash')
+              await session.wait(
+                /RESIZE_READY/,
+                resizing,
+                'Bash handled resize signal'
+              )
             await session.handle.write(
               emitCommand(family, 'INTERACTIVE_', 'READY')
             )
