@@ -1,88 +1,34 @@
 ---
-import { Terminal, Plus, Columns2, Circle } from '@lucide/astro';
-
 const shells = [
   {
     id: 'powershell',
     name: 'PowerShell',
-    prompt: 'PS',
-    lines: [
-      { text: 'PowerShell 7 · a familiar place to start', tone: 'comment' },
-      { text: ' ', tone: '' },
-      { text: 'PS C:\\dev\\terminal-one> git status', tone: 'command' },
-      { text: 'On branch main', tone: '' },
-      { text: "Your branch is up to date with 'origin/main'.", tone: '' },
-      { text: ' ', tone: '' },
-      { text: 'PS C:\\dev\\terminal-one> Get-ChildItem', tone: 'command' },
-      { text: ' ', tone: '' },
-      { text: '    Directory: C:\\dev\\terminal-one', tone: 'comment' },
-      { text: ' ', tone: '' },
-      { text: '    docs/    src/    website/', tone: 'accent' },
-      { text: '    README.md    package.json', tone: '' },
-      { text: ' ', tone: '' },
-      { text: 'PS C:\\dev\\terminal-one> ▌', tone: 'command' },
-    ],
+    description: 'A familiar shell. A fresh perspective.',
+    detail: 'A workspace designed around your Windows workflow.',
   },
   {
     id: 'cmd',
     name: 'CMD',
-    prompt: '>',
-    lines: [
-      { text: 'Microsoft Windows · command prompt', tone: 'comment' },
-      { text: ' ', tone: '' },
-      { text: 'C:\\dev\\terminal-one> echo %COMSPEC%', tone: 'command' },
-      { text: 'C:\\Windows\\system32\\cmd.exe', tone: '' },
-      { text: ' ', tone: '' },
-      { text: 'C:\\dev\\terminal-one> dir /b', tone: 'command' },
-      { text: 'docs', tone: 'accent' },
-      { text: 'src', tone: 'accent' },
-      { text: 'website', tone: 'accent' },
-      { text: 'README.md', tone: '' },
-      { text: 'package.json', tone: '' },
-      { text: ' ', tone: '' },
-      { text: 'C:\\dev\\terminal-one> ▌', tone: 'command' },
-    ],
+    description: 'The classics deserve a better home.',
+    detail: 'Keep the tools you know. Make room for what comes next.',
   },
   {
     id: 'bash',
     name: 'Git Bash',
-    prompt: '$',
-    lines: [
-      { text: 'you@windows MINGW64 ~/projects/terminal-one', tone: 'comment' },
-      { text: '$ git status --short', tone: 'command' },
-      { text: ' M README.md', tone: 'accent' },
-      { text: ' ', tone: '' },
-      { text: '$ ls', tone: 'command' },
-      { text: 'docs/  src/  website/  README.md  package.json', tone: '' },
-      { text: ' ', tone: '' },
-      { text: '$ pwd', tone: 'command' },
-      { text: '/c/Users/you/projects/terminal-one', tone: '' },
-      { text: ' ', tone: '' },
-      { text: 'you@windows MINGW64 ~/projects/terminal-one', tone: 'comment' },
-      { text: '$ ▌', tone: 'command' },
-    ],
+    description: 'Your everyday tools. All together.',
+    detail: 'Bring your Git workflow into a space that feels like yours.',
   },
 ];
 ---
 
-<div class="preview-composition">
+<div class="preview-composition" data-terminal-preview>
   <div class="preview-topline">
-    <span class="status-dot"></span> Interactive concept preview{' '}
-    <span class="preview-index">01 — 03</span>
+    <span>01 / THE WORKSPACE</span>
+    <span>DESIGN CONCEPT</span>
   </div>
-  <div class="terminal-window" data-terminal-preview>
-    <div class="terminal-titlebar">
-      <div class="terminal-title">
-        <Terminal size={13} aria-hidden="true" />
-        <span>terminal-one</span>
-      </div>
-      <div class="window-marks" aria-hidden="true">
-        <span>−</span>
-        <span>□</span>
-        <span>×</span>
-      </div>
-    </div>
-    <div class="terminal-tabbar">
+  <div class="workspace-showcase">
+    <div class="workspace-sidebar">
+      <span class="workspace-label">CHOOSE YOUR SHELL</span>
       <div
         class="shell-tabs"
         role="tablist"
@@ -99,45 +45,50 @@ const shells = [
             tabindex={index === 0 ? 0 : -1}
             data-shell={shell.id}
           >
-            <span class="shell-tab-symbol" aria-hidden="true">
-              {shell.prompt}
+            <span class="shell-number" aria-hidden="true">
+              0{index + 1}
             </span>
             {shell.name}
+            <span class="shell-arrow" aria-hidden="true">
+              ↗
+            </span>
           </button>
         ))}
       </div>
-      <span class="terminal-extra" aria-hidden="true">
-        <Plus size={14} />
-      </span>
+      <p>
+        Different shells.
+        <br />
+        Same place to build.
+      </p>
     </div>
-    {shells.map((shell, index) => (
-      <div
-        id={'panel-' + shell.id}
-        role="tabpanel"
-        aria-label={shell.name + ' sample output'}
-        aria-labelledby={'tab-' + shell.id}
-        tabindex="0"
-        hidden={index !== 0}
-      >
-        <pre class="terminal-output"><code>{shell.lines.map((line) => <span class={'output-line ' + line.tone}>{line.text}</span>)}</code></pre>
+    <div class="workspace-stage">
+      {shells.map((shell, index) => (
+        <div
+          class="shell-workspace"
+          id={'panel-' + shell.id}
+          role="tabpanel"
+          aria-labelledby={'tab-' + shell.id}
+          tabindex="0"
+          hidden={index !== 0}
+        >
+          <span class="workspace-label">YOUR TOOLS. YOUR FLOW.</span>
+          <h2>{shell.name}</h2>
+          <p>{shell.description}</p>
+          <span class="workspace-detail">{shell.detail}</span>
+          <div class="workspace-architecture" aria-hidden="true">
+            <span>LOCAL</span>
+            <i></i>
+            <span>WINDOWS</span>
+            <i></i>
+            <span>YOUR SHELL</span>
+          </div>
+        </div>
+      ))}
+      <div class="workspace-status">
+        <span>TerminalOne</span>
+        <span>MADE TO FEEL LIKE YOURS</span>
       </div>
-    ))}
-    <div class="terminal-statusbar">
-      <span>
-        <Circle size={7} fill="currentColor" aria-hidden="true" /> Sample output
-      </span>
-      <span>
-        <Columns2 size={11} aria-hidden="true" /> UTF-8
-      </span>
     </div>
-  </div>
-  <div class="preview-caption">
-    <span class="corner-line" aria-hidden="true"></span>
-    <span>
-      Your shells. A new home.
-      <br />
-      <strong>No commands are executed in this preview.</strong>
-    </span>
   </div>
 </div>
 

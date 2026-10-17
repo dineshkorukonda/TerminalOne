@@ -1,6 +1,6 @@
-# Terminal One website
+# TerminalOne website
 
-A self-contained marketing website for Terminal One: **One terminal. Every shell.**
+A self-contained marketing website for TerminalOne: **One terminal. Every shell.**
 
 Built with Astro and strict TypeScript. The production output is static HTML, CSS, local fonts and a small amount of JavaScript for shell example tabs and mobile navigation. There is no server, account, analytics or external font service.
 
@@ -59,12 +59,12 @@ The hosting provider and production domain are intentionally not configured. Bef
 - src/components: header, terminal concept preview, product content and footer.
 - src/layouts/SiteLayout.astro: metadata, font loading and document shell.
 - src/styles/global.css: design tokens, layout and responsive styles.
-- public: favicon and social preview assets.
+- public: social preview assets. The brand uses a text-only wordmark with no terminal icon.
 - tests/website.spec.ts: production browser checks.
 - docs/design.md: architecture, design decisions and content constraints.
 - docs/baseline.md: desktop repository baseline and verification limits.
 
-Shell tabs display illustrative local sample output; they do not execute commands. The adapter is a planned capability. No installer is currently published. Keep these statements accurate as the desktop product develops.
+Shell tabs show clean workspace concepts without command output or logs; they do not execute commands. The adapter is a planned capability. No installer is currently published. Keep these statements accurate as the desktop product develops.
 
 Regenerate the committed social PNG after editing public/social-card.svg:
 

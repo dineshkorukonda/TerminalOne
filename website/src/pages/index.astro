@@ -1,5 +1,5 @@
 ---
-import { ArrowRight, ArrowUpRight, Monitor, Terminal } from '@lucide/astro';
+import { ArrowRight, ArrowUpRight, Monitor } from '@lucide/astro';
 import SiteLayout from '../layouts/SiteLayout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import TerminalPreview from '../components/TerminalPreview.astro';
@@ -13,27 +13,25 @@ import SiteFooter from '../components/SiteFooter.astro';
     <section class="hero container">
       <div class="hero-copy">
         <div class="hero-eyebrow">
-          <span class="status-dot"></span> WINDOWS-NATIVE. DEVELOPER-FIRST.
+          <span class="status-dot"></span> TERMINALONE / BUILT FOR WINDOWS
         </div>
         <h1>
           One terminal.
           <br /> <span>Every shell.</span>
         </h1>
         <p class="hero-description">
-          A new home for your command line.
-          <br />
-          Familiar shells. Thoughtful design.
-          <br />A workflow that feels like yours.
+          Your favorite shells. One thoughtful workspace. Built for developers
+          who make Windows their own.
         </p>
         <div class="hero-actions">
           <a
             class="button button-primary"
-            href="https://github.com/dineshkorukonda/Terminal/milestones"
+            href="https://github.com/dineshkorukonda/TerminalOne/milestones"
           >
             Follow the build <ArrowRight size={16} aria-hidden="true" />
           </a>
           <a class="button button-quiet" href="#vision">
-            Meet Terminal One <ArrowUpRight size={15} aria-hidden="true" />
+            Meet TerminalOne <ArrowUpRight size={15} aria-hidden="true" />
           </a>
         </div>
         <div class="hero-meta">
@@ -47,10 +45,7 @@ import SiteFooter from '../components/SiteFooter.astro';
       </div>
       <TerminalPreview />
       <div class="hero-bottom">
-        <span>
-          <Terminal size={13} aria-hidden="true" /> FAMILIAR WHERE IT MATTERS.
-          DIFFERENT WHERE IT COUNTS.
-        </span>
+        <span>FAMILIAR WHERE IT MATTERS. DIFFERENT WHERE IT COUNTS.</span>
         <a href="#vision" aria-label="Explore the vision">
           <span aria-hidden="true">↓</span>
         </a>

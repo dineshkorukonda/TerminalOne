@@ -5,11 +5,11 @@ test('presents honest product messaging and real project destinations', async ({
   page,
 }) => {
   await page.goto('/');
-  await expect(page).toHaveTitle(/Terminal One.*Every shell/);
+  await expect(page).toHaveTitle(/TerminalOne.*Every shell/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'One terminal. Every shell.',
   );
-  await expect(page.getByText('Interactive concept preview')).toBeVisible();
+  await expect(page.getByText('DESIGN CONCEPT')).toBeVisible();
   await expect(
     page.getByText(
       'The terminal should adapt to the developer, not the developer to the shell.',
@@ -19,7 +19,7 @@ test('presents honest product messaging and real project destinations', async ({
     page.getByRole('link', { name: 'Follow the build', exact: true }).first(),
   ).toHaveAttribute(
     'href',
-    'https://github.com/dineshkorukonda/Terminal/milestones',
+    'https://github.com/dineshkorukonda/TerminalOne/milestones',
   );
   await expect(page.getByRole('link', { name: /download/i })).toHaveCount(0);
   await expect(
@@ -38,12 +38,12 @@ test('presents honest product messaging and real project destinations', async ({
       (href) =>
         href &&
         (href.startsWith('#') ||
-          href.startsWith('https://github.com/dineshkorukonda/Terminal')),
+          href.startsWith('https://github.com/dineshkorukonda/TerminalOne')),
     ),
   ).toBe(true);
 });
 
-test('switches independent shell examples and supports tab keyboard navigation', async ({
+test('switches clean shell previews and supports tab keyboard navigation', async ({
   page,
 }) => {
   await page.goto('/');
@@ -53,10 +53,14 @@ test('switches independent shell examples and supports tab keyboard navigation',
   await expect(powershell).toHaveAttribute('aria-selected', 'true');
   await cmd.click();
   await expect(cmd).toHaveAttribute('aria-selected', 'true');
-  await expect(page.getByRole('tabpanel')).toContainText('Microsoft Windows');
+  await expect(page.getByRole('tabpanel')).toContainText(
+    'The classics deserve a better home.',
+  );
   await cmd.press('ArrowRight');
   await expect(bash).toBeFocused();
-  await expect(page.getByRole('tabpanel')).toContainText('MINGW64');
+  await expect(page.getByRole('tabpanel')).toContainText(
+    'Your everyday tools. All together.',
+  );
   await bash.press('ArrowRight');
   await expect(powershell).toBeFocused();
   await expect(page.getByRole('tabpanel')).toContainText('PowerShell');
@@ -93,11 +97,11 @@ test('FAQ discloses the release status and remains keyboard operable', async ({
   await page.goto('/');
   const question = page
     .locator('summary')
-    .filter({ hasText: 'Can I download Terminal One today?' });
+    .filter({ hasText: 'Can I download TerminalOne today?' });
   await question.focus();
   await page.keyboard.press('Enter');
   await expect(
-    page.getByText('Not yet. Terminal One is in development.'),
+    page.getByText('Not yet. TerminalOne is in development.'),
   ).toBeVisible();
 });
 
@@ -159,10 +163,10 @@ test('keeps core content and navigation available without JavaScript', async ({
   await expect(page.getByRole('tabpanel')).toContainText('PowerShell');
   await page
     .locator('summary')
-    .filter({ hasText: 'Can I download Terminal One today?' })
+    .filter({ hasText: 'Can I download TerminalOne today?' })
     .click();
   await expect(
-    page.getByText('Not yet. Terminal One is in development.'),
+    page.getByText('Not yet. TerminalOne is in development.'),
   ).toBeVisible();
   await context.close();
 });
