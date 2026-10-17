@@ -1,10 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <rect width="1200" height="630" fill="#0c0c0c"/>
-  <rect x="66" y="62" width="46" height="46" rx="10" fill="#dddddd"/>
-  <path d="m78 75 9 10-9 10m14 0h10" fill="none" stroke="#1e1e1e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="130" y="95" font-family="Arial,sans-serif" font-size="31" fill="#f0f0f0">TerminalOne</text>
-  <text x="66" y="290" font-family="Arial,sans-serif" font-size="102" font-weight="600" letter-spacing="-6" fill="#f0f0f0">One terminal.</text>
-  <text x="66" y="403" font-family="Arial,sans-serif" font-size="102" font-weight="600" letter-spacing="-6" fill="#dddddd">Every shell.</text>
+  <text x="66" y="95" font-family="Consolas,monospace" font-size="31" fill="#f0f0f0">TerminalOne</text>
+  <text x="66" y="290" font-family="Consolas,monospace" font-size="90" font-weight="600" letter-spacing="-6" fill="#f0f0f0">One terminal.</text>
+  <text x="66" y="403" font-family="Consolas,monospace" font-size="90" font-weight="600" letter-spacing="-6" fill="#dddddd">Every shell.</text>
   <path d="M66 482h1068" stroke="#414141"/>
   <text x="66" y="537" font-family="Consolas,monospace" font-size="19" fill="#bebebe">WINDOWS-NATIVE. DEVELOPER-FIRST.</text>
   <text x="1134" y="537" text-anchor="end" font-family="Consolas,monospace" font-size="16" fill="#bebebe">IN DEVELOPMENT</text>

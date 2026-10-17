@@ -1,13 +1,10 @@
 ---
-import { Terminal, GitBranch, ArrowUpRight, Menu, X } from '@lucide/astro';
+import { GitBranch, ArrowUpRight, Menu, X } from '@lucide/astro';
 ---
 
 <header class="site-header" data-site-header>
   <div class="container header-inner">
     <a href="#main" class="brand" aria-label="TerminalOne home">
-      <span class="brand-symbol">
-        <Terminal size={19} stroke-width={2.2} aria-hidden="true" />
-      </span>
       <span>
         Terminal<span class="brand-one">One</span>
       </span>
@@ -28,7 +25,10 @@ import { Terminal, GitBranch, ArrowUpRight, Menu, X } from '@lucide/astro';
       <a href="#vision">The vision</a>
       <a href="#adapter">Shell adapter</a>
       <a href="#roadmap">Roadmap</a>
-      <a class="nav-github" href="https://github.com/dineshkorukonda/Terminal">
+      <a
+        class="nav-github"
+        href="https://github.com/dineshkorukonda/TerminalOne"
+      >
         <GitBranch size={15} aria-hidden="true" /> GitHub{' '}
         <ArrowUpRight size={13} aria-hidden="true" />
       </a>

@@ -59,7 +59,7 @@ The hosting provider and production domain are intentionally not configured. Bef
 - src/components: header, terminal concept preview, product content and footer.
 - src/layouts/SiteLayout.astro: metadata, font loading and document shell.
 - src/styles/global.css: design tokens, layout and responsive styles.
-- public: favicon and social preview assets.
+- public: social preview assets. The brand uses a text-only wordmark with no terminal icon.
 - tests/website.spec.ts: production browser checks.
 - docs/design.md: architecture, design decisions and content constraints.
 - docs/baseline.md: desktop repository baseline and verification limits.

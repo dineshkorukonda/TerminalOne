@@ -19,7 +19,7 @@ test('presents honest product messaging and real project destinations', async ({
     page.getByRole('link', { name: 'Follow the build', exact: true }).first(),
   ).toHaveAttribute(
     'href',
-    'https://github.com/dineshkorukonda/Terminal/milestones',
+    'https://github.com/dineshkorukonda/TerminalOne/milestones',
   );
   await expect(page.getByRole('link', { name: /download/i })).toHaveCount(0);
   await expect(
@@ -38,7 +38,7 @@ test('presents honest product messaging and real project destinations', async ({
       (href) =>
         href &&
         (href.startsWith('#') ||
-          href.startsWith('https://github.com/dineshkorukonda/Terminal')),
+          href.startsWith('https://github.com/dineshkorukonda/TerminalOne')),
     ),
   ).toBe(true);
 });
