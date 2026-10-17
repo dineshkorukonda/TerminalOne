@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
+import { useStore } from 'zustand'
 import { Icon } from './Icon'
-import { TerminalPane } from './TerminalPane'
+import { PaneLayout } from './PaneLayout'
+import { createWorkspaceStore } from '../workspace/store'
 import type { ShellInfo } from '../../../contracts/desktop-api'
 
 export function App() {
+  const [store] = useState(createWorkspaceStore)
+  const workspace = useStore(store)
   const [shells, setShells] = useState<ShellInfo[]>([])
   const [shellId, setShellId] = useState('')
-  const [generation, setGeneration] = useState(0)
   const [error, setError] = useState('')
   useEffect(() => {
     let active = true
@@ -15,8 +18,12 @@ export function App() {
       .then((available) => {
         if (!active) return
         setShells(available)
-        setShellId(available[0]?.id ?? '')
-        if (!available.length)
+        const shell = available[0]
+        if (shell) {
+          setShellId(shell.id)
+          if (!store.getState().tabs.length)
+            store.getState().newTab(shell.id, shell.name)
+        } else
           setError(
             'No supported shell was found. Install PowerShell or enable Command Prompt, then reopen the window.'
           )
@@ -30,15 +37,10 @@ export function App() {
     return () => {
       active = false
     }
-  }, [])
-  async function openDocumentation() {
-    try {
-      await window.desktop.openExternal(
-        'https://github.com/dineshkorukonda/TerminalOne'
-      )
-    } catch {
-      setError('Could not open project documentation.')
-    }
+  }, [store])
+  const newTab = () => {
+    const shell = shells.find((shell) => shell.id === shellId)
+    if (shell) workspace.newTab(shell.id, shell.name)
   }
   return (
     <div className="min-h-screen bg-canvas font-ui text-ink app-shell">
@@ -46,12 +48,13 @@ export function App() {
         <div className="brand">
           <Icon name="terminal" />
           <h1>Terminal One</h1>
-          <span className="build-label">Development</span>
         </div>
         <button
           className="documentation-button"
           onClick={() => {
-            void openDocumentation()
+            void window.desktop
+              .openExternal('https://github.com/dineshkorukonda/TerminalOne')
+              .catch(() => setError('Could not open project documentation.'))
           }}
         >
           <span>Project documentation</span>
@@ -60,9 +63,10 @@ export function App() {
       </header>
       <main className="workspace">
         <div className="session-controls">
-          <label htmlFor="shell">Shell</label>
+          <label htmlFor="shell">New shell</label>
           <select
             id="shell"
+            aria-label="Shell"
             value={shellId}
             onChange={(event) => setShellId(event.target.value)}
             disabled={!shells.length}
@@ -73,21 +77,61 @@ export function App() {
               </option>
             ))}
           </select>
-          <button
-            disabled={!shellId}
-            onClick={() => setGeneration((value) => value + 1)}
-          >
+          <button disabled={!shellId} onClick={newTab}>
             New session
           </button>
+          <button
+            disabled={!workspace.activeTabId}
+            onClick={() => workspace.split('horizontal', shellId)}
+          >
+            Split right
+          </button>
+          <button
+            disabled={!workspace.activeTabId}
+            onClick={() => workspace.split('vertical', shellId)}
+          >
+            Split down
+          </button>
         </div>
-        {error && (
+        <div className="tab-strip" role="tablist" aria-label="Terminal tabs">
+          {workspace.tabs.map((tab) => (
+            <div className="tab-item" key={tab.id}>
+              <button
+                id={`tab-${tab.id}`}
+                role="tab"
+                aria-selected={tab.id === workspace.activeTabId}
+                aria-controls={`panel-${tab.id}`}
+                onClick={() => workspace.selectTab(tab.id)}
+              >
+                {tab.title}
+              </button>
+              <button
+                aria-label={`Close tab ${tab.title}`}
+                onClick={() => workspace.closeTab(tab.id)}
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+        {(error || workspace.error) && (
           <p role="alert" className="error-message">
-            {error}
+            {error || workspace.error}
           </p>
         )}
-        {shellId && (
-          <TerminalPane key={`${shellId}-${generation}`} shellId={shellId} />
+        {!workspace.tabs.length && !error && (
+          <p className="empty-workspace">Open a new session to begin.</p>
         )}
+        {workspace.tabs.map((tab) => (
+          <PaneLayout
+            key={tab.id}
+            tab={tab}
+            active={tab.id === workspace.activeTabId}
+            focusPane={workspace.focusPane}
+            closePane={workspace.closePane}
+            resizeSplit={workspace.resizeSplit}
+          />
+        ))}
       </main>
     </div>
   )

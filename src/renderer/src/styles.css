@@ -130,3 +130,85 @@ h1 {
     display: none;
   }
 }
+.workspace {
+  padding: 0.5rem;
+  gap: 0.5rem;
+}
+.app-header {
+  padding: 0.5rem 1rem;
+}
+.tab-strip {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.25rem;
+  overflow-x: auto;
+  min-height: 2rem;
+}
+.tab-item {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.125rem;
+}
+.tab-item [aria-selected='true'] {
+  border-color: var(--color-focus);
+  background: var(--color-panel);
+}
+.tab-viewport {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
+}
+.tab-viewport[hidden] {
+  display: none;
+}
+.pane-space {
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+.pane-position {
+  position: absolute;
+  padding: 3px;
+  box-sizing: border-box;
+}
+.pane-position > .terminal-panel {
+  height: 100%;
+}
+.pane-active .terminal-panel {
+  border-color: var(--color-focus);
+}
+.pane-close {
+  position: absolute;
+  top: 13px;
+  right: 12px;
+  font-size: 0.8rem;
+  padding: 0.15rem 0.35rem;
+}
+.terminal-toolbar {
+  padding-right: 2.5rem;
+}
+.split-divider {
+  position: absolute;
+  z-index: 2;
+  background: var(--color-border);
+  touch-action: none;
+}
+.split-divider.horizontal {
+  width: 6px;
+  transform: translateX(-3px);
+  cursor: col-resize;
+}
+.split-divider.vertical {
+  height: 6px;
+  transform: translateY(-3px);
+  cursor: row-resize;
+}
+.split-divider:hover,
+.split-divider:focus {
+  background: var(--color-focus);
+}
+.empty-workspace {
+  color: var(--color-muted);
+  padding: 2rem;
+}
