@@ -1,4 +1,4 @@
-import { mkdir, readFile, rename, writeFile, stat } from 'node:fs/promises'
+import { mkdir, readFile, rename, writeFile, stat, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import {
@@ -69,8 +69,12 @@ export class PreferenceRepository {
     const operation = this.queue.then(async () => {
       await mkdir(this.directory, { recursive: true, mode: 0o700 })
       const temp = join(this.directory, `${file}.${randomUUID()}.tmp`)
-      await writeFile(temp, data, { mode: 0o600 })
-      await rename(temp, join(this.directory, file))
+      try {
+        await writeFile(temp, data, { mode: 0o600 })
+        await rename(temp, join(this.directory, file))
+      } finally {
+        await rm(temp, { force: true }).catch(() => {})
+      }
     })
     this.queue = operation.catch(() => {})
     return operation
@@ -81,6 +85,8 @@ export class PreferenceRepository {
   async save(value: unknown) {
     if (this.blocked) throw new Error(this.warning)
     const settings = parsePreferences(value)
+    if (Buffer.byteLength(JSON.stringify(settings), 'utf8') > 65536)
+      throw new Error('Settings exceed the 64 KiB limit')
     await this.persist('settings.json', settings)
     this.settings = settings
     this.history = settings.history.enabled

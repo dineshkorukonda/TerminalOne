@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises'
+import {
+  mkdtemp,
+  readFile,
+  writeFile,
+  rm,
+  mkdir,
+  readdir
+} from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
@@ -84,6 +91,18 @@ test('repository preserves corruption, validates imports before mutation, round-
     await repository.record('cmd', 'dir')
     assert.equal(repository.search('location', 'pwsh').length, 1)
     await assert.rejects(repository.save({ ...settings, version: 9 }))
+    await assert.rejects(
+      repository.save({
+        ...settings,
+        projects: Array.from({ length: 20 }, (_, index) => ({
+          id: `project-${index}`,
+          name: '界'.repeat(80),
+          cwd: 'C:\\' + '界'.repeat(1000),
+          shellId: 'powershell'
+        }))
+      }),
+      /64 KiB/
+    )
     assert.deepEqual(repository.current().settings, settings)
     const reopened = new PreferenceRepository(directory)
     await reopened.load()
@@ -103,6 +122,10 @@ test('repository preserves corruption, validates imports before mutation, round-
     )
     await corrupt.reset()
     assert.deepEqual(corrupt.current().settings, defaultPreferences())
+    await rm(join(directory, 'history.json'), { force: true })
+    await mkdir(join(directory, 'history.json'))
+    await assert.rejects(corrupt.clearHistory())
+    assert(!(await readdir(directory)).some((name) => name.endsWith('.tmp')))
   } finally {
     await rm(directory, { recursive: true, force: true })
   }
