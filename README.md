@@ -25,7 +25,7 @@ npm run build
 npm start
 ```
 
-Build output is written to `out/`. This is a development bundle, not an installer. The renderer has no Node globals; the window enables context isolation and sandboxing. The preload exposes no capabilities yet. Development permits React Refresh's inline script and Vite's local HMR connection; the built HTML uses the stricter production content security policy.
+Build output is written to `out/`. This is a development bundle, not an installer. The renderer has no Node globals; the window enables context isolation and sandboxing. The preload exposes only typed app-information and allowlisted external-link capabilities; see [IPC security](docs/ipc-security.md). Development permits React Refresh's inline script and Vite's local HMR connection; the built HTML uses the stricter production content security policy.
 
 ## Verification
 
@@ -42,11 +42,12 @@ Run desktop checks in an interactive Windows session. Linux automation needs the
 
 - `src/main/`: composition root, asset selection, and Electron application lifecycle.
 - `src/infrastructure/window/`: Electron window creation and configuration.
-- `src/preload/`: sandbox-compatible preload entry point.
+- `src/preload/`: sandbox-compatible typed capability bridge.
+- `src/contracts/`: framework-free transport types and channel constants.
 - `src/renderer/`: React renderer with a separate DOM-only TypeScript configuration.
 - `tests/`: Electron launch smoke tests.
 - `website/`: independent marketing website; follow its [README](website/README.md) and run its npm commands from that directory.
 
 The [architecture decision](docs/architecture/0001-dependency-direction.md) defines import direction and feature ownership. `lint:boundaries` checks production source; `test:architecture` verifies allowed and forbidden imports using temporary fixtures. Run the architecture test before typechecking or building, rather than concurrently with them. Domain and application directories are reserved for future core behavior and are not created as placeholders.
 
-Desktop work starts with [Phase 0: Repository Foundation](https://github.com/dineshkorukonda/TerminalOne/milestone/1), followed by the native terminal engine, terminal UI, shell adapter, developer experience, and production readiness. Track dependencies and acceptance criteria in [GitHub issues](https://github.com/dineshkorukonda/TerminalOne/issues). The current desktop provides the bootstrap and architecture foundation from #1 and #2. Typed IPC, broad quality tooling, CI, and theme tokens have their own issues. Windows execution is not yet verified here, and no installer or release is available.
+Desktop work starts with [Phase 0: Repository Foundation](https://github.com/dineshkorukonda/TerminalOne/milestone/1), followed by the native terminal engine, terminal UI, shell adapter, developer experience, and production readiness. Track dependencies and acceptance criteria in [GitHub issues](https://github.com/dineshkorukonda/TerminalOne/issues). The current desktop provides the bootstrap and architecture foundation from #1 and #2. Typed IPC is described in the security document; broad quality tooling, CI, and theme tokens have their own issues. Windows execution is not yet verified here, and no installer or release is available.

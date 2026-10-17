@@ -12,7 +12,7 @@ The bootstrap opened a React window with window construction and application lif
 
 `src/infrastructure/window/create-desktop-window.ts` owns the Electron window adapter. It receives content and preload paths explicitly, configures the window and its security defaults, and loads the chosen content. It does not choose development versus production or read environment variables. The extraction preserves the bootstrap's behavior.
 
-`src/renderer/` owns React presentation and browser assets. `src/preload/` owns the sandboxed transport boundary and currently exposes nothing. These are separate runtime entry points: neither imports main-process code or the other's implementation. Future renderer capabilities use the typed bridge tracked in #3.
+`src/renderer/` owns React presentation and browser assets. `src/preload/` owns the sandboxed transport boundary and exposes only the named capabilities documented in `docs/ipc-security.md`. These are separate runtime entry points: neither imports main-process code or the other's implementation. Renderer capabilities use the typed bridge introduced in #3.
 
 Reserve `src/domain/<feature>/` for framework-independent models, invariants, and domain ports. Reserve `src/application/<feature>/` for use cases and application ports, depending only on domain and application code. Infrastructure implements those ports; the composition root supplies implementations through explicit function arguments or constructors. Interfaces describe actual consumers' needs. Do not add a dependency injection container, generic service locator, placeholder use cases, or empty layer directories.
 
@@ -22,14 +22,14 @@ Only the window feature currently needs an infrastructure directory. Domain and 
 
 - Domain imports domain code only. It has no third-party, Node, Electron, or React imports.
 - Application imports application and domain code only, with the same platform restrictions.
-- Infrastructure imports infrastructure, application, and domain code, plus platform packages. It cannot import main, preload, or renderer implementations, or React.
+- Infrastructure imports infrastructure, application, domain, and contract code, plus platform packages. It cannot import main, preload, or renderer implementations, or React.
 - Main imports main, infrastructure, application, and domain code, plus platform packages. It cannot import renderer/preload implementations or React. Asset paths passed to Electron are not code imports.
-- Preload imports preload modules and Electron only, using static ES module imports. Its bundle remains sandbox-compatible.
-- Renderer imports renderer modules and browser-compatible packages. Node built-ins and Electron are forbidden.
+- Preload imports preload modules, contracts, and Electron only, using static ES module imports. Its bundle remains sandbox-compatible.
+- Renderer imports renderer modules, contracts, and browser-compatible packages. Node built-ins and Electron are forbidden.
 
 Source modules must belong to one of these layers. Production source cannot import tests, tooling, documentation, or the independent website. Local restrictions check resolved paths, including type-only imports, re-exports, and literal dynamic imports; unresolved imports fail. Use relative imports in the core. CommonJS imports, TypeScript inline import types, and computed dynamic module specifiers are rejected so they cannot evade the checks. Use named `import type` statements instead. Common Node globals are also rejected in the core.
 
-These are engineering dependency checks, not a runtime security boundary. Renderer isolation still depends on Electron's configuration. A future shared IPC contract requires an explicit policy change and verification in #3; no shared module or IPC implementation is introduced here.
+These are engineering dependency checks, not a runtime security boundary. Renderer isolation still depends on Electron's configuration. `src/contracts/` now holds inert IPC types/constants introduced in #3, shared only by the transport and presentation layers. Its lint policy forbids platform dependencies.
 
 ## Verification and limits
 
