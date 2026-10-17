@@ -35,7 +35,19 @@ app
       let handle,
         output = '',
         code = null
-      const terminal = new Terminal({ cols: 160, rows: 40, scrollback: 2000 })
+      const terminal = new Terminal({
+        cols: 160,
+        rows: 40,
+        scrollback: 2000,
+        allowProposedApi: true
+      })
+      const screen = () => {
+        const buffer = terminal.buffer.active
+        return Array.from(
+          { length: buffer.length },
+          (_, row) => buffer.getLine(row)?.translateToString(true) ?? ''
+        ).join('\n')
+      }
       const early = [],
         replies = [],
         waiters = new Set()
@@ -90,11 +102,32 @@ app
               ),
             20000
           )
-          const finish = (error) => {
+          const finish = async (error) => {
             clearTimeout(timeout)
             waiters.delete(checkCondition)
-            if (error) reject(error)
-            else resolve()
+            if (error) {
+              // This fixture runs only synthetic commands with profiles disabled.
+              // Retain bounded evidence here; never add production PTY logging.
+              try {
+                await fs.mkdir('test-results/shells', { recursive: true })
+                await fs.writeFile(
+                  'test-results/shells/failure.json',
+                  JSON.stringify(
+                    {
+                      shell: shell.id,
+                      condition,
+                      screen: screen().slice(-8192),
+                      protocol: output.slice(-8192)
+                    },
+                    null,
+                    2
+                  )
+                )
+              } catch {
+                // Diagnostic retention must not replace the assertion failure.
+              }
+              reject(error)
+            } else resolve()
           }
           const checkCondition = () => {
             if (predicate()) finish()
@@ -107,10 +140,15 @@ app
       return {
         handle,
         position: () => output.length,
-        text: () => stripVTControlCharacters(output),
+        text: screen,
         wait: (pattern, since = 0) =>
           wait(
-            () => pattern.test(stripVTControlCharacters(output.slice(since))),
+            () =>
+              pattern.test(
+                since === 0
+                  ? screen()
+                  : stripVTControlCharacters(output.slice(since))
+              ),
             String(pattern)
           ),
         exited: () => wait(() => code !== null, 'process exit'),
