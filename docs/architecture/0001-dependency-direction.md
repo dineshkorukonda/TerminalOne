@@ -16,7 +16,7 @@ The bootstrap opened a React window with window construction and application lif
 
 Reserve `src/domain/<feature>/` for framework-independent models, invariants, and domain ports. Reserve `src/application/<feature>/` for use cases and application ports, depending only on domain and application code. Infrastructure implements those ports; the composition root supplies implementations through explicit function arguments or constructors. Interfaces describe actual consumers' needs. Do not add a dependency injection container, generic service locator, placeholder use cases, or empty layer directories.
 
-Only the window feature currently needs an infrastructure directory. Domain and application directories will appear with real behavior. Future platform adapters belong under `src/infrastructure/<feature>/`; React components stay with their renderer feature. Prefer named modules with clear ownership over catch-all utilities or barrel exports that hide dependencies. Cross-feature collaboration should use small, explicit contracts owned by the consuming core layer, rather than reaching into platform adapters.
+The terminal domain defines the PTY port and validation; the application owns session lifecycle. Infrastructure implements native PTY hosting, shell discovery, authorized IPC and window adapters. Future platform adapters belong under `src/infrastructure/<feature>/`; React components stay with their renderer feature. Prefer named modules with clear ownership over catch-all utilities or barrel exports that hide dependencies. Cross-feature collaboration should use small, explicit contracts owned by the consuming core layer, rather than reaching into platform adapters.
 
 ## Enforced dependencies
 

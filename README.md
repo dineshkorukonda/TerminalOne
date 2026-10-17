@@ -1,6 +1,6 @@
 # Terminal One
 
-Windows terminal application under development. The desktop currently opens a small React application window; shell sessions and terminal interaction are planned work.
+Windows terminal application under development. The desktop runs native Windows shell sessions in xterm, with shell selection, ANSI/Unicode output, raw keyboard input, Ctrl+C, and window fitting.
 
 ## Desktop development
 
@@ -10,8 +10,11 @@ From the repository root in PowerShell:
 
 ```powershell
 npm ci
+npm run native:build
 npm run dev
 ```
+
+`native:build` requires Visual Studio Build Tools with Desktop development with C++, the Windows SDK, and .NET Framework 4.x tooling on the development machine. It rebuilds pinned node-pty for Electron and compiles the small Windows Job Object helper. Run it again after installing dependencies or changing Electron. Distributed diagnostic builds already contain these components and require no compiler.
 
 `dev` downloads the pinned Electron binary if needed, builds main/preload, serves the React renderer on `127.0.0.1:5173`, and opens the desktop window. Keep that port free. Close the window or press Ctrl+C to stop development.
 
@@ -26,22 +29,29 @@ npm run build
 npm start
 ```
 
-Build output is written to `out/`. This is a development bundle, not an installer. The renderer has no Node globals; the window enables context isolation and sandboxing. The preload exposes only typed app-information and allowlisted external-link capabilities; see [IPC security](docs/ipc-security.md). Development permits React Refresh's inline script and Vite's local HMR connection; the built HTML uses the stricter production content security policy.
+Build output is written to `out/`. This is a development bundle, not an installer. The renderer has no Node globals; the window enables context isolation and sandboxing. The preload exposes typed app-information, allowlisted external links, and owner-scoped terminal capabilities; see [IPC security](docs/ipc-security.md). Development permits React Refresh's inline script and Vite's local HMR connection; the built HTML uses the stricter production content security policy.
 
 ## Verification
 
 ```powershell
 npm run test:smoke
+npm run test:native
+npm run test:packaged
 npm audit --audit-level=moderate
 ```
 
 The smoke suite installs Electron if needed, builds the application, and launches both the production renderer and the Vite development renderer in Electron. It checks visible React content, native window visibility, and absence of `require`, `process`, and `Buffer` in the page. Each launch uses a temporary profile that is cleaned up after the test. Screenshots and failure traces are saved under `test-results/`.
 
-Run desktop checks in an interactive Windows session. Linux automation needs the Electron system libraries and a display server (for example, `xvfb-run -a npm run test:smoke` on a suitably provisioned machine). Playwright's Electron launcher disables the Chromium sandbox for automation, so passing these tests does not verify OS sandbox enforcement. See [bootstrap verification](docs/bootstrap-verification.md) for actual results and remaining Windows checks.
+Run native checks in an interactive Windows session with ConPTY (Windows 10 build 18309 or later). `test:native` exercises real Electron utility sessions repeatedly and tests renderer/window/app cleanup. `test:packaged` creates an unsigned ASAR diagnostic under `artifacts/native-probe/` and runs the same native suite; it is not an installer or release. See [Phase 1 verification](docs/phase-1-verification.md) for scope, commands, and evidence. Linux shows an unsupported-platform message and cannot run native integration. Linux automation needs the Electron system libraries and a display server (for example, `xvfb-run -a npm run test:smoke` on a suitably provisioned machine). Playwright's Electron launcher disables the Chromium sandbox for automation, so passing these tests does not verify OS sandbox enforcement. See [bootstrap verification](docs/bootstrap-verification.md) for actual results and remaining Windows checks.
 
 ## Source layout and roadmap
 
 - `src/main/`: composition root, asset selection, and Electron application lifecycle.
+- `src/domain/terminal/`: platform-free PTY port and input/grid rules.
+- `src/application/terminal/`: owner-scoped session state and lifecycle.
+- `src/infrastructure/pty/`: Electron utility adapter and bounded native stream.
+- `native/`: Windows Job Object helper source, compiled during native build.
+- `src/infrastructure/shells/`: executable discovery with explicit argument arrays.
 - `src/infrastructure/window/`: Electron window creation and configuration.
 - `src/preload/`: sandbox-compatible typed capability bridge.
 - `src/contracts/`: framework-free transport types and channel constants.
@@ -49,9 +59,9 @@ Run desktop checks in an interactive Windows session. Linux automation needs the
 - `tests/`: Electron launch smoke tests.
 - `website/`: independent marketing website; follow its [README](website/README.md) and run its npm commands from that directory.
 
-The [architecture decision](docs/architecture/0001-dependency-direction.md) defines import direction and feature ownership. `lint:boundaries` checks production source; `test:architecture` verifies allowed and forbidden imports using temporary fixtures. Run the architecture test before typechecking or building, rather than concurrently with them. Domain and application directories are reserved for future core behavior and are not created as placeholders.
+The [architecture decision](docs/architecture/0001-dependency-direction.md) defines import direction and feature ownership. `lint:boundaries` checks production source; `test:architecture` verifies allowed and forbidden imports using temporary fixtures. Run the architecture test before typechecking or building, rather than concurrently with them. Domain and application code stays platform-free; native and transport details remain in infrastructure.
 
-Desktop work starts with [Phase 0: Repository Foundation](https://github.com/dineshkorukonda/TerminalOne/milestone/1), followed by the native terminal engine, terminal UI, shell adapter, developer experience, and production readiness. Track dependencies and acceptance criteria in [GitHub issues](https://github.com/dineshkorukonda/TerminalOne/issues). The current desktop provides the bootstrap and architecture foundation from #1 and #2. Typed IPC is described in the security document; quality checks are available below; CI and theme tokens have their own issues. The Windows Server CI runner has passed the desktop checks; Windows 10/11 manual compatibility remains unverified, and no installer or release is available.
+Desktop work starts with [Phase 0: Repository Foundation](https://github.com/dineshkorukonda/TerminalOne/milestone/1), followed by the native terminal engine, terminal UI, shell adapter, developer experience, and production readiness. Track dependencies and acceptance criteria in [GitHub issues](https://github.com/dineshkorukonda/TerminalOne/issues). Phase 0 provides the repository foundation; Phase 1 adds the native terminal engine (#10–#16). Tabs, splits, settings, shell integration, installers, signing, and production qualification remain later roadmap work. The Windows Server CI runner has passed the desktop checks; Windows 10/11 manual compatibility remains unverified, and no installer or release is available.
 
 ## Code quality
 
@@ -67,9 +77,9 @@ Use a conventional header, a body explaining why (at least 20 characters), and a
 
 ## Desktop CI
 
-The Desktop workflow runs on Windows for PRs targeting `main` and issue branches used by the review stack, on pushes to `main`, and on manual dispatch. It installs the locked dependencies using `.node-version`, validates PR titles, and runs formatting, lint, typecheck, unit/tooling tests, the production build and Electron smoke tests, and a dependency audit. Failures propagate; tests are never replaced by success-on-skip scripts. The only event-specific omission is PR-title validation outside PR events. Hook installation is disabled in CI because the complete checks run directly.
+The Desktop workflow runs on Windows for PRs targeting `main` and issue branches used by the review stack, on pushes to `main`, and on manual dispatch. It installs the locked dependencies using `.node-version`, validates PR titles, and runs formatting, lint, typecheck, unit/tooling tests, the native Electron rebuild, production build, Electron smoke tests, native/session cleanup integration, ASAR diagnostic checks, and a dependency audit. Failures propagate; tests are never replaced by success-on-skip scripts. The only event-specific omission is PR-title validation outside PR events. Hook installation is disabled in CI because the complete checks run directly.
 
-Actions are pinned to immutable commits and the GitHub token has read-only repository contents access. The workflow uploads launch screenshots and failure traces for seven days. It does not package, sign, publish, or deploy desktop releases. Required-check settings must be configured by the repository owner; a workflow file alone does not enable branch protection.
+Actions are pinned to immutable commits and the GitHub token has read-only repository contents access. The workflow uploads launch screenshots and failure traces for seven days. It packages an unsigned native diagnostic solely for verification; it does not sign, publish, or deploy desktop releases. Required-check settings must be configured by the repository owner; a workflow file alone does not enable branch protection.
 
 ## Contributing and security
 
@@ -77,6 +87,6 @@ Follow [CONTRIBUTING.md](CONTRIBUTING.md) for beginner-friendly Windows setup, t
 
 ## Theme foundation
 
-The renderer consumes shared Tailwind surface, typography, focus, border, and ANSI tokens. Its font sample uses a validated typed font configuration; the foundation view does not open shell sessions. See [theme tokens, contrast, focus, and scale limits](docs/theme-foundation.md). Electron component checks retain screenshots at 100%, 150%, and 200% renderer scale for both built and development content.
+The renderer consumes shared Tailwind surface, typography, focus, border, and ANSI tokens. The xterm renderer uses the validated font configuration and all 16 ANSI colors from these tokens. See [theme tokens, contrast, focus, and scale limits](docs/theme-foundation.md). Electron component checks retain screenshots at 100%, 150%, and 200% renderer scale for both built and development content.
 
 The [Phase 0 verification record](docs/phase-0-verification.md) maps all nine issues to delivered scope and links actual Windows runs and retained screenshots. Owner-managed merge/settings gates and later compatibility/security work remain explicit.
