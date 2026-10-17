@@ -1,0 +1,32 @@
+{
+  "version": "0.1.0",
+  "sourceCommit": "",
+  "installer": {
+    "sha256": "",
+    "signatureStatus": "NotSigned",
+    "publisher": ""
+  },
+  "checks": {
+    "requiredCi": false,
+    "securityAudit": false,
+    "performanceBudgetsApproved": false,
+    "windowsNarrator": false,
+    "manualKeyboard": false
+  },
+  "windows10": {
+    "passed": false,
+    "productType": 0,
+    "build": 0,
+    "sourceCommit": "",
+    "installerSha256": ""
+  },
+  "windows11": {
+    "passed": false,
+    "productType": 0,
+    "build": 0,
+    "sourceCommit": "",
+    "installerSha256": ""
+  },
+  "signingDecision": { "approved": false, "provider": "", "publisher": "" },
+  "releaseApproval": { "approved": false, "by": "", "at": "" }
+}

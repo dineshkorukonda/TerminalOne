@@ -26,3 +26,8 @@ No desktop release has been published. These entries describe implementation cha
 - Define conservative shell adapter contracts and architecture (#24, #25).
 - Add narrow PowerShell/CMD/Bash evidence, explicit fallback and strategy resolution, and trusted per-session state observations without environment values (#26–#30, #32).
 - Add an installed-shell Windows ConPTY compatibility matrix with explicit availability and cleanup evidence (#31).
+
+- Add unsigned x64 NSIS development packaging, explicit native paths, production fuse verification and installer checksum generation; publishing remains disabled.
+- Add actual installed-app/uninstall automation, Windows profiling and client-OS qualification tooling without claiming unexecuted compatibility results.
+- Add automated accessibility/keyboard checks and correct tab-list semantics and command-palette initial focus.
+- Add signing/update trust architecture, a focused security report, conventional-history release-note drafts and explicit manual/owner beta gates.
