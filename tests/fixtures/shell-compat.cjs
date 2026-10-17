@@ -141,7 +141,7 @@ app
         handle,
         position: () => output.length,
         text: screen,
-        wait: (pattern, since = 0) =>
+        wait: (pattern, since = 0, condition = String(pattern)) =>
           wait(
             () =>
               pattern.test(
@@ -149,7 +149,7 @@ app
                   ? screen()
                   : stripVTControlCharacters(output.slice(since))
               ),
-            String(pattern)
+            condition
           ),
         exited: () => wait(() => code !== null, 'process exit'),
         resize: async (size) => {
@@ -181,7 +181,9 @@ app
                 ? /MATRIX_PROMPT>/
                 : family === 'bash'
                   ? /MATRIX_PROMPT>/
-                  : /PS [^\r\n]*>/
+                  : /PS [^\r\n]*>/,
+              0,
+              'initial prompt'
             )
             await session.handle.write(
               emitCommand(family, 'QUOTE_', 'space 世界')
@@ -225,15 +227,19 @@ app
             )
             await session.wait(/INTERACTIVE_READY/)
             const before = session.position()
-            // Synchronize command start via output before blocking, not wall-clock sleeps.
+            // CMD must receive a reply from ping itself before Ctrl+C. An echo
+            // before launching it races with the transition to the child process.
             const busyWithMarker =
               family === 'cmd'
-                ? 'set "_LEFT=BUSY_"\rset "_RIGHT=READY"\recho %_LEFT%%_RIGHT% & ping -n 90 127.0.0.1 >nul\r'
+                ? 'ping -n 90 127.0.0.1\r'
                 : family === 'bash'
                   ? "printf '%s%s\\n' 'BUSY_' 'READY'; sleep 90\r"
                   : "Write-Output ('BUSY_' + 'READY'); Start-Sleep -Seconds 90\r"
             await session.handle.write(busyWithMarker)
-            await session.wait(/BUSY_READY/, before)
+            await session.wait(
+              family === 'cmd' ? /TTL=\d+/i : /BUSY_READY/,
+              before
+            )
             const interrupted = session.position()
             await session.handle.write('\x03')
             await session.wait(
@@ -242,7 +248,8 @@ app
                 : family === 'bash'
                   ? /MATRIX_PROMPT>/
                   : /PS [^\r\n]*>/,
-              interrupted
+              interrupted,
+              'post-interrupt prompt'
             )
             await session.handle.write(emitCommand(family, 'CTRL_', 'OK'))
             await session.wait(/CTRL_OK/)
