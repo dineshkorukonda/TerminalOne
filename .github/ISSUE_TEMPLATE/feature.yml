@@ -1,0 +1,62 @@
+name: Feature request
+description: Propose a scoped feature with observable acceptance criteria.
+title: "[Feature]: "
+labels: ["type:feature"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the feature and its scope in plain language.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem being solved
+      description: Explain the user need and why existing behavior is insufficient.
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: Describe what a user should observe when the feature works.
+    validations:
+      required: true
+  - type: textarea
+    id: technical-considerations
+    attributes:
+      label: Technical considerations
+      description: Note architecture boundaries, security, Windows compatibility, and constraints. Write None if unknown.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance criteria
+      description: Provide specific, verifiable outcomes as a Markdown checklist.
+      placeholder: "- [ ] Observable outcome"
+    validations:
+      required: true
+  - type: textarea
+    id: testing-requirements
+    attributes:
+      label: Testing requirements
+      description: Describe the automated and manual checks needed, including relevant Windows versions. Report only checks actually run.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: Link blocking issues and explain the dependency. Write None if ready to begin.
+    validations:
+      required: true
+  - type: textarea
+    id: related-issues
+    attributes:
+      label: Related issues
+      description: Link related issues or PRs. Write None if there are no related items.
+    validations:
+      required: true
