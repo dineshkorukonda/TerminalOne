@@ -41,6 +41,11 @@ test('architecture lint permits inward imports and rejects prohibited dependenci
     }
 
     const cases = [
+      ['renderer', 'import type { DesktopApi } from "../../contracts/desktop-api"', null],
+      ['preload', 'import { IPC_CHANNELS } from "../../contracts/desktop-api"', null],
+      ['contracts', 'import { app } from "electron"', 'no-restricted-imports'],
+      ['domain', 'import type { DesktopApi } from "../../contracts/desktop-api"', 'import-x/no-restricted-paths'],
+
       ['domain', 'import { probe } from "./target"', null],
       [
         'application',

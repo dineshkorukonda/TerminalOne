@@ -5,12 +5,13 @@ import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescrip
 
 const root = fileURLToPath(new URL('.', import.meta.url))
 const layers = {
+  contracts: ['contracts'],
   domain: ['domain'],
   application: ['application', 'domain'],
-  infrastructure: ['infrastructure', 'application', 'domain'],
+  infrastructure: ['infrastructure', 'application', 'domain', 'contracts'],
   main: ['main', 'infrastructure', 'application', 'domain'],
-  preload: ['preload'],
-  renderer: ['renderer']
+  preload: ['preload', 'contracts'],
+  renderer: ['renderer', 'contracts']
 }
 
 export default [
@@ -56,7 +57,7 @@ export default [
               from: '.',
               except: [
                 ...allowed.map((dependency) => `src/${dependency}`),
-                ...(['domain', 'application'].includes(layer)
+                ...(['domain', 'application', 'contracts'].includes(layer)
                   ? []
                   : ['node_modules'])
               ],
@@ -106,7 +107,7 @@ export default [
     }
   },
   {
-    files: ['src/{domain,application}/**/*.{ts,tsx}'],
+    files: ['src/{domain,application,contracts}/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-globals': [
         'error',
@@ -133,7 +134,9 @@ export default [
     }
   },
   {
-    files: ['src/{domain,application,renderer,preload}/**/*.{ts,tsx}'],
+    files: [
+      'src/{domain,application,contracts,renderer,preload}/**/*.{ts,tsx}'
+    ],
     rules: {
       'import-x/no-nodejs-modules': 'error'
     }

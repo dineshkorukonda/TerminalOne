@@ -3,6 +3,7 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { ViteDevServer } from 'vite'
+import type { DesktopApi } from '../src/contracts/desktop-api'
 
 for (const mode of ['built', 'development'] as const) {
   test(`launches the ${mode} React window with an isolated renderer`, async ({}, testInfo) => {
@@ -59,6 +60,97 @@ for (const mode of ['built', 'development'] as const) {
           process: 'undefined',
           buffer: 'undefined'
         })
+        expect(
+          await window.evaluate(() =>
+            Object.keys(Reflect.get(globalThis, 'desktop') as DesktopApi).sort()
+          )
+        ).toEqual(['getAppInfo', 'openExternal'])
+        expect(
+          await window.evaluate(() =>
+            (Reflect.get(globalThis, 'desktop') as DesktopApi).getAppInfo()
+          )
+        ).toMatchObject({ name: 'Terminal One', version: '0.1.0' })
+        expect(
+          await window.evaluate(async () => {
+            try {
+              await (
+                Reflect.get(globalThis, 'desktop') as DesktopApi
+              ).openExternal('javascript:alert(1)')
+              return 'allowed'
+            } catch {
+              return 'rejected'
+            }
+          })
+        ).toBe('rejected')
+        expect(
+          await window.evaluate(async () => {
+            try {
+              await Reflect.apply(
+                (Reflect.get(globalThis, 'desktop') as DesktopApi).getAppInfo,
+                undefined,
+                ['unexpected']
+              )
+              return 'allowed'
+            } catch {
+              return 'rejected'
+            }
+          })
+        ).toBe('rejected')
+        const currentUrl = window.url()
+        expect(
+          await app.evaluate(
+            ({ BrowserWindow }) =>
+              new Promise<boolean>((resolve) => {
+                const contents = BrowserWindow.getAllWindows()[0]?.webContents
+                if (!contents) throw new Error('Missing window')
+                contents.once('will-frame-navigate', (event) =>
+                  queueMicrotask(() => resolve(event.defaultPrevented))
+                )
+                void contents.executeJavaScript(
+                  "location.assign('https://example.com')"
+                )
+              })
+          )
+        ).toBe(true)
+        expect(window.url()).toBe(currentUrl)
+        expect(
+          await window.evaluate(() =>
+            Reflect.get(globalThis, 'open')('https://example.com')
+          )
+        ).toBeNull()
+        expect(
+          await app.evaluate(
+            async ({ BrowserWindow }, preloadPath) => {
+              const rogue = new BrowserWindow({
+                show: false,
+                webPreferences: {
+                  preload: preloadPath,
+                  sandbox: true,
+                  contextIsolation: true,
+                  nodeIntegration: false
+                }
+              })
+              try {
+                await rogue.loadURL(
+                  'data:text/html,<title>Untrusted window</title>'
+                )
+                return await rogue.webContents.executeJavaScript(
+                  "window.desktop.getAppInfo().then(() => 'allowed', () => 'rejected')"
+                )
+              } finally {
+                rogue.destroy()
+              }
+            },
+            join(process.cwd(), 'out/preload/index.js')
+          )
+        ).toBe('rejected')
+        if (mode === 'built') {
+          const csp = await window
+            .locator('meta[http-equiv="Content-Security-Policy"]')
+            .getAttribute('content')
+          expect(csp).not.toContain('unsafe-inline')
+          expect(csp).not.toContain('ws:')
+        }
         await expect
           .poll(() =>
             app.evaluate(({ BrowserWindow }) => {

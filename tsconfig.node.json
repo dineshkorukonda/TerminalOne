@@ -19,6 +19,7 @@
     "playwright.config.ts",
     "src/main/**/*.ts",
     "src/infrastructure/**/*.ts",
+    "src/contracts/**/*.ts",
     "src/application/**/*.ts",
     "src/domain/**/*.ts",
     "src/preload/**/*.ts",
