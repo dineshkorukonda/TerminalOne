@@ -11,6 +11,7 @@ export function CommandDraft({
   close(): void
 }) {
   const dialog = useRef<HTMLDialogElement>(null)
+  const queryInput = useRef<HTMLInputElement>(null)
   const [query, setQuery] = useState(''),
     [draft, setDraft] = useState(''),
     [entries, setEntries] = useState<HistoryEntry[]>([]),
@@ -19,6 +20,7 @@ export function CommandDraft({
   const [dismissed, setDismissed] = useState(false)
   useEffect(() => {
     dialog.current?.showModal()
+    queryInput.current?.focus()
   }, [])
   useEffect(() => {
     let active = true
@@ -86,6 +88,7 @@ export function CommandDraft({
         <input
           autoFocus
           aria-label="Search command history"
+          ref={queryInput}
           value={query}
           maxLength={256}
           onChange={(event) => setQuery(event.target.value)}

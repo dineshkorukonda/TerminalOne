@@ -62,6 +62,9 @@ test('developer settings validate shortcuts and history suggestions remain draft
     const history = page.getByRole('dialog', {
       name: 'History and command draft'
     })
+    await expect(
+      history.getByRole('textbox', { name: 'Search command history' })
+    ).toBeFocused()
     const draft = history.getByRole('textbox', {
       name: 'Command draft',
       exact: true
