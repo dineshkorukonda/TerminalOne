@@ -35,6 +35,8 @@ Local Linux implementation results: formatting, lint, strict typecheck, build, 2
 
 Windows integration additionally exercises real independent tabs, inactive output, isolated environments, split-process cleanup, multiline clipboard paste, search and OS clipboard copy. The inherited native suite verifies real ConPTY/ASAR behavior; its Ctrl+C checks now wait for the observed PowerShell prompt before subsequent input. Windows execution remains pending CI at this revision; it must pass before the phase is considered verified. Screenshots/traces are retained under `test-results/`.
 
+Windows input automation types ASCII keys and sends Unicode through xterm's paste event path. xterm screen-reader mode deliberately ignores input-only `insertText` events, so those are not physical IME coverage. Manual IME entry remains unverified. The main-crash probe retrieves Electron's actual main PID and retains that process handle before force termination; Playwright's Windows process handle belongs to a launcher wrapper.
+
 The built CSP still prohibits inline/eval scripts and remote resources. It allows inline styles because xterm's DOM renderer injects trusted dimension/theme stylesheets. This is necessary for real font metrics, ANSI colors and layout; stylesheet values come from validated font config and fixed palette tokens. It does not allow terminal output to become HTML or execute scripts. Existing navigation, sender authorization and Node isolation remain enforced.
 
 ## Limits
