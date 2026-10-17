@@ -28,7 +28,7 @@ Local environment: Ubuntu 24.04 LTS x86_64, Node 24.21.0, npm 11.19.0. Locked in
 
 At larger forced scales the small hosted desktop has vertical scrolling; focus and text remain intact and the component tests verify no horizontal overflow. These are renderer-scale checks, not native titlebar or cross-monitor system-DPI qualification.
 
-The final integration head's checks are available on [PR #60](https://github.com/dineshkorukonda/TerminalOne/pull/60/checks). Its Electron suite additionally simulates packaged mode in a startup probe and checks that debugging flags cause immediate exit, rather than an error dialog. That test does not create or certify a packaged installer.
+The merged integration checks are available on [PR #60](https://github.com/dineshkorukonda/TerminalOne/pull/60/checks). The follow-up verification change adds the retained evidence and an Electron test that additionally simulates packaged mode in a startup probe and checks that debugging flags cause immediate exit, rather than an error dialog. That test does not create or certify a packaged installer.
 
 ## Remaining external gates and later work
 
