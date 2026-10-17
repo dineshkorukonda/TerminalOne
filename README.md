@@ -44,6 +44,10 @@ The smoke suite installs Electron if needed, builds the application, and launche
 
 Run native checks in an interactive Windows session with ConPTY (Windows 10 build 18309 or later). `test:native` exercises real Electron utility sessions repeatedly and tests renderer/window/app cleanup. `test:packaged` creates an unsigned ASAR diagnostic under `artifacts/native-probe/` and runs the same native suite; it is not an installer or release. See [Phase 1 verification](docs/phase-1-verification.md) for scope, commands, and evidence. Linux shows an unsupported-platform message and cannot run native integration. Linux automation needs the Electron system libraries and a display server (for example, `xvfb-run -a npm run test:smoke` on a suitably provisioned machine). Playwright's Electron launcher disables the Chromium sandbox for automation, so passing these tests does not verify OS sandbox enforcement. See [bootstrap verification](docs/bootstrap-verification.md) for actual results and remaining Windows checks.
 
+## Terminal workspace
+
+Phase 2 adds independent tabs, horizontal/vertical splits, live appearance settings, a command palette, and per-pane search/copy/paste. Use Ctrl+Shift+P for application actions; plain Ctrl+C stays with the shell. Tabs remain alive while inactive. Four total views are supported; closing a pane releases its session. See [Phase 2 verification](docs/phase-2-verification.md) for shortcuts, limits, DPI coverage and exact checks.
+
 ## Source layout and roadmap
 
 - `src/main/`: composition root, asset selection, and Electron application lifecycle.
@@ -61,7 +65,7 @@ Run native checks in an interactive Windows session with ConPTY (Windows 10 buil
 
 The [architecture decision](docs/architecture/0001-dependency-direction.md) defines import direction and feature ownership. `lint:boundaries` checks production source; `test:architecture` verifies allowed and forbidden imports using temporary fixtures. Run the architecture test before typechecking or building, rather than concurrently with them. Domain and application code stays platform-free; native and transport details remain in infrastructure.
 
-Desktop work starts with [Phase 0: Repository Foundation](https://github.com/dineshkorukonda/TerminalOne/milestone/1), followed by the native terminal engine, terminal UI, shell adapter, developer experience, and production readiness. Track dependencies and acceptance criteria in [GitHub issues](https://github.com/dineshkorukonda/TerminalOne/issues). Phase 0 provides the repository foundation; Phase 1 adds the native terminal engine (#10–#16). Tabs, splits, settings, shell integration, installers, signing, and production qualification remain later roadmap work. The Windows Server CI runner has passed the desktop checks; Windows 10/11 manual compatibility remains unverified, and no installer or release is available.
+Desktop work starts with [Phase 0: Repository Foundation](https://github.com/dineshkorukonda/TerminalOne/milestone/1), followed by the native terminal engine, terminal UI, shell adapter, developer experience, and production readiness. Track dependencies and acceptance criteria in [GitHub issues](https://github.com/dineshkorukonda/TerminalOne/issues). Phase 0 provides the repository foundation; Phase 1 adds the native terminal engine (#10–#16). Tabs, splits, appearance, search and application actions are implemented in Phase 2. Persistent settings, shell integration, installers, signing and production qualification remain later roadmap work. The Windows Server CI runner has passed the desktop checks; Windows 10/11 manual compatibility remains unverified, and no installer or release is available.
 
 ## Code quality
 

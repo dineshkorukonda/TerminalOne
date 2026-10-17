@@ -23,6 +23,8 @@ export type SessionEvent =
   | { type: 'exit'; id: string; exitCode: number }
   | { type: 'error'; id: string; message: string }
 export interface DesktopApi {
+  readClipboard(): Promise<string>
+  writeClipboard(text: string): Promise<void>
   getAppInfo(): Promise<AppInfo>
   openExternal(url: string): Promise<void>
   listShells(): Promise<ShellInfo[]>
@@ -35,6 +37,8 @@ export interface DesktopApi {
 }
 export const IPC_CHANNELS = {
   getAppInfo: 'desktop:get-app-info',
+  readClipboard: 'desktop:read-clipboard',
+  writeClipboard: 'desktop:write-clipboard',
   openExternal: 'desktop:open-external',
   listShells: 'terminal:list-shells',
   createSession: 'terminal:create',

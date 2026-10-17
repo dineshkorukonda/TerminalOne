@@ -1,16 +1,56 @@
 import { useEffect, useRef, useState } from 'react'
+import { SearchAddon } from '@xterm/addon-search'
+import { terminalTheme, type Appearance } from '../theme/appearance'
 import { FitAddon } from '@xterm/addon-fit'
 import { createGridSender } from '../grid-sender'
 import { Terminal } from '@xterm/xterm'
 import '@xterm/xterm/css/xterm.css'
 import type { SessionEvent } from '../../../contracts/desktop-api'
-import {
-  DEFAULT_TERMINAL_FONT,
-  terminalFontStyle,
-  ANSI_NAMES
-} from '../theme/font'
+import { terminalFontStyle } from '../theme/font'
 
-export function TerminalPane({ shellId }: { shellId: string }) {
+export function TerminalPane({
+  shellId,
+  appearance
+}: {
+  shellId: string
+  appearance: Appearance
+}) {
+  const terminalInstance = useRef<Terminal | null>(null)
+  const searchInstance = useRef<SearchAddon | null>(null)
+  const refit = useRef<() => void>(() => {})
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const [searchResult, setSearchResult] = useState('')
+  const [searchSummary, setSearchSummary] = useState('')
+  const searchOptions = {
+    decorations: {
+      matchBackground: '#34415b',
+      activeMatchBackground: '#536b94',
+      matchOverviewRuler: '#91bfff',
+      activeMatchColorOverviewRuler: '#b8d5ff'
+    }
+  }
+  function search(reverse = false) {
+    const found = reverse
+      ? searchInstance.current?.findPrevious(query, searchOptions)
+      : searchInstance.current?.findNext(query, searchOptions)
+    setSearchResult(found ? 'Match selected' : 'No matches')
+  }
+  async function clipboard(action: 'copy' | 'paste') {
+    try {
+      const terminal = terminalInstance.current
+      if (!terminal) return
+      if (action === 'copy') {
+        const selected = terminal.getSelection()
+        if (selected) await window.desktop.writeClipboard(selected)
+      } else terminal.paste(await window.desktop.readClipboard())
+      terminal.focus()
+    } catch {
+      setError(
+        'Clipboard operation failed. Select less text or paste a smaller block.'
+      )
+    }
+  }
   const container = useRef<HTMLDivElement>(null)
   const [status, setStatus] = useState('Starting…')
   const [error, setError] = useState('')
@@ -26,32 +66,49 @@ export function TerminalPane({ shellId }: { shellId: string }) {
     let input = Promise.resolve()
     let queuedInput = 0
     const colors = getComputedStyle(element)
-    const theme: Record<string, string> = {
-      background: colors.getPropertyValue('--color-canvas').trim(),
-      foreground: colors.getPropertyValue('--color-ink').trim(),
-      cursor: colors.getPropertyValue('--color-ink').trim()
-    }
-    for (const name of ANSI_NAMES)
-      theme[
-        name.replace(/-([a-z])/g, (_match, letter: string) =>
-          letter.toUpperCase()
-        )
-      ] = colors.getPropertyValue(`--ansi-${name}`).trim()
-    const font = terminalFontStyle(DEFAULT_TERMINAL_FONT)
+    const theme = terminalTheme(appearance, (name) =>
+      colors.getPropertyValue(name).trim()
+    )
+    const font = terminalFontStyle(appearance.font)
     const terminal = new Terminal({
       cols: 80,
       rows: 24,
       scrollback: 2000,
       fontFamily: font.fontFamily,
-      fontSize: DEFAULT_TERMINAL_FONT.size,
-      lineHeight: DEFAULT_TERMINAL_FONT.lineHeight,
+      fontSize: appearance.font.size,
+      lineHeight: appearance.font.lineHeight,
       cursorBlink: true,
+      allowProposedApi: true,
       screenReaderMode: true,
       theme
     })
     const fit = new FitAddon()
     terminal.loadAddon(fit)
+    const searchAddon = new SearchAddon({ highlightLimit: 500 })
+    terminal.loadAddon(searchAddon)
+    const searchResults = searchAddon.onDidChangeResults(
+      ({ resultIndex, resultCount }) => {
+        if (!disposed)
+          setSearchSummary(
+            resultIndex >= 0
+              ? `Match ${resultIndex + 1} of ${resultCount}`
+              : `${resultCount} matches`
+          )
+      }
+    )
+    searchInstance.current = searchAddon
     terminal.open(element)
+    terminalInstance.current = terminal
+    terminal.attachCustomKeyEventHandler(
+      (event) =>
+        !(
+          event.ctrlKey &&
+          event.shiftKey &&
+          ['p', 't', 'w', 'e', 'o', 'f', 'c', 'v'].includes(
+            event.key.toLowerCase()
+          )
+        )
+    )
     const fail = (message: string) => {
       if (disposed) return
       stopping = true
@@ -87,6 +144,7 @@ export function TerminalPane({ shellId }: { shellId: string }) {
           measure()
         })
     }
+    refit.current = scheduleFit
     const observer = new ResizeObserver(scheduleFit)
     observer.observe(element)
     measure()
@@ -162,9 +220,20 @@ export function TerminalPane({ shellId }: { shellId: string }) {
             )
           )
     }
-    void window.desktop
-      .createSession({ shellId, cols: terminal.cols, rows: terminal.rows })
+    // React development effect replay can dispose this view before the microtask.
+    // Avoid allocating a native session for that discarded mount.
+    void Promise.resolve()
+      .then(() =>
+        disposed
+          ? null
+          : window.desktop.createSession({
+              shellId,
+              cols: terminal.cols,
+              rows: terminal.rows
+            })
+      )
       .then(async (session) => {
+        if (!session) return
         id = session.id
         if (disposed || stopping) {
           await window.desktop.closeSession(id)
@@ -189,16 +258,97 @@ export function TerminalPane({ shellId }: { shellId: string }) {
       grids.dispose()
       onData.dispose()
       pending = []
+      searchResults.dispose()
+      terminalInstance.current = null
+      searchInstance.current = null
       terminal.dispose()
       if (id) void window.desktop.closeSession(id).catch(() => {})
     }
   }, [shellId])
+  useEffect(() => {
+    const terminal = terminalInstance.current
+    const element = container.current
+    if (!terminal || !element) return
+    const style = getComputedStyle(element)
+    terminal.options.fontFamily = terminalFontStyle(appearance.font).fontFamily
+    terminal.options.fontSize = appearance.font.size
+    terminal.options.lineHeight = appearance.font.lineHeight
+    terminal.options.theme = terminalTheme(appearance, (name) =>
+      style.getPropertyValue(name).trim()
+    )
+    refit.current()
+  }, [appearance])
   return (
     <section className="terminal-panel" aria-label="Terminal session">
       <div className="terminal-toolbar">
         <span role="status">{status}</span>
-        <button onClick={() => closeSession.current()}>Close session</button>
+        <div className="terminal-tools">
+          <button
+            aria-label="Search terminal"
+            onClick={() => setSearchOpen((value) => !value)}
+          >
+            Search
+          </button>
+          <button
+            aria-label="Copy selection"
+            onClick={() => {
+              void clipboard('copy')
+            }}
+          >
+            Copy
+          </button>
+          <button
+            aria-label="Paste clipboard"
+            onClick={() => {
+              void clipboard('paste')
+            }}
+          >
+            Paste
+          </button>
+          <button onClick={() => closeSession.current()}>Close session</button>
+        </div>
       </div>
+      {searchOpen && (
+        <form
+          className="terminal-search"
+          onSubmit={(event) => {
+            event.preventDefault()
+            search()
+          }}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') {
+              event.stopPropagation()
+              setSearchOpen(false)
+              searchInstance.current?.clearDecorations()
+              terminalInstance.current?.focus()
+            }
+          }}
+        >
+          <input
+            aria-label="Search terminal output"
+            value={query}
+            maxLength={256}
+            autoFocus
+            onChange={(event) => setQuery(event.target.value)}
+          />
+          <button type="button" onClick={() => search(true)}>
+            Previous match
+          </button>
+          <button type="submit">Next match</button>
+          <span aria-live="polite">{searchResult}</span>
+          <span aria-live="polite">{searchSummary}</span>
+          <button
+            type="button"
+            aria-label="Close search"
+            onClick={() => {
+              setSearchOpen(false)
+              terminalInstance.current?.focus()
+            }}
+          >
+            ×
+          </button>
+        </form>
+      )}
       {error && (
         <p role="alert" className="error-message">
           {error}
