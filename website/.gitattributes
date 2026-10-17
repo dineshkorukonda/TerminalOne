@@ -1,0 +1,5 @@
+# Keep website source consistent with Prettier on Windows and Unix.
+* text=auto eol=lf
+
+# Preserve binary assets without line-ending conversion.
+*.png binary
