@@ -26,6 +26,6 @@ Unit checks enforce 4.5:1 for text and 3:1 for focus/control boundaries. Subtle 
 
 ## Scale verification
 
-`npm run test:smoke` launches built and development renderers at Chromium device-scale factors 1, 1.5, and 2, retaining a focused-window screenshot from each case. These correspond to 100%, 150%, and 200% renderer scaling. All six tests passed on Linux during implementation. Windows CI artifacts are used for Windows screenshot inspection; final evidence is recorded in the PR.
+`npm run test:smoke` launches built and development renderers at Chromium device-scale factors 1, 1.5, and 2, retaining a focused-window screenshot from each case. These correspond to 100%, 150%, and 200% renderer scaling. All six tests passed on Linux during implementation. The Windows theme CI run passed all six cases; its 100%, 150%, and 200% built-window screenshots were visually inspected and retained in the [Phase 0 verification record](phase-0-verification.md).
 
 Forced Chromium scale does not test native window chrome or changing Windows system DPI across monitors. Those checks remain in #23/#45; no Windows 10/11 compatibility guarantee is made here.

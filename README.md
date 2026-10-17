@@ -78,3 +78,5 @@ Follow [CONTRIBUTING.md](CONTRIBUTING.md) for beginner-friendly Windows setup, t
 ## Theme foundation
 
 The renderer consumes shared Tailwind surface, typography, focus, border, and ANSI tokens. Its font sample uses a validated typed font configuration; the foundation view does not open shell sessions. See [theme tokens, contrast, focus, and scale limits](docs/theme-foundation.md). Electron component checks retain screenshots at 100%, 150%, and 200% renderer scale for both built and development content.
+
+The [Phase 0 verification record](docs/phase-0-verification.md) maps all nine issues to delivered scope and links actual Windows runs and retained screenshots. Owner-managed merge/settings gates and later compatibility/security work remain explicit.
