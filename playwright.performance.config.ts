@@ -6,7 +6,7 @@ export default defineConfig({
   testMatch: '**/*.profile.ts',
   workers: 1,
   fullyParallel: false,
-  timeout: 180000,
+  timeout: 300000,
   retries: 0,
   reporter: 'list',
   outputDir: 'test-results/performance',

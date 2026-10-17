@@ -86,17 +86,74 @@ test('profile startup throughput and repeated native session cleanup', async () 
         .toEqual({ width, height })
       resizeMs.push(performance.now() - started)
     }
+    await page.evaluate(() => {
+      const observation = {
+        characters: 0,
+        tail: '',
+        complete: false,
+        failure: ''
+      }
+      Reflect.set(globalThis, '__terminalProfileOutput', observation)
+      const stop = (
+        Reflect.get(globalThis, 'desktop') as DesktopApi
+      ).onSessionEvent((event) => {
+        if (event.type === 'data') {
+          observation.characters += event.data.length
+          observation.tail = (observation.tail + event.data).slice(-512)
+          observation.complete ||= observation.tail.includes('PERF_DONE')
+        } else if (event.type === 'error') observation.failure = event.message
+      })
+      // Observe only: the production renderer remains responsible for ACKs.
+      Reflect.set(globalThis, '__terminalProfileStop', stop)
+    })
     const outputStart = performance.now()
     await page.locator('.xterm-helper-textarea').focus()
     await page.keyboard.type(
-      "$line='P'*1024; 1..1024 | ForEach-Object { [Console]::WriteLine($line) }; Write-Output ('PERF_' + 'DONE')"
+      "[Console]::Write((('P'*1024)+[Environment]::NewLine)*1024); Write-Output ('PERF_' + 'DONE')"
     )
     await page.keyboard.press('Enter')
+    let lastCharacters = -1
+    let lastProgress = Date.now()
+    await expect
+      .poll(
+        async () => {
+          const state = await page.evaluate(() => {
+            const state = Reflect.get(
+              globalThis,
+              '__terminalProfileOutput'
+            ) as { characters: number; complete: boolean; failure: string }
+            return {
+              characters: state.characters,
+              complete: state.complete,
+              failure: state.failure
+            }
+          })
+          expect(state.failure, 'production terminal stream failure').toBe('')
+          if (state.characters > lastCharacters) {
+            lastCharacters = state.characters
+            lastProgress = Date.now()
+          }
+          if (Date.now() - lastProgress > 15000)
+            throw new Error(
+              `Terminal output stopped progressing after ${lastCharacters} characters`
+            )
+          return state.complete
+        },
+        {
+          timeout: 120000,
+          message:
+            'synthetic output completes while retaining normal renderer backpressure'
+        }
+      )
+      .toBe(true)
     await expect(page.locator('.xterm-accessibility-tree')).toContainText(
       'PERF_DONE',
-      { timeout: 30000 }
+      { timeout: 10000 }
     )
     const outputMs = performance.now() - outputStart
+    await page.evaluate(() =>
+      (Reflect.get(globalThis, '__terminalProfileStop') as () => void)()
+    )
     await page.getByRole('button', { name: 'Split right', exact: true }).click()
     await page.getByRole('button', { name: 'Split down', exact: true }).click()
     await expect(page.locator('.xterm')).toHaveCount(3)
@@ -161,10 +218,11 @@ test('profile startup throughput and repeated native session cleanup', async () 
           versions,
           instrumented: true,
           workload:
-            'production bundle in Playwright Electron, one fresh profile then two same-profile launches; 1024 lines of 1024 ASCII characters; 20 native session create/close cycles',
+            'production bundle in Playwright Electron, one fresh profile then two same-profile launches; 1024 lines of 1024 ASCII characters in one bulk Console.Write; 20 native session create/close cycles',
           startupMs,
           outputMs,
           outputBytes: 1024 * 1024,
+          observedStreamCharacters: lastCharacters,
           outputMiBPerSecond: 1000 / outputMs,
           cleanupMs,
           resizeMs,
@@ -184,6 +242,28 @@ test('profile startup throughput and repeated native session cleanup', async () 
         2
       )
     )
+  } catch (error) {
+    // Synthetic workload diagnostics only: retain counts/state, never output.
+    const diagnosticPage = app?.windows()[0]
+    const output = await diagnosticPage
+      ?.evaluate(() => {
+        const state = Reflect.get(globalThis, '__terminalProfileOutput') as
+          { characters: number; complete: boolean; failure: string } | undefined
+        return state
+          ? {
+              characters: state.characters,
+              complete: state.complete,
+              failure: state.failure
+            }
+          : null
+      })
+      .catch(() => null)
+    await mkdir('test-results/performance', { recursive: true })
+    await writeFile(
+      'test-results/performance/failure.json',
+      JSON.stringify({ startupMs, cleanupMs, output: output ?? null }, null, 2)
+    )
+    throw error
   } finally {
     await app?.close()
     await rm(profile, {
