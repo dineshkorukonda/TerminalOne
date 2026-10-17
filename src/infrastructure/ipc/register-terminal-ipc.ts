@@ -11,11 +11,12 @@ export function registerTerminalIpc(window: BrowserWindow, trustedUrl: string) {
   const owner = String(window.webContents.id)
   let active = true
   let generation = 0
+  let rendererAvailable = true
   const sessions = new Sessions(
     new UtilityPtyPort(),
     randomUUID,
     (_owner, event) => {
-      if (active && !window.webContents.isDestroyed())
+      if (active && rendererAvailable && !window.webContents.isDestroyed())
         window.webContents.send(IPC_CHANNELS.sessionEvent, event)
     }
   )
@@ -88,9 +89,13 @@ export function registerTerminalIpc(window: BrowserWindow, trustedUrl: string) {
   )
   const lost = () => {
     generation++
+    rendererAvailable = false
     void sessions.closeOwner(owner)
   }
   window.webContents.on('render-process-gone', lost)
+  window.webContents.on('did-finish-load', () => {
+    rendererAvailable = true
+  })
   window.webContents.on(
     'did-start-navigation',
     (_event, _url, inPlace, mainFrame) => {

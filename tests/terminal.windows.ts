@@ -133,7 +133,7 @@ async function ownedTree(page: Page) {
           await api.acknowledgeSession(sessionId, event.sequence)
       await api.writeSession(
         sessionId,
-        "$child=Start-Process -FilePath (Join-Path $PSHOME 'powershell.exe') -ArgumentList @('-NoProfile','-Command','Start-Sleep -Seconds 120') -PassThru; Write-Output ('CHILD_' + $child.Id)\r"
+        "$child=Start-Process -NoNewWindow -FilePath (Join-Path $PSHOME 'powershell.exe') -ArgumentList @('-NoProfile','-Command','Start-Sleep -Seconds 120') -PassThru; Write-Output ('CHILD_' + $child.Id)\r"
       )
       return { root: session.pid!, child: await child, id: sessionId }
     } finally {
@@ -142,14 +142,21 @@ async function ownedTree(page: Page) {
     }
   })
 }
-for (const mode of ['renderer-crash', 'window-close', 'app-quit'] as const) {
+for (const mode of [
+  'renderer-crash',
+  'window-close',
+  'app-quit',
+  'main-crash'
+] as const) {
   test(`owned shell tree exits after ${mode}`, async () => {
     const fixture = await launch()
     let watcher: Awaited<ReturnType<typeof watchProcesses>> | undefined
     try {
       const tree = await ownedTree(fixture.page)
       watcher = await watchProcesses([tree.root, tree.child])
-      if (mode === 'renderer-crash') {
+      if (mode === 'main-crash') {
+        fixture.app.process().kill()
+      } else if (mode === 'renderer-crash') {
         await fixture.app.evaluate(({ BrowserWindow }) =>
           BrowserWindow.getAllWindows()[0]!.webContents.forcefullyCrashRenderer()
         )

@@ -122,7 +122,7 @@ export function TerminalPane({ shellId }: { shellId: string }) {
       } else receive(event)
     })
     const onData = terminal.onData((data) => {
-      if (!id || disposed) return
+      if (!id || disposed || stopping) return
       queuedInput += data.length
       if (queuedInput > 262144) {
         fail('Terminal input queue is full. Start a new session.')
@@ -135,7 +135,7 @@ export function TerminalPane({ shellId }: { shellId: string }) {
             let end = Math.min(offset + 16384, data.length)
             if (end < data.length && /[\uD800-\uDBFF]/.test(data[end - 1]!))
               end--
-            if (!disposed)
+            if (!disposed && !stopping)
               await window.desktop.writeSession(
                 sessionId,
                 data.slice(offset, end)

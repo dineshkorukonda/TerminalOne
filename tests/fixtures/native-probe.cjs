@@ -164,7 +164,7 @@ app
       for (const mode of ['close', 'natural-exit', 'utility-crash']) {
         const current = await session()
         await current.handle.write(
-          "$child=Start-Process -FilePath (Join-Path $PSHOME 'powershell.exe') -ArgumentList @('-NoProfile','-Command','Start-Sleep -Seconds 120') -PassThru; Write-Output ('CHILD_' + $child.Id)\r"
+          "$child=Start-Process -NoNewWindow -FilePath (Join-Path $PSHOME 'powershell.exe') -ArgumentList @('-NoProfile','-Command','Start-Sleep -Seconds 120') -PassThru; Write-Output ('CHILD_' + $child.Id)\r"
         )
         const match = await current.wait(/CHILD_(\d+)/)
         const watcher = await watchProcesses([

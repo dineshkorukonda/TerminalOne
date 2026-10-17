@@ -8,6 +8,7 @@ export default defineConfig({
   fullyParallel: false,
   timeout: 45000,
   retries: 0,
+  repeatEach: 2,
   outputDir: 'test-results/windows',
   reporter: 'list',
   use: { trace: 'retain-on-failure' }
