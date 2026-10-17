@@ -47,6 +47,25 @@ async function command(page: Page, input: string) {
   await page.keyboard.press('Enter')
 }
 
+async function waitForPrompt(page: Page) {
+  await expect
+    .poll(
+      async () => {
+        const rows = await page
+          .locator('.xterm-accessibility-tree:visible > div')
+          .allTextContents()
+        return (
+          rows
+            .map((row) => row.trim())
+            .filter(Boolean)
+            .at(-1) ?? ''
+        )
+      },
+      { timeout: 15000 }
+    )
+    .toMatch(/^PS .*?>$/)
+}
+
 test('xterm renders live ANSI and Unicode, sends Ctrl+C, fits grids, and restarts', async () => {
   const fixture = await launch()
   const { app, page } = fixture
@@ -70,6 +89,7 @@ test('xterm renders live ANSI and Unicode, sends Ctrl+C, fits grids, and restart
       'BUSY_READY'
     )
     await page.keyboard.press('Control+c')
+    await waitForPrompt(page)
     await command(page, "Write-Output ('CTRL_' + 'OK')")
     await expect(page.locator('.xterm-accessibility-tree')).toContainText(
       'CTRL_OK'
