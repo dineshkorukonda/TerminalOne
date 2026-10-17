@@ -400,3 +400,17 @@ input {
 .session-controls {
   padding-right: 0;
 }
+
+.terminal-panel {
+  position: relative;
+}
+.terminal-search {
+  position: absolute;
+  top: 2.8rem;
+  left: 0.5rem;
+  right: 0.5rem;
+  z-index: 3;
+  background: var(--color-panel);
+  border: 1px solid var(--color-control-border);
+  border-radius: 0.25rem;
+}
