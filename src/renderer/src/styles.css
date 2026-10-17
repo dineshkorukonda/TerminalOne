@@ -317,6 +317,17 @@ input {
   }
 }
 
+.tab-chrome {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.tab-chrome > .tab-strip {
+  flex: 1;
+  min-width: 0;
+}
+
 .developer-dialog {
   width: min(720px, calc(100vw - 32px));
   max-height: calc(100vh - 32px);

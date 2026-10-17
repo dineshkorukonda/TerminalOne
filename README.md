@@ -102,3 +102,9 @@ Follow [CONTRIBUTING.md](CONTRIBUTING.md) for beginner-friendly Windows setup, t
 The renderer consumes shared Tailwind surface, typography, focus, border, and ANSI tokens. The xterm renderer uses the validated font configuration and all 16 ANSI colors from these tokens. See [theme tokens, contrast, focus, and scale limits](docs/theme-foundation.md). Electron component checks retain screenshots at 100%, 150%, and 200% renderer scale for both built and development content.
 
 The [Phase 0 verification record](docs/phase-0-verification.md) maps all nine issues to delivered scope and links actual Windows runs and retained screenshots. Owner-managed merge/settings gates and later compatibility/security work remain explicit.
+
+## Windows production-readiness work
+
+`npm run build:win` builds a self-contained, unsigned x64 NSIS development installer after rebuilding native components. `npm run test:installed` verifies installation into a path with spaces/Unicode, real terminal interaction, quit cleanup and uninstall on Windows. `npm run test:profile` records measured Windows performance data; `npm run release:notes` generates a reviewable draft from conventional Git history. Version-tag/manual artifact workflows have publishing disabled and read-only repository permissions.
+
+See [release readiness](docs/release-readiness.md), [signing/update architecture](docs/architecture/0004-release-trust.md), [security review](docs/security-audit.md), [profiling](docs/performance.md), and [accessibility verification](docs/accessibility-verification.md). New installer/profile checks require actual Windows execution before claims of success. No signing provider, client Windows 10/11 or Narrator qualification, agreed performance budget, or public beta approval is implied. The checked-in qualification manifest remains blocked until real evidence and explicit owner decisions exist.

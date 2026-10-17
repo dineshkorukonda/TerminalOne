@@ -19,6 +19,7 @@
     "electron.vite.config.ts",
     "playwright.config.ts",
     "playwright.windows.config.ts",
+    "playwright.performance.config.ts",
     "src/main/**/*.ts",
     "src/infrastructure/**/*.ts",
     "src/contracts/**/*.ts",

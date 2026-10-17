@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from 'electron'
 import { join } from 'node:path'
+import { realpathSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
 import { createDesktopWindow } from '../infrastructure/window/create-desktop-window'
 import { registerDesktopIpc } from '../infrastructure/ipc/register-desktop-ipc'
@@ -35,7 +36,12 @@ function createWindow(): void {
   if (rendererUrl && new URL(rendererUrl).href !== 'http://127.0.0.1:5173/') {
     throw new Error('Unexpected development renderer URL')
   }
-  const rendererPath = join(__dirname, '../renderer/index.html')
+  // Authorize the same canonical file that Chromium loads, including when
+  // Windows supplies a DOS alias for a Unicode installation directory.
+  const rendererFile = join(__dirname, '../renderer/index.html')
+  const rendererPath = rendererUrl
+    ? rendererFile
+    : realpathSync.native(rendererFile)
   const window = createDesktopWindow({
     preloadPath: join(__dirname, '../preload/index.js'),
     allowDevTools: !app.isPackaged,
