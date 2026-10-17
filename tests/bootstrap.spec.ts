@@ -122,6 +122,25 @@ for (const mode of ['built', 'development'] as const) {
               }
             })
           ).toBe('rejected')
+          expect(
+            await window.evaluate(async () => {
+              const api = Reflect.get(globalThis, 'desktop') as DesktopApi
+              const rejected: boolean[] = []
+              for (const [method, args] of [
+                [api.readClipboard, ['extra']],
+                [api.writeClipboard, [{}]],
+                [api.writeClipboard, ['x'.repeat(262145)]]
+              ] as const) {
+                try {
+                  await Reflect.apply(method, undefined, args)
+                  rejected.push(false)
+                } catch {
+                  rejected.push(true)
+                }
+              }
+              return rejected
+            })
+          ).toEqual([true, true, true])
           const documentation = window.getByRole('button', {
             name: 'Project documentation'
           })
@@ -198,7 +217,8 @@ for (const mode of ['built', 'development'] as const) {
             const csp = await window
               .locator('meta[http-equiv="Content-Security-Policy"]')
               .getAttribute('content')
-            expect(csp).not.toContain('unsafe-inline')
+            expect(csp).toContain("script-src 'self';")
+            expect(csp).toContain("style-src 'self' 'unsafe-inline';")
             expect(csp).not.toContain('ws:')
           }
           await expect

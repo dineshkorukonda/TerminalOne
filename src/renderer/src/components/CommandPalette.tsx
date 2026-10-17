@@ -51,7 +51,7 @@ export function CommandPalette({
           if (event.key === 'Enter' && matches[0]) {
             event.preventDefault()
             matches[0].run()
-            close()
+            close(matches[0].id !== 'search' && matches[0].id !== 'settings')
           }
         }}
       />
@@ -62,7 +62,7 @@ export function CommandPalette({
             key={action.id}
             onClick={() => {
               action.run()
-              close()
+              close(action.id !== 'search' && action.id !== 'settings')
             }}
           >
             {action.label}

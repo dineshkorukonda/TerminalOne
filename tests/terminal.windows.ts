@@ -42,9 +42,30 @@ async function launch() {
   }
 }
 async function command(page: Page, input: string) {
-  await page.locator('.xterm-helper-textarea').focus()
+  await page
+    .locator('.tab-viewport:not([hidden]) .pane-active .xterm-helper-textarea')
+    .focus()
   await page.keyboard.type(input)
   await page.keyboard.press('Enter')
+}
+
+async function waitForPrompt(page: Page) {
+  await expect
+    .poll(
+      async () => {
+        const rows = await page
+          .locator('.xterm-accessibility-tree:visible > div')
+          .allTextContents()
+        return (
+          rows
+            .map((row) => row.trim())
+            .filter(Boolean)
+            .at(-1) ?? ''
+        )
+      },
+      { timeout: 15000 }
+    )
+    .toMatch(/^PS .*?>$/)
 }
 
 test('xterm renders live ANSI and Unicode, sends Ctrl+C, fits grids, and restarts', async () => {
@@ -59,33 +80,36 @@ test('xterm renders live ANSI and Unicode, sends Ctrl+C, fits grids, and restart
       page,
       "Write-Output ([char]27 + '[32m' + 'UI_' + '世界' + [char]27 + '[0m')"
     )
-    await expect(page.locator('.xterm-accessibility-tree')).toContainText(
-      'UI_世界'
-    )
+    await expect(
+      page.locator('.tab-viewport:not([hidden]) .xterm-accessibility-tree')
+    ).toContainText('UI_世界')
     await command(
       page,
       "Write-Output ('BUSY_' + 'READY'); Start-Sleep -Seconds 90"
     )
-    await expect(page.locator('.xterm-accessibility-tree')).toContainText(
-      'BUSY_READY'
-    )
+    await expect(
+      page.locator('.tab-viewport:not([hidden]) .xterm-accessibility-tree')
+    ).toContainText('BUSY_READY')
     await page.keyboard.press('Control+c')
+    await waitForPrompt(page)
     await command(page, "Write-Output ('CTRL_' + 'OK')")
-    await expect(page.locator('.xterm-accessibility-tree')).toContainText(
-      'CTRL_OK'
-    )
+    await expect(
+      page.locator('.tab-viewport:not([hidden]) .xterm-accessibility-tree')
+    ).toContainText('CTRL_OK')
     await app.evaluate(({ BrowserWindow }) => {
       BrowserWindow.getAllWindows()[0]!.setSize(1000, 720)
     })
-    await expect(page.locator('.xterm-screen')).toHaveCSS('height', /\d+px/)
+    await expect(
+      page.locator('.tab-viewport:not([hidden]) .xterm-screen')
+    ).toHaveCSS('height', /\d+px/)
     await command(page, 'exit 0')
     await expect(page.getByRole('status')).toHaveText('Exited (0)')
     await page.getByRole('button', { name: 'New session' }).click()
     await expect(page.getByRole('status')).toHaveText('running')
     await command(page, "Write-Output ('RESTART_' + 'OK')")
-    await expect(page.locator('.xterm-accessibility-tree')).toContainText(
-      'RESTART_OK'
-    )
+    await expect(
+      page.locator('.tab-viewport:not([hidden]) .xterm-accessibility-tree')
+    ).toContainText('RESTART_OK')
     await page.getByRole('button', { name: 'Close session' }).click()
     await expect(page.getByRole('status')).toHaveText('closed')
   } finally {
@@ -232,6 +256,140 @@ test('terminal capabilities reject forged payloads and detach event subscribers'
     expect(result.rejected).toEqual(Array(7).fill(true))
     expect(result.events).toBe(0)
   } finally {
+    await fixture.dispose()
+  }
+})
+
+test('real tabs and panes preserve sessions, search output and use the scoped Windows clipboard', async () => {
+  const fixture = await launch()
+  const { page } = fixture
+  const visible = page.locator('.tab-viewport:not([hidden])')
+  const originalClipboard = await page.evaluate(() =>
+    (Reflect.get(globalThis, 'desktop') as DesktopApi).readClipboard()
+  )
+  async function captureStart(action: () => Promise<unknown>) {
+    const started = page.evaluate(
+      () =>
+        new Promise<{ id: string; pid: number }>((resolve, reject) => {
+          const api = Reflect.get(globalThis, 'desktop') as DesktopApi
+          const timer = setTimeout(() => {
+            detach()
+            reject(new Error('UI session start timed out'))
+          }, 15000)
+          const detach = api.onSessionEvent((event) => {
+            if (
+              event.type === 'state' &&
+              event.state === 'running' &&
+              event.pid
+            ) {
+              clearTimeout(timer)
+              detach()
+              resolve({ id: event.id, pid: event.pid })
+            }
+          })
+        })
+    )
+    await action()
+    return started
+  }
+  try {
+    await command(
+      page,
+      "$env:TERMINAL_UI_ISOLATION='first'; Write-Output ('TAB_ONE_' + 'OK')"
+    )
+    await expect(visible.locator('.xterm-accessibility-tree')).toContainText(
+      'TAB_ONE_OK'
+    )
+    await page
+      .getByRole('combobox', { name: 'Shell' })
+      .selectOption('powershell')
+    const second = await captureStart(() =>
+      page.getByRole('button', { name: 'New session', exact: true }).click()
+    )
+    await expect(page.getByRole('tab')).toHaveCount(2)
+    await command(
+      page,
+      "if (!$env:TERMINAL_UI_ISOLATION) {Write-Output ('ISOLATED_' + 'OK')}"
+    )
+    await expect(visible.locator('.xterm-accessibility-tree')).toContainText(
+      'ISOLATED_OK'
+    )
+    await page.getByRole('tab').first().click()
+    await page.evaluate(
+      ({ id }) =>
+        (Reflect.get(globalThis, 'desktop') as DesktopApi).writeSession(
+          id,
+          "Write-Output ('HIDDEN_' + 'OUTPUT')\r"
+        ),
+      second
+    )
+    await page.getByRole('tab').nth(1).click()
+    await expect(visible.locator('.xterm-accessibility-tree')).toContainText(
+      'HIDDEN_OUTPUT'
+    )
+    const split = await captureStart(() =>
+      page.getByRole('button', { name: 'Split right', exact: true }).click()
+    )
+    await expect(visible.locator('.xterm')).toHaveCount(2)
+    const watcher = await watchProcesses([split.pid])
+    try {
+      await visible
+        .getByRole('button', { name: 'Close pane', exact: true })
+        .last()
+        .click()
+      await watcher.done
+    } finally {
+      watcher.cancel()
+    }
+    await expect(visible.locator('.xterm')).toHaveCount(1)
+    await page.evaluate(() =>
+      (Reflect.get(globalThis, 'desktop') as DesktopApi).writeClipboard(
+        "Write-Output ('PASTE_' + 'OK')\r\nWrite-Output ('LINE_' + 'TWO')\r\n"
+      )
+    )
+    await visible
+      .getByRole('button', { name: 'Paste clipboard', exact: true })
+      .click()
+    await page.keyboard.press('Enter')
+    await expect(visible.locator('.xterm-accessibility-tree')).toContainText(
+      'PASTE_OK'
+    )
+    await expect(visible.locator('.xterm-accessibility-tree')).toContainText(
+      'LINE_TWO'
+    )
+    await visible
+      .getByRole('button', { name: 'Search terminal', exact: true })
+      .click()
+    await visible
+      .getByRole('textbox', { name: 'Search terminal output' })
+      .fill('PASTE_OK')
+    await visible
+      .getByRole('button', { name: 'Next match', exact: true })
+      .click()
+    await visible
+      .getByRole('button', { name: 'Copy selection', exact: true })
+      .click()
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          (Reflect.get(globalThis, 'desktop') as DesktopApi).readClipboard()
+        )
+      )
+      .toBe('PASTE_OK')
+    await page.getByRole('tab').first().click()
+    await expect(visible.locator('.xterm-accessibility-tree')).toContainText(
+      'TAB_ONE_OK'
+    )
+  } finally {
+    await page
+      .evaluate(
+        (text) =>
+          (Reflect.get(globalThis, 'desktop') as DesktopApi).writeClipboard(
+            text
+          ),
+        originalClipboard
+      )
+      .catch(() => {})
     await fixture.dispose()
   }
 })
