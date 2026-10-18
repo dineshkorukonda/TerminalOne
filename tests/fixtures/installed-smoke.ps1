@@ -1,6 +1,7 @@
 param([Parameter(Mandatory=$true)][string]$Installer,[Parameter(Mandatory=$true)][string]$Root,[Parameter(Mandatory=$true)][string]$ResultPath)
 $ErrorActionPreference='Stop'
 . (Join-Path $PSScriptRoot 'uninstalled-path.ps1')
+. (Join-Path $PSScriptRoot 'powershell-prompt.ps1')
 # The CI parent is PowerShell 7. Its inherited module search path can select
 # incompatible modules in Windows PowerShell 5.1; load this engine's modules.
 Import-Module (Join-Path $PSHOME 'Modules\Microsoft.PowerShell.Security\Microsoft.PowerShell.Security.psd1') -ErrorAction Stop
@@ -44,6 +45,11 @@ function Send-Terminal([string]$Text) {
  }
  [Windows.Forms.SendKeys]::SendWait(($keys -join '')+'{ENTER}')
 }
+function Terminal-Rows {
+ $condition=New-Object Windows.Automation.PropertyCondition([Windows.Automation.AutomationElement]::ControlTypeProperty,[Windows.Automation.ControlType]::ListItem)
+ $rows=$script:window.FindAll([Windows.Automation.TreeScope]::Descendants,$condition)
+ foreach($row in $rows){$row.Current.Name}
+}
 $installPath=Join-Path $Root ('App with spaces '+[char]0x4e16+[char]0x754c)
 $testProfile=Join-Path $Root 'isolated-profile'
 $exe=Join-Path $installPath 'TerminalOne.exe'
@@ -71,16 +77,18 @@ try {
  [void](Wait-Condition {$process.Refresh();if($process.HasExited){throw 'Installed app exited before opening'};$process.MainWindowHandle -ne [IntPtr]::Zero} 'installed window')
  $window=[Windows.Automation.AutomationElement]::FromHandle($process.MainWindowHandle)
  [void](Wait-Condition {(Window-Text) -match '(?m)^running$'} 'real shell startup')
+ [void](Wait-Condition {Test-IdlePowerShellPrompt @(Terminal-Rows)} 'initial idle prompt')
  $startup.Stop()
  Send-Terminal "Write-Output ('INSTALL_' + 'OK'); Write-Output ('UNICODE_' + [char]0x4e16 + [char]0x754c)"
  [void](Wait-Condition {(Window-Text).Contains('INSTALL_OK')} 'real command output')
  [void](Wait-Condition {(Window-Text).Contains(('UNICODE_'+[char]0x4e16+[char]0x754c))} 'Unicode output')
+ [void](Wait-Condition {Test-IdlePowerShellPrompt @(Terminal-Rows)} 'idle prompt after Unicode command')
  [void][TerminalTestWindow]::SetWindowPos($process.MainWindowHandle,[IntPtr]::Zero,0,0,800,600,4)
  Send-Terminal "Clear-Host; Write-Output ('BUSY_' + 'READY'); Start-Sleep -Seconds 90"
  [void](Wait-Condition {(Window-Text).Contains('BUSY_READY')} 'blocking command start')
  if([TerminalTestWindow]::GetForegroundWindow() -ne $process.MainWindowHandle){throw 'Installed window lost keyboard focus'}
  [Windows.Forms.SendKeys]::SendWait('^c')
- [void](Wait-Condition {(Window-Text) -match 'PS [^\r\n]*>'} 'post-interrupt prompt')
+ [void](Wait-Condition {Test-IdlePowerShellPrompt @(Terminal-Rows)} 'post-interrupt idle prompt')
  Send-Terminal "Write-Output ('CTRL_' + 'OK')"
  [void](Wait-Condition {(Window-Text).Contains('CTRL_OK')} 'post-interrupt command')
  $snapshot=@(Get-CimInstance Win32_Process)
