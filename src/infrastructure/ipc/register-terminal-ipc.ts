@@ -5,6 +5,7 @@ import { stat } from 'node:fs/promises'
 import type { PreferenceRepository } from '../preferences/repository'
 import { Sessions } from '../../application/terminal/sessions'
 import { UtilityPtyPort } from '../pty/client'
+import { SessionPtyPort } from '../pty/session-port'
 import { discoverShells, selectShell } from '../shells/discover'
 import { IPC_CHANNELS } from '../../contracts/desktop-api'
 import { authorizeSender, validateArguments } from './policy'
@@ -19,7 +20,7 @@ export function registerTerminalIpc(
   let generation = 0
   let rendererAvailable = true
   const sessions = new Sessions(
-    new UtilityPtyPort(),
+    new SessionPtyPort(() => new UtilityPtyPort()),
     randomUUID,
     (_owner, event) => {
       if (active && rendererAvailable && !window.webContents.isDestroyed())

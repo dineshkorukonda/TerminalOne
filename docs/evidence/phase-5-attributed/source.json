@@ -1,0 +1,7 @@
+{
+  "run": "https://github.com/dineshkorukonda/TerminalOne/actions/runs/39102983220",
+  "headCommit": "380a00f981658a4ba1f7333d7802c3640086303e",
+  "artifactBuildCommit": "43d8d16b09cef7c485a00be96bb02913467c4598",
+  "retrievedOn": "2026-10-18",
+  "scope": "Windows Server 2025 x64 CI; not client Windows qualification; pre-session-isolation baseline"
+}

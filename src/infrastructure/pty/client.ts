@@ -188,10 +188,29 @@ export class UtilityPtyPort implements PtyPort {
     this.stopping = true
     const child = this.child
     if (!child) return
+    const exited = new Promise<void>((resolve) => {
+      child.once('exit', () => resolve())
+    })
+    // Install the exit observer before requesting shutdown; process ownership
+    // is complete only after the retained UtilityProcess has actually exited.
     try {
       await this.request('shutdown')
     } finally {
       child.kill()
+      let timer: ReturnType<typeof setTimeout> | undefined
+      try {
+        await Promise.race([
+          exited,
+          new Promise<never>((_resolve, reject) => {
+            timer = setTimeout(
+              () => reject(new Error('Native terminal host did not exit')),
+              5000
+            )
+          })
+        ])
+      } finally {
+        clearTimeout(timer)
+      }
     }
   }
 }
