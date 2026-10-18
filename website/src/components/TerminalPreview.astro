@@ -3,36 +3,36 @@ const shells = [
   {
     id: 'powershell',
     name: 'PowerShell',
-    description: 'A familiar shell. A fresh perspective.',
-    detail: 'A workspace designed around your Windows workflow.',
+    description: 'For Windows commands and automation.',
+    detail: 'Work with scripts, files, and development tools.',
   },
   {
     id: 'cmd',
     name: 'CMD',
-    description: 'The classics deserve a better home.',
-    detail: 'Keep the tools you know. Make room for what comes next.',
+    description: 'For command-line tools and batch scripts.',
+    detail: 'Use familiar Windows commands in a shared workspace.',
   },
   {
     id: 'bash',
     name: 'Git Bash',
-    description: 'Your everyday tools. All together.',
-    detail: 'Bring your Git workflow into a space that feels like yours.',
+    description: 'For Git and familiar Bash commands.',
+    detail: 'Use Bash commands from the same TerminalOne prompt.',
   },
 ];
 ---
 
 <div class="preview-composition" data-terminal-preview>
   <div class="preview-topline">
-    <span>01 / THE WORKSPACE</span>
+    <span>ONE TERMINAL / AUTOMATIC SHELL SELECTION</span>
     <span>DESIGN CONCEPT</span>
   </div>
   <div class="workspace-showcase">
     <div class="workspace-sidebar">
-      <span class="workspace-label">CHOOSE YOUR SHELL</span>
+      <span class="workspace-label">EXPLORE SHELL EXAMPLES</span>
       <div
         class="shell-tabs"
         role="tablist"
-        aria-label="Shell concept examples"
+        aria-label="Automatic shell selection concept examples"
         hidden
       >
         {shells.map((shell, index) => (
@@ -56,9 +56,9 @@ const shells = [
         ))}
       </div>
       <p>
-        Different shells.
+        You enter a command.
         <br />
-        Same place to build.
+        TerminalOne selects the shell.
       </p>
     </div>
     <div class="workspace-stage">
@@ -71,7 +71,7 @@ const shells = [
           tabindex="0"
           hidden={index !== 0}
         >
-          <span class="workspace-label">YOUR TOOLS. YOUR FLOW.</span>
+          <span class="workspace-label">THE SHELL BEHIND YOUR COMMAND</span>
           <h2>{shell.name}</h2>
           <p>{shell.description}</p>
           <span class="workspace-detail">{shell.detail}</span>
@@ -86,7 +86,7 @@ const shells = [
       ))}
       <div class="workspace-status">
         <span>TerminalOne</span>
-        <span>MADE TO FEEL LIKE YOURS</span>
+        <span>ONE CONTINUOUS WORKFLOW</span>
       </div>
     </div>
   </div>

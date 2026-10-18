@@ -11,23 +11,13 @@ test('presents honest product messaging and real project destinations', async ({
   );
   await expect(page.getByText('DESIGN CONCEPT')).toBeVisible();
   await expect(
-    page.getByText(
-      'The terminal should adapt to the developer, not the developer to the shell.',
-    ),
-  ).toBeVisible();
-  await expect(
-    page.getByRole('link', { name: 'Follow the build', exact: true }).first(),
-  ).toHaveAttribute(
-    'href',
-    'https://github.com/dineshkorukonda/TerminalOne/milestones',
-  );
+    page.getByRole('link', { name: 'View on GitHub', exact: true }).first(),
+  ).toHaveAttribute('href', 'https://github.com/dineshkorukonda/TerminalOne');
   await expect(page.getByRole('link', { name: /download/i })).toHaveCount(0);
   await expect(
-    page.getByRole('heading', { name: 'A smarter shell. A careful approach.' }),
+    page.getByRole('heading', { name: 'Your tools. One workspace.' }),
   ).toBeVisible();
-  await expect(
-    page.getByText('Planned capability', { exact: true }),
-  ).toBeVisible();
+  await expect(page.locator('a[href*="milestone"]')).toHaveCount(0);
   const links = await page
     .locator('a[href]')
     .evaluateAll((anchors) =>
@@ -54,12 +44,12 @@ test('switches clean shell previews and supports tab keyboard navigation', async
   await cmd.click();
   await expect(cmd).toHaveAttribute('aria-selected', 'true');
   await expect(page.getByRole('tabpanel')).toContainText(
-    'The classics deserve a better home.',
+    'For command-line tools and batch scripts.',
   );
   await cmd.press('ArrowRight');
   await expect(bash).toBeFocused();
   await expect(page.getByRole('tabpanel')).toContainText(
-    'Your everyday tools. All together.',
+    'For Git and familiar Bash commands.',
   );
   await bash.press('ArrowRight');
   await expect(powershell).toBeFocused();
@@ -82,7 +72,7 @@ test('mobile menu opens, closes on navigation, and restores focus with Escape', 
   await expect(menu).toHaveAttribute('aria-expanded', 'true');
   await page
     .getByRole('navigation', { name: 'Main' })
-    .getByRole('link', { name: 'The vision', exact: true })
+    .getByRole('link', { name: 'Features', exact: true })
     .click();
   await expect(menu).toHaveAttribute('aria-expanded', 'false');
   await menu.click();
@@ -139,7 +129,7 @@ test('fits narrow and wide layouts without runtime errors or missing local asset
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(page.locator('html')).toHaveCSS('scroll-behavior', 'auto');
     await expect(
-      page.getByRole('link', { name: 'Follow the build', exact: true }).first(),
+      page.getByRole('link', { name: 'View on GitHub', exact: true }).first(),
     ).toHaveCSS('transition-duration', '0s');
   }
   expect(errors).toEqual([]);
@@ -158,7 +148,7 @@ test('keeps core content and navigation available without JavaScript', async ({
   await expect(
     page
       .getByRole('navigation', { name: 'Main' })
-      .getByRole('link', { name: 'The vision' }),
+      .getByRole('link', { name: 'Features' }),
   ).toBeVisible();
   await expect(page.getByRole('tabpanel')).toContainText('PowerShell');
   await page
