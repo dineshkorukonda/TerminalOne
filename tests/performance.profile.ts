@@ -56,7 +56,13 @@ test('profile startup throughput and repeated native session cleanup', async () 
           cpuPercentSum: metrics.reduce(
             (sum, item) => sum + item.cpu.percentCPUUsage,
             0
-          )
+          ),
+          processes: metrics.map((item) => ({
+            pid: item.pid,
+            type: item.type,
+            workingSetKiB: item.memory.workingSetSize,
+            cpuPercent: item.cpu.percentCPUUsage
+          }))
         }
       })
     const before = await memory()
@@ -204,6 +210,9 @@ test('profile startup throughput and repeated native session cleanup', async () 
       }
     }
     const after = await memory()
+    // Observe normal reclamation without forcing GC or changing production flags.
+    await page.waitForTimeout(10000)
+    const settled = await memory()
     await mkdir('test-results/performance', { recursive: true })
     await writeFile(
       'test-results/performance/baseline.json',
@@ -233,6 +242,7 @@ test('profile startup throughput and repeated native session cleanup', async () 
             idle,
             multiPane,
             after,
+            settled,
             cycleWorkingSetKiB,
             deltaWorkingSetKiB: after.workingSetKiB - before.workingSetKiB
           },

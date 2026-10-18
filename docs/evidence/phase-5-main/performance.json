@@ -1,0 +1,87 @@
+{
+  "platform": "win32",
+  "os": "10.0.26100",
+  "arch": "x64",
+  "cpu": "AMD EPYC 7763 64-Core Processor                ",
+  "logicalCpus": 2,
+  "systemMemoryBytes": 8584425472,
+  "versions": {
+    "node": "24.22.0",
+    "acorn": "8.18.0",
+    "ada": "4.0.0",
+    "amaro": "1.1.11",
+    "ares": "1.34.8",
+    "brotli": "1.2.0",
+    "cldr": "48.0",
+    "icu": "78.2",
+    "llhttp": "9.4.3",
+    "merve": "1.2.2",
+    "modules": "149",
+    "napi": "10",
+    "nbytes": "0.1.4",
+    "ncrypto": "0.0.1",
+    "nghttp2": "1.70.0",
+    "nghttp3": "",
+    "ngtcp2": "",
+    "openssl": "0.0.0",
+    "simdjson": "4.6.11",
+    "simdutf": "7.7.0",
+    "sqlite": "3.53.4",
+    "tz": "2026d",
+    "undici": "7.29.1",
+    "unicode": "17.0",
+    "uv": "1.52.1",
+    "uvwasi": "0.0.23",
+    "v8": "15.2.124.43-electron.0",
+    "zlib": "1.3.2.1-motley",
+    "zstd": "1.6.0",
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167"
+  },
+  "instrumented": true,
+  "workload": "production bundle in Playwright Electron, one fresh profile then two same-profile launches; 1024 lines of 1024 ASCII characters in one bulk Console.Write; 20 native session create/close cycles",
+  "startupMs": [2965.8160000000003, 1021.5133000000001, 870.2694000000001],
+  "outputMs": 8083.120800000002,
+  "outputBytes": 1048576,
+  "observedStreamCharacters": 1155766,
+  "outputMiBPerSecond": 0.1237145930071959,
+  "cleanupMs": [
+    66.14450000000215, 41.29819999999745, 34.293100000002596, 49.2531999999992,
+    37.410100000000966, 38.045500000000175, 40.86209999999846,
+    48.740899999997055, 31.88129999999728, 38.79859999999826, 38.23800000000119,
+    36.060600000000704, 36.050200000001496, 36.394200000002456,
+    38.615200000000186, 37.820599999999104, 44.900699999998324,
+    36.94770000000426, 43.87430000000313, 37.34739999999874
+  ],
+  "resizeMs": [46.02889999999934, 27.32970000000023, 26.197700000000623],
+  "memory": {
+    "scope": "Electron processes reported by app.getAppMetrics; external shell/helper/conhost memory is excluded",
+    "before": {
+      "workingSetKiB": 408540,
+      "processCount": 5,
+      "cpuPercentSum": 0
+    },
+    "idle": {
+      "workingSetKiB": 408988,
+      "processCount": 5,
+      "cpuPercentSum": 0.3873320986944445
+    },
+    "multiPane": {
+      "workingSetKiB": 534648,
+      "processCount": 5,
+      "cpuPercentSum": 64.12136557861348
+    },
+    "after": {
+      "workingSetKiB": 638708,
+      "processCount": 5,
+      "cpuPercentSum": 43.07590743242819
+    },
+    "cycleWorkingSetKiB": [
+      550080, 559016, 566232, 574472, 582660, 590852, 599068, 602308, 606672,
+      609044, 615616, 624028, 631292, 639572, 647816, 656036, 664400, 672964,
+      681124, 638696
+    ],
+    "deltaWorkingSetKiB": 230168
+  },
+  "cleanupPassed": true
+}

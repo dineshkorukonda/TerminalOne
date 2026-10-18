@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "startupMs": 2065,
+  "installerChecksum": "FE1486FF0447DA363A1F19EBFAD289FD64C13AC63ADF2799604A6ED0CC14BF23",
+  "arch": "AMD64",
+  "checks": [
+    "install-space-unicode-path",
+    "real-shell",
+    "command",
+    "unicode",
+    "resize",
+    "ctrlc",
+    "owned-tree-quit",
+    "uninstall"
+  ],
+  "unsigned": true,
+  "os": "10.0.26100.0"
+}

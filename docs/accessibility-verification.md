@@ -1,5 +1,7 @@
 # Accessibility verification
 
+The subsequent main-branch Windows Server run also recorded zero automated violations in all seven scenes, with incomplete contrast checks in six. See [Phase 5 verification](phase-5-verification.md) for the preserved reports and exact source/run provenance. Manual Narrator and client-Windows qualification remain outstanding.
+
 Issue #46 adds automated WCAG 2 A/AA and 2.1 AA checks using axe and actual keyboard workflows in the Electron renderer. Checks cover terminal chrome, command palette, search and appearance, plus existing tab/split/clipboard/focus and 100/125/150/200% scale cases. Contrast tokens have focused numeric checks in the unit suite.
 
 Electron does not implement Target.createTarget; axe uses its existing-page legacy mode. The app denies embedded frames, so this covers its document. Violations and incomplete checks are retained separately in JSON. Incomplete results and zero automated violations are not a manual accessibility pass. The audit found close buttons inside an ARIA tablist; the close control now sits outside the list so the list owns tabs only.

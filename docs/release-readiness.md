@@ -21,6 +21,8 @@ The installed-app test uses a clean ephemeral CI runner or an explicitly selecte
 
 ## Required evidence and current gaps
 
+See [Phase 5 verification](phase-5-verification.md) for inspected main-branch CI results, measured performance, installer identity and automated accessibility evidence. The successful Server run does not resolve the client-OS, manual accessibility, performance-review or owner-approval gates below.
+
 | Issue | Delivered engineering                                                                                          | Completion gate                                                                          |
 | ----- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | #40   | Self-contained unsigned NSIS build, checksums, fuse/native-path checks and actual installed-app/uninstall test | Windows CI execution must pass                                                           |
