@@ -253,23 +253,67 @@ export function App() {
     <div
       className={`min-h-screen bg-canvas font-ui text-ink app-shell theme-${appearance.theme}`}
     >
-      <header className="app-header border-b border-border">
+      <header className="app-header">
+        <div className="tab-chrome">
+          <div
+            className="tab-strip"
+            role={workspace.tabs.length ? 'tablist' : undefined}
+            aria-label={workspace.tabs.length ? 'Terminal tabs' : undefined}
+          >
+            {workspace.tabs.map((tab) => (
+              <div className="tab-item" key={tab.id}>
+                <button
+                  id={`tab-${tab.id}`}
+                  role="tab"
+                  aria-selected={tab.id === workspace.activeTabId}
+                  tabIndex={tab.id === workspace.activeTabId ? 0 : -1}
+                  onKeyDown={(event) => {
+                    if (
+                      event.key === 'ArrowRight' ||
+                      event.key === 'ArrowLeft'
+                    ) {
+                      event.preventDefault()
+                      switchTab(event.key === 'ArrowRight' ? 1 : -1)
+                    }
+                  }}
+                  aria-controls={`panel-${tab.id}`}
+                  onClick={() => {
+                    workspace.selectTab(tab.id)
+                    focusTerminal()
+                  }}
+                >
+                  <Icon name="terminal" />
+                  <span>{tab.title}</span>
+                </button>
+              </div>
+            ))}
+          </div>
+          {activeTab && (
+            <button
+              aria-label={`Close tab ${activeTab.title}`}
+              title="Close active tab"
+              onClick={() => {
+                workspace.closeTab(activeTab.id)
+                focusTerminal()
+              }}
+            >
+              <Icon name="close" />
+            </button>
+          )}
+        </div>
+        <button
+          className="new-tab-button"
+          aria-label="New session"
+          title={`New tab (${preferences.shortcuts.new})`}
+          disabled={!shellId}
+          onClick={() => newTab()}
+        >
+          <Icon name="plus" />
+        </button>
         <div className="brand">
           <Icon name="terminal" />
           <h1>Terminal One</h1>
         </div>
-        <button
-          className="documentation-button"
-          aria-label="Project documentation"
-          onClick={() => {
-            void window.desktop
-              .openExternal('https://github.com/dineshkorukonda/TerminalOne')
-              .catch(() => setError('Could not open project documentation.'))
-          }}
-        >
-          <span>Project documentation</span>
-          <Icon name="external" />
-        </button>
       </header>
       <main className="workspace">
         {developer && (
@@ -346,7 +390,7 @@ export function App() {
                   )
                 }
               >
-                <option value="midnight">Midnight</option>
+                <option value="midnight">iTerm Night</option>
                 <option value="contrast">High contrast</option>
               </select>
             </label>
@@ -399,144 +443,132 @@ export function App() {
             </button>
           </section>
         )}
-        <div className="session-controls">
-          <label htmlFor="shell">New shell</label>
-          <select
-            id="shell"
-            aria-label="Shell"
-            value={shellId}
-            onChange={(event) => setShellId(event.target.value)}
-            disabled={!shells.length}
-          >
-            {shells.map((shell) => (
-              <option key={shell.id} value={shell.id}>
-                {shell.name}
-              </option>
-            ))}
-          </select>
-          <button disabled={!shellId} onClick={() => newTab()}>
-            New session
-          </button>
-          <button
-            disabled={!workspace.activeTabId}
-            onClick={() => split('horizontal')}
-          >
-            Split right
-          </button>
-          <button
-            disabled={!workspace.activeTabId}
-            onClick={() => split('vertical')}
-          >
-            Split down
-          </button>
-        </div>
-        <div className="workspace-actions">
-          <button onClick={() => setPalette(true)}>Commands</button>
-          <button
-            onClick={() => {
-              if (settings) {
-                setSettings(false)
-                focusTerminal()
-              } else openSettings()
-            }}
-          >
-            Appearance
-          </button>
-          <button onClick={() => setDeveloper(true)}>Developer settings</button>
-          <button onClick={() => setDraftOpen(true)}>History</button>
-          <button
-            disabled={!['powershell', 'pwsh'].includes(shellId)}
-            onClick={() => newTab(true)}
-          >
-            Private tab
-          </button>
-          <button
-            disabled={!shellId}
-            onClick={() => {
-              void window.desktop
-                .chooseProject(shellId)
-                .then(async (project) => {
-                  if (project) {
-                    await reloadPreferences()
-                    setProjectId(project.id)
-                    setShellId(project.shellId)
-                  }
-                })
-                .catch(() =>
-                  setError(
-                    'Could not add a project. Choose a normal local or UNC folder.'
-                  )
-                )
-            }}
-          >
-            Open project
-          </button>
-          <label>
-            Project
+        <div className="workspace-toolbar">
+          <div className="session-controls">
+            <label htmlFor="shell">New shell</label>
             <select
-              aria-label="Project"
-              value={projectId}
-              onChange={(event) => {
-                setProjectId(event.target.value)
-                const project = preferences.projects.find(
-                  (item) => item.id === event.target.value
-                )
-                if (project) setShellId(project.shellId)
-              }}
+              id="shell"
+              aria-label="Shell"
+              value={shellId}
+              onChange={(event) => setShellId(event.target.value)}
+              disabled={!shells.length}
             >
-              <option value="">Home directory</option>
-              {preferences.projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
+              {shells.map((shell) => (
+                <option key={shell.id} value={shell.id}>
+                  {shell.name}
                 </option>
               ))}
             </select>
-          </label>
-        </div>
-        <div className="tab-chrome">
-          <div
-            className="tab-strip"
-            role={workspace.tabs.length ? 'tablist' : undefined}
-            aria-label={workspace.tabs.length ? 'Terminal tabs' : undefined}
-          >
-            {workspace.tabs.map((tab) => (
-              <div className="tab-item" key={tab.id}>
-                <button
-                  id={`tab-${tab.id}`}
-                  role="tab"
-                  aria-selected={tab.id === workspace.activeTabId}
-                  tabIndex={tab.id === workspace.activeTabId ? 0 : -1}
-                  onKeyDown={(event) => {
-                    if (
-                      event.key === 'ArrowRight' ||
-                      event.key === 'ArrowLeft'
-                    ) {
-                      event.preventDefault()
-                      switchTab(event.key === 'ArrowRight' ? 1 : -1)
-                    }
-                  }}
-                  aria-controls={`panel-${tab.id}`}
-                  onClick={() => {
-                    workspace.selectTab(tab.id)
-                    focusTerminal()
-                  }}
-                >
-                  {tab.title}
-                </button>
-              </div>
-            ))}
-          </div>
-          {activeTab && (
             <button
-              aria-label={`Close tab ${activeTab.title}`}
+              disabled={!workspace.activeTabId}
+              aria-label="Split right"
+              title={`Split right (${preferences.shortcuts.right})`}
+              onClick={() => split('horizontal')}
+            >
+              <Icon name="split" />
+              <span>Split right</span>
+            </button>
+            <button
+              disabled={!workspace.activeTabId}
+              aria-label="Split down"
+              title={`Split down (${preferences.shortcuts.down})`}
+              onClick={() => split('vertical')}
+            >
+              <Icon name="split-down" />
+              <span>Split down</span>
+            </button>
+          </div>
+          <div className="workspace-actions">
+            <button
+              aria-label="Commands"
+              onClick={() => setPalette(true)}
+              title={`Command palette (${preferences.shortcuts.palette})`}
+            >
+              <Icon name="commands" />
+              <span>Commands</span>
+            </button>
+            <button
+              aria-label="Appearance"
+              title="Appearance"
               onClick={() => {
-                workspace.closeTab(activeTab.id)
-                focusTerminal()
+                if (settings) {
+                  setSettings(false)
+                  focusTerminal()
+                } else openSettings()
               }}
             >
-              Close tab
+              <Icon name="appearance" />
+              <span>Appearance</span>
             </button>
-          )}
+            <button
+              aria-label="Developer settings"
+              title="Developer settings"
+              onClick={() => setDeveloper(true)}
+            >
+              <Icon name="settings" />
+            </button>
+            <button
+              aria-label="History"
+              title="Command history"
+              onClick={() => setDraftOpen(true)}
+            >
+              <Icon name="history" />
+            </button>
+            <button
+              aria-label="Private tab"
+              title="New private tab"
+              disabled={!['powershell', 'pwsh'].includes(shellId)}
+              onClick={() => newTab(true)}
+            >
+              <Icon name="lock" />
+              <span>Private tab</span>
+            </button>
+            <button
+              aria-label="Open project"
+              title="Open project"
+              disabled={!shellId}
+              onClick={() => {
+                void window.desktop
+                  .chooseProject(shellId)
+                  .then(async (project) => {
+                    if (project) {
+                      await reloadPreferences()
+                      setProjectId(project.id)
+                      setShellId(project.shellId)
+                    }
+                  })
+                  .catch(() =>
+                    setError(
+                      'Could not add a project. Choose a normal local or UNC folder.'
+                    )
+                  )
+              }}
+            >
+              <Icon name="folder" />
+              <span>Open project</span>
+            </button>
+            <label>
+              Project
+              <select
+                aria-label="Project"
+                value={projectId}
+                onChange={(event) => {
+                  setProjectId(event.target.value)
+                  const project = preferences.projects.find(
+                    (item) => item.id === event.target.value
+                  )
+                  if (project) setShellId(project.shellId)
+                }}
+              >
+                <option value="">Home directory</option>
+                {preferences.projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
         </div>
         {(error || workspace.error) && (
           <p role="alert" className="error-message">
@@ -562,6 +594,38 @@ export function App() {
           />
         ))}
       </main>
+      <footer className="workspace-status">
+        <div className="workspace-status-left">
+          <Icon name="folder" />
+          <span>
+            {preferences.projects.find((item) => item.id === projectId)?.name ??
+              'Home directory'}
+          </span>
+          <span className="status-divider" />
+          <span>
+            {workspace.tabs.length}{' '}
+            {workspace.tabs.length === 1 ? 'tab' : 'tabs'}
+          </span>
+        </div>
+        <div className="workspace-status-right">
+          <span>
+            {appearance.theme === 'contrast' ? 'High contrast' : 'iTerm Night'}
+          </span>
+          <span className="status-divider" />
+          <button
+            aria-label="Project documentation"
+            title="Project documentation"
+            onClick={() => {
+              void window.desktop
+                .openExternal('https://github.com/dineshkorukonda/TerminalOne')
+                .catch(() => setError('Could not open project documentation.'))
+            }}
+          >
+            Documentation
+            <Icon name="external" />
+          </button>
+        </div>
+      </footer>
     </div>
   )
 }
