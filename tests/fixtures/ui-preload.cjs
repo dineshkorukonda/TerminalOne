@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-require-imports -- Controlled sandboxed renderer fixture; never bundled in production preload. */
 const { contextBridge } = require('electron')
+const preview = process.argv.includes('--terminal-ui-preview')
 let sequence = 0,
   clipboard = ''
 const listeners = new Set(),
@@ -81,8 +82,8 @@ contextBridge.exposeInMainWorld('desktop', {
   getAppInfo: async () => ({ name: 'Terminal One', version: '0.1.0' }),
   openExternal: async () => {},
   listShells: async () => [
-    { id: 'powershell', name: 'PowerShell fixture' },
-    { id: 'cmd', name: 'CMD fixture' }
+    { id: 'powershell', name: preview ? 'PowerShell' : 'PowerShell fixture' },
+    { id: 'cmd', name: preview ? 'Command Prompt' : 'CMD fixture' }
   ],
   createSession: async ({ shellId }) => {
     if (sessions.size >= 4) throw new Error('Fixture owner limit reached')
