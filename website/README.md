@@ -1,6 +1,6 @@
 # TerminalOne website
 
-A self-contained marketing website for TerminalOne: **One terminal. Every shell.**
+A self-contained marketing website for TerminalOne, an all-in-one terminal designed to select Bash, CMD, or PowerShell based on the command. A Unix-like command-line experience for Windows.
 
 Built with Astro and strict TypeScript. The production output is static HTML, CSS, local fonts and a small amount of JavaScript for shell example tabs and mobile navigation. There is no server, account, analytics or external font service.
 
@@ -64,7 +64,7 @@ The hosting provider and production domain are intentionally not configured. Bef
 - docs/design.md: architecture, design decisions and content constraints.
 - docs/baseline.md: desktop repository baseline and verification limits.
 
-Shell tabs show clean workspace concepts without command output or logs; they do not execute commands. The adapter is a planned capability. No installer is currently published. Keep these statements accurate as the desktop product develops.
+Shell tabs show clean workspace concepts without command output or logs; they do not execute commands. Product copy explains the workspace and intended uses without milestones or phase lists. No installer is currently published. Keep these statements accurate as the desktop product develops.
 
 Regenerate the committed social PNG after editing public/social-card.svg:
 
@@ -73,14 +73,6 @@ npm run assets:social
 ```
 
 This uses the existing Playwright development dependency and the installed Chromium browser. Normal builds use the committed PNG and do not launch a browser to generate assets.
-
-## Contribution boundaries
-
-Work is tracked by [issue #49](https://github.com/dineshkorukonda/Terminal/issues/49) on feat/49-marketing-website. Keep website code and tooling inside website. The only outside addition is .github/workflows/website.yml, a website-specific path-filtered quality workflow.
-
-Do not modify desktop source, PTY behavior, Electron configuration, desktop dependencies, root scripts or root lockfiles. Before and after changes, record desktop checks when an application exists. The inspected baseline contains only root README.md and LICENSE, so desktop builds/tests cannot run and must not be reported as passed.
-
-Use meaningful Conventional Commits, link the issue in the PR, include UI evidence and actual verification results, and await owner review and merge authorization. No deployment is authorized by this issue.
 
 ## License
 
