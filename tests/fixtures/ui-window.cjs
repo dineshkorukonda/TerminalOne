@@ -10,6 +10,10 @@ app
       minWidth: 640,
       minHeight: 420,
       webPreferences: {
+        additionalArguments:
+          process.env.UI_FIXTURE_PREVIEW === '1'
+            ? ['--terminal-ui-preview']
+            : [],
         sandbox: true,
         contextIsolation: true,
         nodeIntegration: false,

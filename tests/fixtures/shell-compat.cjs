@@ -232,9 +232,10 @@ app
               // Do not race input against MSYS readline's resize handling:
               // observe the size from a running command, then wait for its
               // fresh prompt before sending the next interactive command.
-              // The fixture's 20-second deadline bounds this polling workload.
+              // MSYS read -t can remain blocked on the Windows console after
+              // resize; use non-input polling, bounded both here and by wait().
               await session.handle.write(
-                "printf '%s%s\\n' 'RESIZE_' 'WAITING'; until [ \"$(stty size)\" = '35 120' ]; do read -r -t 0.05 matrix_resize_wait; done; printf '%s%s\\n' 'SIZE_' \"$(stty size)\"\r"
+                "printf '%s%s\\n' 'RESIZE_' 'WAITING'; for ((matrix_n=0;matrix_n<100;matrix_n++)); do matrix_size=$(stty size); [ \"$matrix_size\" = '35 120' ] && break; sleep 0.05; done; printf '%s%s\\n' 'SIZE_' \"$matrix_size\"\r"
               )
               await session.wait(/^RESIZE_WAITING$/m)
             }

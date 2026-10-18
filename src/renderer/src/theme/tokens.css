@@ -1,13 +1,13 @@
 @theme static {
-  --color-canvas: #101114;
-  --color-panel: #181b21;
-  --color-elevated: #222733;
-  --color-ink: #eef0f6;
-  --color-muted: #a8adb9;
-  --color-border: #343944;
-  --color-control-border: #68758b;
-  --color-focus: #a3c9ff;
-  --color-accent: #b8d5ff;
+  --color-canvas: #161821;
+  --color-panel: #1e202b;
+  --color-elevated: #282c3c;
+  --color-ink: #c6c8d1;
+  --color-muted: #a4abc0;
+  --color-border: #34394c;
+  --color-control-border: #75809b;
+  --color-focus: #91bfff;
+  --color-accent: #89b8c2;
   --font-ui: 'Segoe UI', system-ui, sans-serif;
   --font-terminal: 'Cascadia Mono', Consolas, 'Liberation Mono', monospace;
   --radius-panel: 0.75rem;
@@ -16,19 +16,19 @@
 :root {
   color-scheme: dark;
   --ansi-black: #20232b;
-  --ansi-red: #f0838c;
-  --ansi-green: #a4d68c;
-  --ansi-yellow: #e6cb8b;
+  --ansi-red: #e89b9b;
+  --ansi-green: #b4be82;
+  --ansi-yellow: #e2c08d;
   --ansi-blue: #91bfff;
-  --ansi-magenta: #c6a0ee;
-  --ansi-cyan: #8bd5ca;
+  --ansi-magenta: #b4a5dc;
+  --ansi-cyan: #89b8c2;
   --ansi-white: #c7cbd6;
   --ansi-bright-black: #747e94;
   --ansi-bright-red: #ffacb3;
   --ansi-bright-green: #c3e8b1;
   --ansi-bright-yellow: #f4e2b5;
-  --ansi-bright-blue: #b8d5ff;
+  --ansi-bright-blue: #89b8c2;
   --ansi-bright-magenta: #dec5fa;
   --ansi-bright-cyan: #b1ece3;
-  --ansi-bright-white: #eef0f6;
+  --ansi-bright-white: #c6c8d1;
 }

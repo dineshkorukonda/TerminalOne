@@ -1,3 +1,4 @@
+import { Icon } from './Icon'
 import { useEffect, useRef, useState } from 'react'
 import { SearchAddon } from '@xterm/addon-search'
 import { terminalTheme, type Appearance } from '../theme/appearance'
@@ -303,7 +304,9 @@ export function TerminalPane({
   return (
     <section className="terminal-panel" aria-label="Terminal session">
       <div className="terminal-toolbar">
-        <span role="status">{status}</span>
+        <span role="status" data-state={status}>
+          {status}
+        </span>
         {privateSession && <span className="session-privacy">Private tab</span>}
         {integrated && !privateSession && (
           <span className="session-privacy">History integration ready</span>
@@ -311,27 +314,36 @@ export function TerminalPane({
         <div className="terminal-tools">
           <button
             aria-label="Search terminal"
+            title={`Search terminal (${shortcuts.search})`}
             onClick={() => setSearchOpen((value) => !value)}
           >
-            Search
+            <Icon name="search" />
           </button>
           <button
             aria-label="Copy selection"
+            title={`Copy selection (${shortcuts.copy})`}
             onClick={() => {
               void clipboard('copy')
             }}
           >
-            Copy
+            <Icon name="copy" />
           </button>
           <button
             aria-label="Paste clipboard"
+            title={`Paste clipboard (${shortcuts.paste})`}
             onClick={() => {
               void clipboard('paste')
             }}
           >
-            Paste
+            <Icon name="paste" />
           </button>
-          <button onClick={() => closeSession.current()}>Close session</button>
+          <button
+            aria-label="Close session"
+            title="Close session"
+            onClick={() => closeSession.current()}
+          >
+            <Icon name="stop" />
+          </button>
         </div>
       </div>
       {searchOpen && (

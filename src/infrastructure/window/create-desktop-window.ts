@@ -16,7 +16,17 @@ export function createDesktopWindow(
     minWidth: 640,
     minHeight: 420,
     title: 'Terminal One',
-    backgroundColor: '#111318',
+    backgroundColor: '#161821',
+    ...(process.platform === 'win32'
+      ? {
+          titleBarStyle: 'hidden' as const,
+          titleBarOverlay: {
+            color: '#101218',
+            symbolColor: '#c6c8d1',
+            height: 46
+          }
+        }
+      : {}),
     show: false,
     webPreferences: {
       preload: options.preloadPath,

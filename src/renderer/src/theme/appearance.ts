@@ -35,7 +35,10 @@ export function terminalTheme(
     background:
       config.theme === 'contrast' ? '#000000' : read('--color-canvas'),
     foreground: config.theme === 'contrast' ? '#ffffff' : read('--color-ink'),
-    cursor: read('--color-focus')
+    cursor: read('--color-focus'),
+    scrollbarSliderBackground: read('--color-border'),
+    scrollbarSliderHoverBackground: read('--color-control-border'),
+    scrollbarSliderActiveBackground: read('--color-muted')
   }
   for (const name of ANSI_NAMES)
     theme[

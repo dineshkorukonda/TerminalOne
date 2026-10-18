@@ -159,11 +159,11 @@ for (const mode of ['built', 'development'] as const) {
           await expect(documentation).toHaveCSS('outline-style', 'solid')
           await expect(documentation).toHaveCSS(
             'outline-color',
-            'rgb(163, 201, 255)'
+            'rgb(145, 191, 255)'
           )
           await expect(window.locator('.min-h-screen')).toHaveCSS(
             'background-color',
-            'rgb(16, 17, 20)'
+            'rgb(22, 24, 33)'
           )
           expect(
             await window.evaluate(() => {
