@@ -60,12 +60,21 @@ test('profile startup throughput and repeated native session cleanup', async () 
           processes: metrics.map((item) => ({
             pid: item.pid,
             type: item.type,
+            serviceName: item.serviceName,
+            name: item.name,
             workingSetKiB: item.memory.workingSetSize,
             cpuPercent: item.cpu.percentCPUUsage
           }))
         }
       })
     const before = await memory()
+    const ownedHostPids = (sample: Awaited<ReturnType<typeof memory>>) =>
+      sample.processes
+        .filter((item) => item.name === 'Terminal PTY host')
+        .map((item) => item.pid)
+        .sort((a, b) => a - b)
+    const baselineHosts = ownedHostPids(before)
+    expect(baselineHosts).toHaveLength(1)
     // This interval is the measured idle workload, not an assertion delay.
     await page.waitForTimeout(10000)
     const idle = await memory()
@@ -203,6 +212,13 @@ test('profile startup throughput and repeated native session cleanup', async () 
           session.id
         )
         await watcher.done
+        await expect
+          .poll(async () => ownedHostPids(await memory()), {
+            timeout: 10000,
+            message:
+              'closed session utility exits without replacing the live pane host'
+          })
+          .toEqual(baselineHosts)
         cleanupMs.push(performance.now() - start)
         cycleWorkingSetKiB.push((await memory()).workingSetKiB)
       } finally {
