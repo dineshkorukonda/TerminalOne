@@ -78,15 +78,18 @@ test('profile startup throughput and repeated native session cleanup', async () 
       const started = performance.now()
       await app!.evaluate(
         ({ BrowserWindow }, size) => {
-          BrowserWindow.getAllWindows()[0]!.setSize(size.width, size.height)
+          BrowserWindow.getAllWindows()[0]!.setContentSize(
+            size.width,
+            size.height
+          )
         },
         { width, height }
       )
       await expect
         .poll(() =>
           page.evaluate(() => ({
-            width: Number(Reflect.get(globalThis, 'outerWidth')),
-            height: Number(Reflect.get(globalThis, 'outerHeight'))
+            width: Number(Reflect.get(globalThis, 'innerWidth')),
+            height: Number(Reflect.get(globalThis, 'innerHeight'))
           }))
         )
         .toEqual({ width, height })
