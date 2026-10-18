@@ -1,5 +1,6 @@
 param([Parameter(Mandatory=$true)][string]$Installer,[Parameter(Mandatory=$true)][string]$Root,[Parameter(Mandatory=$true)][string]$ResultPath)
 $ErrorActionPreference='Stop'
+. (Join-Path $PSScriptRoot 'uninstalled-path.ps1')
 # The CI parent is PowerShell 7. Its inherited module search path can select
 # incompatible modules in Windows PowerShell 5.1; load this engine's modules.
 Import-Module (Join-Path $PSHOME 'Modules\Microsoft.PowerShell.Security\Microsoft.PowerShell.Security.psd1') -ErrorAction Stop
@@ -98,9 +99,9 @@ try {
   $uninstaller=(Get-ChildItem -LiteralPath $installPath -Filter '*Uninstall*.exe' | Select-Object -First 1).FullName
  }
  if(!$uninstaller){throw 'Installed uninstaller is missing'}
- $remove=Start-Process -FilePath $uninstaller -ArgumentList '/S' -PassThru
+ $remove=Start-Process -FilePath $uninstaller -ArgumentList '/S' -PassThru -WindowStyle Hidden
  if(!$remove.WaitForExit(60000)){throw 'Uninstaller timed out'}
- [void](Wait-Condition {!(Test-Path -LiteralPath $exe)} 'uninstalled executable')
+ [void](Wait-Condition {Test-UninstalledPath $exe} 'uninstalled executable')
  @{passed=$true;os=[Environment]::OSVersion.Version.ToString();arch=$env:PROCESSOR_ARCHITECTURE;unsigned=$true;startupMs=$startup.ElapsedMilliseconds;installerChecksum=(Get-FileHash -LiteralPath $Installer -Algorithm SHA256).Hash;checks=@('install-space-unicode-path','real-shell','command','unicode','resize','ctrlc','owned-tree-quit','uninstall')} | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $ResultPath -Encoding UTF8
 } finally {
  if($process -and !$process.HasExited){$process.Kill();[void]$process.WaitForExit(15000)}
