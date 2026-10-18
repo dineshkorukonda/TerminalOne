@@ -1,0 +1,252 @@
+{
+  "platform": "win32",
+  "os": "10.0.26100",
+  "arch": "x64",
+  "cpu": "AMD EPYC 9V74 80-Core Processor                ",
+  "logicalCpus": 2,
+  "systemMemoryBytes": 8584425472,
+  "versions": {
+    "node": "24.22.0",
+    "acorn": "8.18.0",
+    "ada": "4.0.0",
+    "amaro": "1.1.11",
+    "ares": "1.34.8",
+    "brotli": "1.2.0",
+    "cldr": "48.0",
+    "icu": "78.2",
+    "llhttp": "9.4.3",
+    "merve": "1.2.2",
+    "modules": "149",
+    "napi": "10",
+    "nbytes": "0.1.4",
+    "ncrypto": "0.0.1",
+    "nghttp2": "1.70.0",
+    "nghttp3": "",
+    "ngtcp2": "",
+    "openssl": "0.0.0",
+    "simdjson": "4.6.11",
+    "simdutf": "7.7.0",
+    "sqlite": "3.53.4",
+    "tz": "2026d",
+    "undici": "7.29.1",
+    "unicode": "17.0",
+    "uv": "1.52.1",
+    "uvwasi": "0.0.23",
+    "v8": "15.2.124.43-electron.0",
+    "zlib": "1.3.2.1-motley",
+    "zstd": "1.6.0",
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167"
+  },
+  "instrumented": true,
+  "workload": "production bundle in Playwright Electron, one fresh profile then two same-profile launches; 1024 lines of 1024 ASCII characters in one bulk Console.Write; 20 native session create/close cycles",
+  "startupMs": [2133.8504000000003, 2102.7707, 2340.5281000000004],
+  "outputMs": 8599.4172,
+  "outputBytes": 1048576,
+  "observedStreamCharacters": 1150748,
+  "outputMiBPerSecond": 0.11628695023658116,
+  "cleanupMs": [
+    28.326399999998102, 30.71940000000177, 32.989400000002206,
+    29.96310000000085, 32.013599999998405, 30.238099999998667,
+    30.48949999999968, 27.426299999999173, 38.82670000000144, 33.56020000000353,
+    30.028800000000047, 28.645299999996496, 30.018700000000536,
+    31.216499999994994, 27.297200000000885, 30.112300000000687,
+    28.13420000000042, 29.51589999999851, 27.29950000000099, 27.445299999999406
+  ],
+  "resizeMs": [238.46630000000005, 136.75540000000183, 77.84549999999945],
+  "memory": {
+    "scope": "Electron processes reported by app.getAppMetrics; external shell/helper/conhost memory is excluded",
+    "before": {
+      "workingSetKiB": 411960,
+      "processCount": 5,
+      "cpuPercentSum": 0,
+      "processes": [
+        {
+          "pid": 5032,
+          "type": "Browser",
+          "workingSetKiB": 106828,
+          "cpuPercent": 0
+        },
+        {
+          "pid": 8648,
+          "type": "GPU",
+          "workingSetKiB": 64700,
+          "cpuPercent": 0
+        },
+        {
+          "pid": 7964,
+          "type": "Utility",
+          "workingSetKiB": 43444,
+          "cpuPercent": 0
+        },
+        {
+          "pid": 7904,
+          "type": "Tab",
+          "workingSetKiB": 100816,
+          "cpuPercent": 0
+        },
+        {
+          "pid": 7596,
+          "type": "Utility",
+          "workingSetKiB": 96172,
+          "cpuPercent": 0
+        }
+      ]
+    },
+    "idle": {
+      "workingSetKiB": 415636,
+      "processCount": 5,
+      "cpuPercentSum": 1.6188362096908953,
+      "processes": [
+        {
+          "pid": 5032,
+          "type": "Browser",
+          "workingSetKiB": 107008,
+          "cpuPercent": 1.3745653500929225
+        },
+        {
+          "pid": 8648,
+          "type": "GPU",
+          "workingSetKiB": 64176,
+          "cpuPercent": 0.04805915710710241
+        },
+        {
+          "pid": 7964,
+          "type": "Utility",
+          "workingSetKiB": 45572,
+          "cpuPercent": 0.03740265945392916
+        },
+        {
+          "pid": 7904,
+          "type": "Tab",
+          "workingSetKiB": 100780,
+          "cpuPercent": 0.1322176917328812
+        },
+        {
+          "pid": 7596,
+          "type": "Utility",
+          "workingSetKiB": 98100,
+          "cpuPercent": 0.026591351304059842
+        }
+      ]
+    },
+    "multiPane": {
+      "workingSetKiB": 538312,
+      "processCount": 5,
+      "cpuPercentSum": 48.239009715683565,
+      "processes": [
+        {
+          "pid": 5032,
+          "type": "Browser",
+          "workingSetKiB": 110864,
+          "cpuPercent": 23.48314900943981
+        },
+        {
+          "pid": 8648,
+          "type": "GPU",
+          "workingSetKiB": 74240,
+          "cpuPercent": 3.854873781205052
+        },
+        {
+          "pid": 7964,
+          "type": "Utility",
+          "workingSetKiB": 45660,
+          "cpuPercent": 0.020032398856102706
+        },
+        {
+          "pid": 7904,
+          "type": "Tab",
+          "workingSetKiB": 190260,
+          "cpuPercent": 12.766404699591739
+        },
+        {
+          "pid": 7596,
+          "type": "Utility",
+          "workingSetKiB": 117288,
+          "cpuPercent": 8.11454982659086
+        }
+      ]
+    },
+    "after": {
+      "workingSetKiB": 690336,
+      "processCount": 5,
+      "cpuPercentSum": 42.795466810577445,
+      "processes": [
+        {
+          "pid": 5032,
+          "type": "Browser",
+          "workingSetKiB": 114708,
+          "cpuPercent": 42.795466810577445
+        },
+        {
+          "pid": 8648,
+          "type": "GPU",
+          "workingSetKiB": 66928,
+          "cpuPercent": 0
+        },
+        {
+          "pid": 7964,
+          "type": "Utility",
+          "workingSetKiB": 45148,
+          "cpuPercent": 0
+        },
+        {
+          "pid": 7904,
+          "type": "Tab",
+          "workingSetKiB": 185324,
+          "cpuPercent": 0
+        },
+        {
+          "pid": 7596,
+          "type": "Utility",
+          "workingSetKiB": 278228,
+          "cpuPercent": 0
+        }
+      ]
+    },
+    "settled": {
+      "workingSetKiB": 626620,
+      "processCount": 5,
+      "cpuPercentSum": 2.1045128832001128,
+      "processes": [
+        {
+          "pid": 5032,
+          "type": "Browser",
+          "workingSetKiB": 108160,
+          "cpuPercent": 0.14532256852092054
+        },
+        {
+          "pid": 8648,
+          "type": "GPU",
+          "workingSetKiB": 66936,
+          "cpuPercent": 0.42520606563012514
+        },
+        {
+          "pid": 7964,
+          "type": "Utility",
+          "workingSetKiB": 43160,
+          "cpuPercent": 0.00017992846044412742
+        },
+        {
+          "pid": 7904,
+          "type": "Tab",
+          "workingSetKiB": 132916,
+          "cpuPercent": 1.294099818862111
+        },
+        {
+          "pid": 7596,
+          "type": "Utility",
+          "workingSetKiB": 275448,
+          "cpuPercent": 0.23970450172651217
+        }
+      ]
+    },
+    "cycleWorkingSetKiB": [
+      552932, 561404, 569788, 577892, 585888, 593956, 602200, 609304, 617368,
+      625396, 633520, 641720, 638504, 642000, 650364, 658548, 666648, 674088,
+      681700, 690320
+    ],
+    "deltaWorkingSetKiB": 278376
+  },
+  "cleanupPassed": true
+}
