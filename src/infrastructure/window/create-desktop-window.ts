@@ -40,6 +40,10 @@ export function createDesktopWindow(
     }
   })
 
+  // The terminal owns its shortcuts. A hidden default menu still registers
+  // accelerators such as Ctrl+Shift+W and can close the whole window.
+  if (process.platform !== 'darwin') window.setMenu(null)
+
   window.once('ready-to-show', () => window.show())
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
   window.webContents.on('will-navigate', (event) => event.preventDefault())
