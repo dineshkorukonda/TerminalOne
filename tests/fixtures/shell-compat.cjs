@@ -22,7 +22,13 @@ app
       path.join(os.tmpdir(), 'Adapter matrix 空间-')
     )
     const port = new UtilityPtyPort(),
-      shells = await discoverShells(),
+      // This matrix tests raw shell/ConPTY compatibility with a fixed prompt.
+      // The application-owned Bash rc/editor is covered by bash.windows.ts.
+      shells = (await discoverShells()).map((shell) =>
+        shell.id === 'git-bash'
+          ? { ...shell, args: ['--noprofile', '--norc', '-i'] }
+          : shell
+      ),
       results = []
     let sequence = 0
     const emitCommand = (family, left, right) =>
