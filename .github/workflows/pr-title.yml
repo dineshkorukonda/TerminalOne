@@ -1,0 +1,34 @@
+name: PR title
+
+on:
+  pull_request:
+    branches: [main, 'refactor/**', 'feat/**', 'chore/**', 'docs/**']
+    types: [opened, synchronize, reopened, edited, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-title-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  title:
+    name: Validate PR title
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      HUSKY: '0'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+          cache: npm
+      # Title validation only needs commitlint, not native install scripts.
+      - run: npm ci --ignore-scripts --no-audit
+      - run: npm run check:pr-title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}

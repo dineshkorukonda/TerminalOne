@@ -31,15 +31,18 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test:unit
+      # Cache before applying the per-run version to the lockfile.
+      - uses: ./.github/actions/windows-native
       - id: version
         run: node scripts/alpha-version.mjs
-      - run: npm run native:build
       - run: npm run test:smoke
       - run: npm run test:native
       - run: npm run test:shells
       - run: npm run test:packaged
       - run: node scripts/build-win.mjs
       - run: npm run test:installed
+      - run: npm run test:profile
+      - run: npm run release:notes
       - run: npm audit --audit-level=moderate
       - name: Write alpha notes
         shell: pwsh

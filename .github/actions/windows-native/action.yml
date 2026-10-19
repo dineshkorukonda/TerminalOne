@@ -1,0 +1,27 @@
+name: Prepare Windows native runtime
+description: Reuse an exact native build while retaining runtime validation in callers.
+runs:
+  using: composite
+  steps:
+    - name: Identify runner toolchain
+      id: image
+      shell: pwsh
+      run: |
+        if (!$env:ImageOS -or !$env:ImageVersion) { throw 'Hosted runner image identity is required' }
+        "identity=$env:ImageOS-$env:ImageVersion" >> $env:GITHUB_OUTPUT
+    - name: Restore exact native build
+      id: native
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      with:
+        path: |
+          node_modules/node-pty
+          native/pty-job-host.exe
+        key: native-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.image.outputs.identity }}-${{ hashFiles('package-lock.json', '.node-version', 'scripts/native-build.mjs', 'native/PtyJobHost.cs', '.github/actions/windows-native/action.yml') }}
+    - name: Rebuild native addon and process owner
+      if: steps.native.outputs.cache-hit != 'true'
+      shell: pwsh
+      run: npm run native:build
+    - name: Verify compiled outputs exist
+      shell: pwsh
+      run: |
+        node --input-type=module -e "import {access} from 'node:fs/promises'; await access('node_modules/node-pty/build/Release/conpty.node'); await access('native/pty-job-host.exe')"
