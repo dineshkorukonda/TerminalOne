@@ -1,6 +1,6 @@
 # Windows beta readiness
 
-Phase 5 covers #40–#48 in one PR targeting main. Building an artifact is separate from approving a public beta. No public release, signing provider, paid account or visibility change is authorized automatically.
+Phase 5 covers #40–#48 in one PR targeting main. Building an artifact is separate from approving a public beta. The owner has separately authorized automatic unsigned alpha prereleases from main in #71; see [alpha delivery](bash-experience.md). Stable/beta release, signing provider, paid account and visibility changes still require separate approval.
 
 ## Build and verification
 
@@ -13,7 +13,7 @@ npm run release:notes
 npm audit --audit-level=moderate
 ```
 
-build:win compiles the Windows Job Object helper, rebuilds node-pty for the pinned Electron ABI, builds the renderer and creates an x64 per-user NSIS installer under artifacts/windows. The application includes its runtime; end users do not need Node, Python, a compiler or development dependencies. The installer is unsigned and publishing is disabled. It preserves user data on uninstall. Source and dependency licenses remain included.
+build:win compiles the Windows Job Object helper, rebuilds node-pty for the pinned Electron ABI, builds the renderer and creates an x64 per-user NSIS installer under artifacts/windows. The application includes its runtime; end users do not need Node, Python, a compiler or development dependencies. The installer is unsigned; the build command does not publish. The alpha workflow publishes only after validation. It preserves user data on uninstall. Source and dependency licenses remain included.
 
 Production fuses disable RunAsNode, NODE_OPTIONS and Node CLI inspection, and require the integrity-bound app.asar. Native helper/addon files remain physically unpacked. Build verification reads the actual fuse wire and checks the native paths. These measures do not make an unsigned app a same-user security sandbox or authenticate unpacked native files.
 
@@ -53,4 +53,4 @@ Manually repeat startup, shell selection, tabs/splits, quoting, paths with space
 
 ## Public distribution handoff
 
-Review actual installer, checksums, test reports, security findings, performance measurements and release-note draft. Obtain the signing decision and implement/verify it in a separate approved change. Obtain manual client-OS/Narrator evidence, required CI/reviews and explicit owner release approval. Only then decide a beta version/channel and publication action. The present workflows cannot publish, even on version tags. Releasing or changing repository visibility remains an owner action requiring explicit authorization.
+Review actual installer, checksums, test reports, security findings, performance measurements and release-note draft. Obtain the signing decision and implement/verify it in a separate approved change. Obtain manual client-OS/Narrator evidence, required CI/reviews and explicit owner release approval. Only then decide a beta version/channel and publication action. The alpha workflow is authorized to publish unsigned prereleases only. Stable/beta release and repository visibility changes still require explicit owner authorization.

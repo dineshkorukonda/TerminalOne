@@ -38,3 +38,24 @@ This narrow infrastructure integration extends the Phase 3 behavior described in
 `architecture/0002-shell-adapter.md`. Its typed complete-string analyzer remains
 conservative; the new hook receives argv already parsed by Bash, rather than
 pretending that terminal output is trusted prompt-state evidence.
+
+## Alpha delivery
+
+Every push to main, including each merged PR, runs the alpha release workflow.
+Feature branches do not publish. All versions are currently `0.2.0-alpha.N`, with
+N taken from that workflow's increasing run number. Rerunning a failed run retains
+its version. Version changes apply to the build's package and lockfile, without
+creating another commit on main. The tag identifies the source commit; reproduce
+its version by running `alpha-version.mjs` with the original `GITHUB_RUN_NUMBER`.
+
+Quality, smoke, native shell, packaged native and installed-app checks run before
+publishing. A separate job gets write permission only to upload verified artifacts
+and publish the tagged prerelease. It first creates a draft, uploads the unsigned
+installer and SHA-256 checksums, then publishes it as a prerelease, never latest.
+A completed release is left intact on retries. No tag-triggered workflow chaining
+is required. Failed checks produce no public release; rerun after resolving the
+failure. Concurrent merges have independent versions and are not cancelled.
+
+The owner's request authorizes automated unsigned alpha publication. Stable/beta
+promotion, signing and visibility changes retain their separate approval gates.
+CI evidence does not claim manual Windows 10/11 or screen-reader qualification.
