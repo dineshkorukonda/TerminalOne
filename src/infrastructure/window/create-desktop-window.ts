@@ -16,6 +16,7 @@ export function createDesktopWindow(
     minWidth: 640,
     minHeight: 420,
     title: 'Terminal One',
+    autoHideMenuBar: true,
     backgroundColor: '#161821',
     ...(process.platform === 'win32'
       ? {

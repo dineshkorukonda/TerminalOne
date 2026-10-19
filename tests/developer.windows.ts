@@ -18,6 +18,7 @@ test('PowerShell complete-command history is opt-in and private sessions never r
     env
   })
   const page = await app.firstWindow()
+  await page.getByRole('button', { name: 'Terminal options' }).click()
   try {
     await expect(page.getByRole('status')).toHaveText('running', {
       timeout: 20000

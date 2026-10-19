@@ -52,6 +52,7 @@ export function App() {
   }
   const [palette, setPalette] = useState(false)
   const [settings, setSettings] = useState(false)
+  const [toolsOpen, setToolsOpen] = useState(false)
   useEffect(() => {
     let active = true
     void window.desktop
@@ -310,6 +311,16 @@ export function App() {
         >
           <Icon name="plus" />
         </button>
+        <button
+          className="workspace-menu-button"
+          aria-label="Terminal options"
+          aria-expanded={toolsOpen}
+          aria-controls="workspace-options"
+          title="Terminal options"
+          onClick={() => setToolsOpen((open) => !open)}
+        >
+          <span aria-hidden="true">⌄</span>
+        </button>
         <div className="brand">
           <Icon name="terminal" />
           <h1>Terminal One</h1>
@@ -443,9 +454,13 @@ export function App() {
             </button>
           </section>
         )}
-        <div className="workspace-toolbar">
+        <div
+          className="workspace-toolbar"
+          id="workspace-options"
+          hidden={!toolsOpen}
+        >
           <div className="session-controls">
-            <label htmlFor="shell">New shell</label>
+            <label htmlFor="shell">Shell override</label>
             <select
               id="shell"
               aria-label="Shell"
@@ -594,7 +609,7 @@ export function App() {
           />
         ))}
       </main>
-      <footer className="workspace-status">
+      <footer className="workspace-status" hidden={!toolsOpen}>
         <div className="workspace-status-left">
           <Icon name="folder" />
           <span>

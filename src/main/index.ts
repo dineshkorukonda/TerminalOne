@@ -58,7 +58,11 @@ function createWindow(): void {
   const disposeTerminal = registerTerminalIpc(
     window,
     rendererUrl ? new URL(rendererUrl).href : pathToFileURL(rendererPath).href,
-    preferences
+    preferences,
+    join(
+      app.isPackaged ? process.resourcesPath : app.getAppPath(),
+      'shell/bashrc'
+    )
   )
   const disposePreferences = registerPreferencesIpc(
     window,

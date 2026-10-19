@@ -13,7 +13,7 @@ test('native content resizing preserves the terminal chrome viewport', async () 
   delete env['ELECTRON_RUN_AS_NODE']
   delete env['ELECTRON_RENDERER_URL']
   const app = await electron.launch({
-    args: ['.', `--user-data-dir=${profile}`],
+    args: ['.', '--force-device-scale-factor=1', `--user-data-dir=${profile}`],
     env
   })
   try {

@@ -21,6 +21,7 @@ export default [
   {
     ignores: [
       'node_modules/**',
+      'shell/blesh/**',
       'out/**',
       'artifacts/**',
       'test-results/**',

@@ -13,6 +13,7 @@ test('production bundle authorizes its document from a space and Unicode install
   const application = join(root, 'App with spaces 世界 #%')
   await mkdir(application)
   await cp('out', join(application, 'out'), { recursive: true })
+  await cp('shell', join(application, 'shell'), { recursive: true })
   if (process.platform === 'win32')
     await cp('native', join(application, 'native'), { recursive: true })
   await symlink(

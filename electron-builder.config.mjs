@@ -5,6 +5,7 @@ export default {
   directories: { output: 'artifacts/windows' },
   files: ['out/**/*', 'native/pty-job-host.exe', 'package.json', 'LICENSE'],
   asar: true,
+  extraResources: [{ from: 'shell', to: 'shell' }],
   asarUnpack: ['**/node-pty/**', '**/native/**'],
   npmRebuild: false,
   nodeGypRebuild: false,
