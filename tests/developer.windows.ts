@@ -18,6 +18,7 @@ test('PowerShell complete-command history is opt-in and private sessions never r
     env
   })
   const page = await app.firstWindow()
+  await page.getByRole('button', { name: 'Terminal options' }).click()
   try {
     await expect(page.getByRole('status')).toHaveText('running', {
       timeout: 20000
@@ -207,6 +208,10 @@ test('saved projects restore fresh sessions only after explicit confirmation', a
   })
   try {
     let page = await app.firstWindow()
+    await page.getByRole('button', { name: 'Terminal options' }).click()
+    await page
+      .getByRole('combobox', { name: 'Shell' })
+      .selectOption('powershell')
     await expect(page.getByRole('status')).toHaveText('running', {
       timeout: 20000
     })

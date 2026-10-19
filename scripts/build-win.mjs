@@ -18,12 +18,24 @@ if (
   throw new Error('Version tag must match package.json')
 await access('native/pty-job-host.exe')
 await access('node_modules/node-pty/build/Release/conpty.node')
+await access('shell/bashrc')
+await access('shell/blesh/ble.sh')
+await access('shell/blesh/doc/LICENSE.md')
 const artifacts = await build({
   targets: Platform.WINDOWS.createTarget(['nsis'], Arch.x64),
   publish: 'never',
   config
 })
 const installers = artifacts.filter((path) => path.endsWith('.exe'))
+for (const file of [
+  'bashrc',
+  'adapters.bash',
+  'blesh/ble.sh',
+  'blesh/doc/LICENSE.md'
+])
+  await access(
+    join(config.directories.output, 'win-unpacked/resources/shell', file)
+  )
 if (
   installers.length !== 1 ||
   !basename(installers[0]).includes('-unsigned-x64')

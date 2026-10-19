@@ -602,3 +602,38 @@ textarea {
     padding-inline: 11px;
   }
 }
+
+/* Keep the initial view focused on terminal content. */
+.workspace-toolbar[hidden] {
+  display: none;
+}
+.workspace-menu-button {
+  app-region: no-drag;
+  min-width: 30px;
+  font-size: 18px;
+}
+.workspace-status[hidden] {
+  display: none;
+}
+.terminal-toolbar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 120ms;
+}
+.terminal-panel:hover .terminal-toolbar,
+.terminal-panel:focus-within .terminal-toolbar:focus-within,
+.terminal-toolbar:has([data-state='Failed']),
+.terminal-toolbar:has([data-state^='Exited']) {
+  opacity: 1;
+}
+.pane-close {
+  opacity: 0;
+  z-index: 3;
+}
+.pane-position:hover .pane-close,
+.pane-close:focus-visible {
+  opacity: 1;
+}

@@ -2,7 +2,7 @@
 
 ## Current decision
 
-Installer builds are unsigned development artifacts. The build API uses publish: never, configuration has no publishing provider, and workflows have read-only repository contents permissions. There is no update client, feed, background request, release creation or signing credential in the application. Feature-branch workflows cannot publish. Version-tag artifact builds require the tag to match package.json and still cannot publish.
+Installer builds are unsigned development artifacts. The build API uses publish: never, configuration has no publishing provider, and build jobs have read-only repository contents permissions. The owner-authorized alpha workflow publishes unsigned tagged prereleases for main updates through a separate job with contents write permission. There is no update client, feed, background request, release creation or signing credential in the application. Feature-branch workflows cannot publish. Version-tag artifact builds require the tag to match package.json and still cannot publish.
 
 No signing provider, legal publisher identity, certificate budget or signing credentials have been approved. Issue #41 is strategy-only until the owner makes those decisions and an actual signed artifact is verified. A GitHub username is not fabricated into an Authenticode identity. Unsigned files are labeled in filenames, installer metadata, checksums, evidence and documentation.
 
@@ -20,6 +20,6 @@ Use HTTPS plus an authenticated signed manifest, exact artifact SHA256, expected
 
 Download to a staging location. Verify before replacing anything. Failed download, verification or install keeps the current executable usable. An explicit rollback must use a previously verified signed installer and compatible settings migration; never recover by executing an unverified cached binary. Do not overwrite active terminal processes: obtain user consent, close owned sessions through their normal lifecycle, flush local data, and only then hand off to the installer. Persist no automatic command replay.
 
-The release workflow currently produces reviewable artifacts and draft notes only. Any future publishing workflow needs main/tag-only source checks, protected environment approval, least privileges, signature/checksum verification and completed client-OS qualification. The qualification checklist is evidence bookkeeping, not an authentication mechanism or an authorization to publish.
+The original release-build workflow produces reviewable artifacts and draft notes only. The alpha-release workflow now validates and publishes unsigned alphas from main; see [alpha delivery](../bash-experience.md). Stable/beta publishing still requires protected environment approval, signature/checksum verification and completed client-OS qualification. The qualification checklist is evidence bookkeeping, not an authentication mechanism or an authorization to publish.
 
 References: [Electron fuses](https://www.electronjs.org/docs/latest/tutorial/fuses), [electron-builder publishing](https://www.electron.build/docs/publish/), [NSIS configuration](https://www.electron.build/docs/nsis/).

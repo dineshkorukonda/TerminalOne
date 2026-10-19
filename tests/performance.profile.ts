@@ -43,6 +43,13 @@ test('profile startup throughput and repeated native session cleanup', async () 
       }
     }
     page = await app!.firstWindow()
+    await page.getByRole('button', { name: 'Terminal options' }).click()
+    await page
+      .getByRole('combobox', { name: 'Shell' })
+      .selectOption('powershell')
+    await page.keyboard.press('Control+Shift+W')
+    await page.getByRole('button', { name: 'New session', exact: true }).click()
+    await expect(page.getByRole('status')).toHaveText('running')
     const versions = await app!.evaluate(() => ({ ...process.versions }))
     const memory = () =>
       app!.evaluate(({ app }) => {

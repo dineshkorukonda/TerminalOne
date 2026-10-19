@@ -19,6 +19,7 @@ test('developer settings validate shortcuts and history suggestions remain draft
   })
   try {
     const page = await app.firstWindow()
+    await page.getByRole('button', { name: 'Terminal options' }).click()
     await expect(page.getByRole('status')).toHaveText('running')
     await page
       .getByRole('button', { name: 'Developer settings', exact: true })

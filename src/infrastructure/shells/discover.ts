@@ -3,6 +3,7 @@ import { stat } from 'node:fs/promises'
 import type { Shell } from '../../domain/terminal/pty'
 
 interface DiscoveryOptions {
+  bashRcPath?: string | undefined
   platform?: string
   env?: Record<string, string | undefined>
   exists?: (path: string) => Promise<boolean>
@@ -74,7 +75,9 @@ export async function discoverShells(
     {
       id: 'git-bash',
       name: 'Git Bash',
-      args: ['--noprofile', '--norc', '-i'],
+      args: options.bashRcPath
+        ? ['--noprofile', '--rcfile', options.bashRcPath, '-i']
+        : ['--login', '-i'],
       paths: [
         ...programs.map((directory) =>
           win32.join(directory, 'Git/bin/bash.exe')
@@ -96,7 +99,9 @@ export async function discoverShells(
         executable
       })
   }
-  return shells
+  return shells.sort(
+    (a, b) => Number(b.id === 'git-bash') - Number(a.id === 'git-bash')
+  )
 }
 export function selectShell(shells: Shell[], id: string): Shell {
   const shell =

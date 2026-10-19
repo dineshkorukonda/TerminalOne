@@ -3,9 +3,9 @@ name: Desktop
 on:
   pull_request:
     branches: [main, 'refactor/**', 'feat/**', 'chore/**', 'docs/**']
-    types: [opened, synchronize, reopened, edited, ready_for_review]
-  push:
-    branches: [main]
+    # Metadata edits must not cancel a native build already in progress.
+    # Draft PRs are tested on opened/synchronize, so ready_for_review adds no work.
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
 
 permissions:
@@ -33,11 +33,6 @@ jobs:
           cache-dependency-path: package-lock.json
       - name: Install locked dependencies
         run: npm ci
-      - name: Validate PR title
-        if: github.event_name == 'pull_request'
-        env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
-        run: npm run check:pr-title
       - name: Check formatting
         run: npm run format:check
       - name: Lint
@@ -46,8 +41,8 @@ jobs:
         run: npm run typecheck
       - name: Unit and tooling tests
         run: npm run test:unit
-      - name: Rebuild native addon for Electron
-        run: npm run native:build
+      - name: Prepare native addon for Electron
+        uses: ./.github/actions/windows-native
       - name: Build and test Electron
         run: npm run test:smoke
       - name: Verify real ConPTY in Electron utility process

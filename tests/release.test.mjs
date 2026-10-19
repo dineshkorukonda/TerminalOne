@@ -32,6 +32,7 @@ test('packaging and release builds remain unsigned and publishing is unavailable
   for (const ref of [
     'refs/heads/main',
     'refs/tags/v1.2.3',
+    'refs/tags/v0.2.0-alpha.17',
     'refs/tags/v1.2.3-beta.1'
   ])
     assert.equal(allowedBuildRef(ref), true)

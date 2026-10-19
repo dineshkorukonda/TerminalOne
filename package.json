@@ -1,6 +1,6 @@
 {
   "name": "terminal-one",
-  "version": "0.1.0",
+  "version": "0.2.0-alpha.0",
   "description": "Terminal One desktop application",
   "private": true,
   "main": "./out/main/index.js",
@@ -10,7 +10,7 @@
   "packageManager": "npm@11.19.0",
   "scripts": {
     "electron:install": "install-electron",
-    "predev": "npm run electron:install",
+    "predev": "npm run electron:install && npm run shell:prepare",
     "dev": "electron-vite dev",
     "prestart": "npm run electron:install",
     "start": "electron-vite preview",
@@ -37,7 +37,9 @@
     "release:notes": "node scripts/release-notes.mjs",
     "test:profile": "playwright test -c playwright.performance.config.ts",
     "test:qualification": "node scripts/qualify-windows.mjs",
-    "release:check": "node scripts/check-release-readiness.mjs"
+    "release:check": "node scripts/check-release-readiness.mjs",
+    "shell:prepare": "node scripts/prepare-shell.mjs",
+    "prebuild": "npm run shell:prepare"
   },
   "dependencies": {
     "@xterm/addon-fit": "0.11.0",

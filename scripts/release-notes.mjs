@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 export function allowedBuildRef(ref) {
   return (
     ref === 'refs/heads/main' ||
-    /^refs\/tags\/v\d+\.\d+\.\d+(?:-(?:beta|rc)\.\d+)?$/.test(ref)
+    /^refs\/tags\/v\d+\.\d+\.\d+(?:-(?:alpha|beta|rc)\.\d+)?$/.test(ref)
   )
 }
 export function renderNotes(records, revision) {
@@ -41,7 +41,7 @@ export function renderNotes(records, revision) {
 export function generateNotes(from, to = 'HEAD') {
   const validate = (ref) => {
     if (
-      !/^(?:HEAD|[a-f0-9]{7,40}|v\d+\.\d+\.\d+(?:-(?:beta|rc)\.\d+)?)$/.test(
+      !/^(?:HEAD|[a-f0-9]{7,40}|v\d+\.\d+\.\d+(?:-(?:alpha|beta|rc)\.\d+)?)$/.test(
         ref
       )
     )

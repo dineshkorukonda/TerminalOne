@@ -48,6 +48,8 @@ test('terminal chrome passes automated accessibility checks and keyboard workflo
       )
     }
     await audit('workspace')
+    await page.getByRole('button', { name: 'Terminal options' }).click()
+    await audit('workspace-options')
     await page.keyboard.press('Control+Shift+P')
     await expect(
       page.getByRole('dialog', { name: 'Application commands' })

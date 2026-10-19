@@ -40,6 +40,7 @@ for (const { scale, mode } of [
     })
     try {
       const page = await app.firstWindow()
+      await page.getByRole('button', { name: 'Terminal options' }).click()
       const errors: string[] = []
       page.on('pageerror', (error) => errors.push(error.message))
       await page.waitForURL(

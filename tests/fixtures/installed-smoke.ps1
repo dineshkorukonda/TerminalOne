@@ -45,6 +45,11 @@ function Send-Terminal([string]$Text) {
  }
  [Windows.Forms.SendKeys]::SendWait(($keys -join '')+'{ENTER}')
 }
+function Test-IdleTerminalPrompt($Rows) {
+ if(!$script:isBash){return Test-IdlePowerShellPrompt $Rows}
+ $last=@($Rows | ForEach-Object {$_.Trim()} | Where-Object {$_}) | Select-Object -Last 1
+ return $last -match '^[^ ]+@[^ ]+:.*[$#]$'
+}
 function Terminal-Rows {
  $condition=New-Object Windows.Automation.PropertyCondition([Windows.Automation.AutomationElement]::ControlTypeProperty,[Windows.Automation.ControlType]::ListItem)
  $rows=$script:window.FindAll([Windows.Automation.TreeScope]::Descendants,$condition)
@@ -77,19 +82,23 @@ try {
  [void](Wait-Condition {$process.Refresh();if($process.HasExited){throw 'Installed app exited before opening'};$process.MainWindowHandle -ne [IntPtr]::Zero} 'installed window')
  $window=[Windows.Automation.AutomationElement]::FromHandle($process.MainWindowHandle)
  [void](Wait-Condition {(Window-Text) -match '(?m)^running$'} 'real shell startup')
- [void](Wait-Condition {Test-IdlePowerShellPrompt @(Terminal-Rows)} 'initial idle prompt')
+ $script:isBash=(Window-Text) -match 'Git Bash'
+ [void](Wait-Condition {Test-IdleTerminalPrompt @(Terminal-Rows)} 'initial idle prompt')
  $startup.Stop()
- Send-Terminal "Write-Output ('INSTALL_' + 'OK'); Write-Output ('UNICODE_' + [char]0x4e16 + [char]0x754c)"
+ if($script:isBash){Send-Terminal 'printf "%s%s\n" INSTALL_ OK; printf "UNICODE_\u4e16\u754c\n"'}
+ else{Send-Terminal "Write-Output ('INSTALL_' + 'OK'); Write-Output ('UNICODE_' + [char]0x4e16 + [char]0x754c)"}
  [void](Wait-Condition {(Window-Text).Contains('INSTALL_OK')} 'real command output')
  [void](Wait-Condition {(Window-Text).Contains(('UNICODE_'+[char]0x4e16+[char]0x754c))} 'Unicode output')
- [void](Wait-Condition {Test-IdlePowerShellPrompt @(Terminal-Rows)} 'idle prompt after Unicode command')
+ [void](Wait-Condition {Test-IdleTerminalPrompt @(Terminal-Rows)} 'idle prompt after Unicode command')
  [void][TerminalTestWindow]::SetWindowPos($process.MainWindowHandle,[IntPtr]::Zero,0,0,800,600,4)
- Send-Terminal "Clear-Host; Write-Output ('BUSY_' + 'READY'); Start-Sleep -Seconds 90"
+ if($script:isBash){Send-Terminal 'clear; printf "%s%s\n" BUSY_ READY; sleep 90'}
+ else{Send-Terminal "Clear-Host; Write-Output ('BUSY_' + 'READY'); Start-Sleep -Seconds 90"}
  [void](Wait-Condition {(Window-Text).Contains('BUSY_READY')} 'blocking command start')
  if([TerminalTestWindow]::GetForegroundWindow() -ne $process.MainWindowHandle){throw 'Installed window lost keyboard focus'}
  [Windows.Forms.SendKeys]::SendWait('^c')
- [void](Wait-Condition {Test-IdlePowerShellPrompt @(Terminal-Rows)} 'post-interrupt idle prompt')
- Send-Terminal "Write-Output ('CTRL_' + 'OK')"
+ [void](Wait-Condition {Test-IdleTerminalPrompt @(Terminal-Rows)} 'post-interrupt idle prompt')
+ if($script:isBash){Send-Terminal 'printf "%s%s\n" CTRL_ OK'}
+ else{Send-Terminal "Write-Output ('CTRL_' + 'OK')"}
  [void](Wait-Condition {(Window-Text).Contains('CTRL_OK')} 'post-interrupt command')
  $snapshot=@(Get-CimInstance Win32_Process)
  $owned=New-Object 'System.Collections.Generic.HashSet[int]'

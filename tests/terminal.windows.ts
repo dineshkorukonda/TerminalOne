@@ -27,6 +27,12 @@ async function launch() {
   await expect(page.getByRole('status')).toHaveText('running', {
     timeout: 20000
   })
+  await page.getByRole('button', { name: 'Terminal options' }).click()
+  await page.getByRole('combobox', { name: 'Shell' }).selectOption('powershell')
+  await page.keyboard.press('Control+Shift+W')
+  await page.getByRole('button', { name: 'New session', exact: true }).click()
+  await expect(page.getByRole('status')).toHaveText('running')
+  await waitForPrompt(page)
   return {
     app,
     page,

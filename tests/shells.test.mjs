@@ -23,12 +23,12 @@ test('shell discovery handles Windows paths, optional shells, stable IDs and arg
   })
   assert.deepEqual(
     shells.map((shell) => shell.id),
-    ['pwsh', 'powershell', 'cmd', 'git-bash']
+    ['git-bash', 'pwsh', 'powershell', 'cmd']
   )
-  assert.equal(shells[0].executable, 'D:\\用户 files\\pwsh.exe')
+  assert.equal(shells[1].executable, 'D:\\用户 files\\pwsh.exe')
   assert(shells.every((shell) => Array.isArray(shell.args)))
   assert.deepEqual(shells.find((shell) => shell.id === 'cmd').args, ['/d'])
-  assert.equal(selectShell(shells, 'auto').id, 'pwsh')
+  assert.equal(selectShell(shells, 'auto').id, 'git-bash')
   assert.throws(() => selectShell(shells, 'missing'), /unavailable/)
 })
 

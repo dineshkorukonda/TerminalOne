@@ -13,7 +13,8 @@ import { authorizeSender, validateArguments } from './policy'
 export function registerTerminalIpc(
   window: BrowserWindow,
   trustedUrl: string,
-  preferences: PreferenceRepository
+  preferences: PreferenceRepository,
+  bashRcPath?: string
 ) {
   const owner = String(window.webContents.id)
   let active = true
@@ -61,7 +62,7 @@ export function registerTerminalIpc(
     return value
   }
   handle(IPC_CHANNELS.listShells, 0, async () =>
-    (await discoverShells()).map(({ id, name }) => ({ id, name }))
+    (await discoverShells({ bashRcPath })).map(({ id, name }) => ({ id, name }))
   )
   handle(IPC_CHANNELS.createSession, 1, async (value) => {
     if (!value || typeof value !== 'object' || Array.isArray(value))
@@ -84,7 +85,10 @@ export function registerTerminalIpc(
     )
       throw new Error('Invalid terminal options')
     const expected = generation
-    const shell = selectShell(await discoverShells(), options['shellId'])
+    const shell = selectShell(
+      await discoverShells({ bashRcPath }),
+      options['shellId']
+    )
     const settings = preferences.current().settings
     const project = options['projectId']
       ? settings.projects.find((project) => project.id === options['projectId'])

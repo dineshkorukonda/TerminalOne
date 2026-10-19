@@ -1,5 +1,5 @@
 import { _electron as electron, expect, test } from '@playwright/test'
-import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, rm, writeFile, readFile } from 'node:fs/promises'
 import { spawnSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -47,6 +47,10 @@ for (const mode of ['built', 'development'] as const) {
           await expect(
             window.getByRole('heading', { name: 'Terminal One' })
           ).toBeVisible()
+          await expect(
+            window.getByRole('combobox', { name: 'Shell' })
+          ).toBeHidden()
+          await window.getByRole('button', { name: 'Terminal options' }).click()
           await expect(
             window.getByRole('combobox', { name: 'Shell' })
           ).toBeVisible()
@@ -104,7 +108,10 @@ for (const mode of ['built', 'development'] as const) {
             await window.evaluate(() =>
               (Reflect.get(globalThis, 'desktop') as DesktopApi).getAppInfo()
             )
-          ).toMatchObject({ name: 'Terminal One', version: '0.1.0' })
+          ).toMatchObject({
+            name: 'Terminal One',
+            version: JSON.parse(await readFile('package.json', 'utf8')).version
+          })
           expect(
             await window.evaluate(async () => {
               try {
@@ -153,6 +160,7 @@ for (const mode of ['built', 'development'] as const) {
           const documentation = window.getByRole('button', {
             name: 'Project documentation'
           })
+          await window.keyboard.press('Tab')
           await documentation.focus()
           await expect(documentation).toBeFocused()
           await expect(documentation).toHaveCSS('outline-width', '2px')
