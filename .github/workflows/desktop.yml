@@ -16,72 +16,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  validation:
+    name: Parallel Windows validation
+    uses: ./.github/workflows/desktop-validation.yml
+
   quality:
     name: Desktop quality (Windows)
-    runs-on: windows-latest
-    timeout-minutes: 20
-    env:
-      HUSKY: '0'
+    if: always()
+    needs: validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: .node-version
-          cache: npm
-          cache-dependency-path: package-lock.json
-      - name: Install locked dependencies
-        run: npm ci
-      - name: Check formatting
-        run: npm run format:check
-      - name: Lint
-        run: npm run lint
-      - name: Typecheck
-        run: npm run typecheck
-      - name: Unit and tooling tests
-        run: npm run test:unit
-      - name: Prepare native addon for Electron
-        uses: ./.github/actions/windows-native
-      - name: Build and test Electron
-        run: npm run test:smoke
-      - name: Verify real ConPTY in Electron utility process
+      - name: Require every validation lane to succeed
         env:
-          PTY_PROBE_RESULT: test-results/native/utility.json
-        run: npm run test:native
-      - name: Verify installed shell compatibility
-        run: npm run test:shells
-      - name: Verify packaged native addon
-        run: npm run test:packaged
-      - name: Build unsigned Windows installer
-        env:
-          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-        run: node scripts/build-win.mjs
-      - name: Verify installed application and uninstall
-        run: npm run test:installed
-      - name: Profile Windows runtime and process cleanup
-        run: npm run test:profile
-      - name: Generate reviewable release notes
-        run: npm run release:notes
-      - name: Dry-run alpha release preparation
-        run: node scripts/release-alpha.mjs --prepare
-      - name: Audit dependencies
-        run: npm audit --audit-level=moderate
-      - name: Preserve launch screenshots and failure traces
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: desktop-test-results-windows
-          path: test-results/
-          retention-days: 7
-          if-no-files-found: ignore
-      - name: Preserve unsigned installer and checksums
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: terminal-one-unsigned-installer-windows
-          path: |
-            artifacts/windows/*-unsigned-x64.exe
-            artifacts/windows/SHA256SUMS.txt
-          retention-days: 7
-          if-no-files-found: ignore
+          VALIDATION_RESULT: ${{ needs.validation.result }}
+        run: test "$VALIDATION_RESULT" = success

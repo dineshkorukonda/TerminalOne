@@ -15,59 +15,15 @@ permissions:
 
 # Do not cancel or coalesce main updates: each merge gets its own alpha.
 jobs:
-  build:
+  validation:
     if: github.ref == 'refs/heads/main'
-    runs-on: windows-latest
-    timeout-minutes: 40
-    outputs:
-      version: ${{ steps.version.outputs.version }}
-    env:
-      HUSKY: '0'
-      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: .node-version
-          cache: npm
-      - run: npm ci
-      - run: npm run format:check
-      - run: npm run lint
-      - run: npm run typecheck
-      - run: npm run test:unit
-      # Cache before applying the per-run version to the lockfile.
-      - uses: ./.github/actions/windows-native
-      - id: version
-        run: node scripts/alpha-version.mjs
-      - run: npm run test:smoke
-      - run: npm run test:native
-      - run: npm run test:shells
-      - run: npm run test:packaged
-      - run: node scripts/build-win.mjs
-      - run: npm run test:installed
-      - run: npm run test:profile
-      - run: npm run release:notes
-      - run: npm audit --audit-level=moderate
-      - name: Prepare and validate the release bundle
-        run: node scripts/release-alpha.mjs --prepare
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: alpha-release
-          path: artifacts/alpha-release/
-          if-no-files-found: error
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        if: always()
-        with:
-          name: alpha-test-results
-          path: test-results/
-          if-no-files-found: ignore
+    uses: ./.github/workflows/desktop-validation.yml
+    with:
+      alpha: true
 
   publish:
     if: github.event_name == 'push' || inputs.publish == true
-    needs: build
+    needs: validation
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -86,5 +42,5 @@ jobs:
       - name: Verify remote assets and publish the complete alpha
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_VERSION: ${{ needs.build.outputs.version }}
+          RELEASE_VERSION: ${{ needs.validation.outputs.version }}
         run: node scripts/release-alpha.mjs --publish

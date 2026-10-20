@@ -1,0 +1,31 @@
+name: Restore validated Windows runtime
+description: Install locked dependencies and restore this run's source-bound build.
+inputs:
+  alpha:
+    description: Apply the caller's alpha run number after dependency installation.
+    default: 'false'
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version-file: .node-version
+        cache: npm
+    - run: npm ci
+      shell: pwsh
+    - if: inputs.alpha == 'true'
+      run: node scripts/alpha-version.mjs
+      shell: pwsh
+    - run: npm run electron:install
+      shell: pwsh
+    - name: Clean replaced runtime targets
+      shell: pwsh
+      run: |
+        Remove-Item -Recurse -Force out, native/pty-job-host.exe, node_modules/node-pty/build/Release, shell/blesh -ErrorAction SilentlyContinue
+    - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+      with:
+        name: desktop-runtime
+        path: .
+    - name: Verify source, version and runtime bytes
+      run: node scripts/ci-runtime.mjs --verify
+      shell: pwsh
