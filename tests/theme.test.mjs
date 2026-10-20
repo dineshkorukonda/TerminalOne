@@ -12,7 +12,7 @@ test('terminal font configuration accepts bounded values and rejects CSS injecti
     parseTerminalFont(DEFAULT_TERMINAL_FONT),
     DEFAULT_TERMINAL_FONT
   )
-  assert.equal(terminalFontStyle(DEFAULT_TERMINAL_FONT).fontSize, '14px')
+  assert.equal(terminalFontStyle(DEFAULT_TERMINAL_FONT).fontSize, '16px')
   assert.equal(
     parseTerminalFont({ ...DEFAULT_TERMINAL_FONT, size: 32, lineHeight: 2 })
       .size,

@@ -1,3 +1,4 @@
+import { clickTerminalOption } from './fixtures/terminal-options'
 import { _electron as electron, expect, test } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
@@ -99,20 +100,34 @@ test('terminal chrome passes automated accessibility checks and keyboard workflo
     await expect(
       page.locator('.tab-viewport:not([hidden]) .xterm-helper-textarea')
     ).toBeFocused()
-    await page
-      .getByRole('button', { name: 'Developer settings', exact: true })
-      .click()
+    await clickTerminalOption(page, 'Developer settings')
     await expect(
       page.getByRole('dialog', { name: 'Developer settings', exact: true })
     ).toBeVisible()
     await audit('developer-settings')
     await page.getByRole('button', { name: 'Close developer settings' }).click()
-    await page.getByRole('button', { name: 'History', exact: true }).click()
+    await clickTerminalOption(page, 'History')
     await expect(
       page.getByRole('textbox', { name: 'Search command history' })
     ).toBeFocused()
     await audit('history-draft')
     await page.getByRole('button', { name: 'Close command draft' }).click()
+    await clickTerminalOption(page, 'Updates')
+    await expect(
+      page.getByRole('dialog', { name: 'Updates', exact: true })
+    ).toBeVisible()
+    await audit('updates')
+    await page
+      .getByRole('button', { name: 'Check for updates', exact: true })
+      .click()
+    await page
+      .getByRole('button', { name: 'Download 0.2.0-alpha.2', exact: true })
+      .click()
+    await expect(
+      page.getByRole('button', { name: 'Restart and install', exact: true })
+    ).toBeVisible()
+    await audit('update-ready')
+    await page.getByRole('button', { name: 'Close updates' }).click()
     await page.keyboard.press('Control+Shift+W')
     await page.keyboard.press('Control+Shift+W')
     await expect(page.getByRole('tab')).toHaveCount(0)

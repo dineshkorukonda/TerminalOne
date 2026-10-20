@@ -1,6 +1,6 @@
 import { app, BrowserWindow } from 'electron'
 import { join } from 'node:path'
-import { realpathSync } from 'node:fs'
+import { existsSync, realpathSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
 import { createDesktopWindow } from '../infrastructure/window/create-desktop-window'
 import { registerDesktopIpc } from '../infrastructure/ipc/register-desktop-ipc'
@@ -8,6 +8,12 @@ import { registerTerminalIpc } from '../infrastructure/ipc/register-terminal-ipc
 import { validatePackagedArguments } from '../infrastructure/ipc/policy'
 import { PreferenceRepository } from '../infrastructure/preferences/repository'
 import { registerPreferencesIpc } from '../infrastructure/ipc/register-preferences-ipc'
+import { registerUpdateIpc } from '../infrastructure/ipc/register-update-ipc'
+import { UpdateService } from '../infrastructure/updates/service'
+import { createWindowsUpdateBackend } from '../infrastructure/updates/windows-backend'
+
+if (process.platform === 'win32')
+  app.setAppUserModelId('com.github.dineshkorukonda.terminalone')
 
 if (app.isPackaged) {
   try {
@@ -25,6 +31,7 @@ if (app.isPackaged) {
 
 const terminalDisposers = new Set<() => Promise<void>>()
 let quitting = false
+let updates: UpdateService
 const preferences = new PreferenceRepository(
   join(app.getPath('userData'), 'developer-data')
 )
@@ -43,6 +50,11 @@ function createWindow(): void {
     ? rendererFile
     : realpathSync.native(rendererFile)
   const window = createDesktopWindow({
+    iconPath: join(
+      app.isPackaged ? process.resourcesPath : join(app.getAppPath(), 'assets'),
+      'branding',
+      process.platform === 'win32' ? 'terminal-one.ico' : 'terminal-one.png'
+    ),
     preloadPath: join(__dirname, '../preload/index.js'),
     allowDevTools: !app.isPackaged,
     content: rendererUrl ? { url: rendererUrl } : { filePath: rendererPath }
@@ -69,10 +81,16 @@ function createWindow(): void {
     rendererUrl ? new URL(rendererUrl).href : pathToFileURL(rendererPath).href,
     preferences
   )
+  const disposeUpdates = registerUpdateIpc(
+    window,
+    rendererUrl ? new URL(rendererUrl).href : pathToFileURL(rendererPath).href,
+    updates
+  )
   terminalDisposers.add(disposeTerminal)
   window.once('closed', () => {
     dispose()
     disposePreferences()
+    disposeUpdates()
     void disposeTerminal().finally(() =>
       terminalDisposers.delete(disposeTerminal)
     )
@@ -81,6 +99,38 @@ function createWindow(): void {
 
 app.whenReady().then(async () => {
   await preferences.load()
+  const supported =
+    app.isPackaged &&
+    process.platform === 'win32' &&
+    process.arch === 'x64' &&
+    existsSync(join(process.resourcesPath, 'app-update.yml'))
+  updates = new UpdateService(
+    supported ? createWindowsUpdateBackend() : null,
+    app.getVersion(),
+    async () => {
+      await Promise.all([...terminalDisposers].map((dispose) => dispose()))
+      await preferences.flush()
+      quitting = true
+    }
+  )
+  if (supported) {
+    const firstCheck = setTimeout(() => {
+      void updates.check()
+    }, 15000)
+    const repeatCheck = setInterval(
+      () => {
+        void updates.check()
+      },
+      6 * 60 * 60 * 1000
+    )
+    firstCheck.unref()
+    repeatCheck.unref()
+    app.once('quit', () => {
+      clearTimeout(firstCheck)
+      clearInterval(repeatCheck)
+      updates.dispose()
+    })
+  }
   createWindow()
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()

@@ -1,3 +1,7 @@
+import {
+  clickTerminalOption,
+  openTerminalOptions
+} from './fixtures/terminal-options'
 import { _electron as electron, expect, test } from '@playwright/test'
 import type { ElectronApplication, Page } from '@playwright/test'
 import { mkdtemp, rm, mkdir, writeFile } from 'node:fs/promises'
@@ -44,6 +48,7 @@ test('profile startup throughput and repeated native session cleanup', async () 
     }
     page = await app!.firstWindow()
     await page.getByRole('button', { name: 'Terminal options' }).click()
+    await openTerminalOptions(page)
     await page
       .getByRole('combobox', { name: 'Shell' })
       .selectOption('powershell')
@@ -179,8 +184,8 @@ test('profile startup throughput and repeated native session cleanup', async () 
     await page.evaluate(() =>
       (Reflect.get(globalThis, '__terminalProfileStop') as () => void)()
     )
-    await page.getByRole('button', { name: 'Split right', exact: true }).click()
-    await page.getByRole('button', { name: 'Split down', exact: true }).click()
+    await clickTerminalOption(page, 'Split right')
+    await clickTerminalOption(page, 'Split down')
     await expect(page.locator('.xterm')).toHaveCount(3)
     await expect
       .poll(() => page.getByRole('status').allTextContents(), {

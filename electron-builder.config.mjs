@@ -5,11 +5,23 @@ export default {
   directories: { output: 'artifacts/windows' },
   files: ['out/**/*', 'native/pty-job-host.exe', 'package.json', 'LICENSE'],
   asar: true,
-  extraResources: [{ from: 'shell', to: 'shell' }],
+  extraResources: [
+    { from: 'shell', to: 'shell' },
+    {
+      from: 'assets/branding',
+      to: 'branding',
+      filter: ['terminal-one.png', 'terminal-one.ico']
+    }
+  ],
   asarUnpack: ['**/node-pty/**', '**/native/**'],
   npmRebuild: false,
   nodeGypRebuild: false,
-  publish: null,
+  publish: {
+    provider: 'github',
+    owner: 'dineshkorukonda',
+    repo: 'TerminalOne',
+    releaseType: 'prerelease'
+  },
   artifactName: 'TerminalOne-${version}-unsigned-${arch}.${ext}',
   electronFuses: {
     runAsNode: false,
@@ -19,11 +31,14 @@ export default {
     onlyLoadAppFromAsar: true
   },
   win: {
+    icon: 'assets/branding/terminal-one.ico',
     target: [{ target: 'nsis', arch: ['x64'] }],
     signExecutable: false,
     requestedExecutionLevel: 'asInvoker'
   },
   nsis: {
+    installerIcon: 'assets/branding/terminal-one.ico',
+    uninstallerIcon: 'assets/branding/terminal-one.ico',
     oneClick: false,
     perMachine: false,
     allowToChangeInstallationDirectory: true,

@@ -16,6 +16,11 @@ import { fileURLToPath } from 'node:url'
 const sha256 = (data) => createHash('sha256').update(data).digest('hex')
 const json = async (path) => JSON.parse(await readFile(path, 'utf8'))
 
+export function updateMetadata(version, filename, bytes) {
+  const sha512 = createHash('sha512').update(bytes).digest('base64')
+  return `version: ${version}\nfiles:\n  - url: ${filename}\n    sha512: ${sha512}\n    size: ${bytes.length}\npath: ${filename}\nsha512: ${sha512}\n`
+}
+
 function identity(manifest, source, version) {
   if (
     manifest.schema !== 1 ||
@@ -39,6 +44,7 @@ export async function validateBundle(directory, source, version) {
     manifest.installer.file,
     'SHA256SUMS.txt',
     'alpha-notes.md',
+    'alpha.yml',
     'release-manifest.json'
   ].sort()
   if (
@@ -46,7 +52,7 @@ export async function validateBundle(directory, source, version) {
     JSON.stringify(expected)
   )
     throw new Error(
-      'Release bundle must contain exactly the installer, checksum, notes and manifest'
+      'Release bundle must contain exactly the installer, checksum, notes, update metadata and manifest'
     )
   const checksum = `${manifest.installer.sha256}  ${manifest.installer.file}\n`
   if (
@@ -55,6 +61,13 @@ export async function validateBundle(directory, source, version) {
       manifest.installer.sha256
   )
     throw new Error('Alpha installer checksum mismatch')
+  const expectedUpdate = updateMetadata(
+    version,
+    manifest.installer.file,
+    await readFile(join(directory, manifest.installer.file))
+  )
+  if ((await readFile(join(directory, 'alpha.yml'), 'utf8')) !== expectedUpdate)
+    throw new Error('Alpha update metadata does not match the installer')
   return manifest
 }
 
@@ -119,6 +132,14 @@ export async function prepareBundle(root, source, version) {
     JSON.stringify(manifest, null, 2) + '\n'
   )
   await writeFile(join(bundle, 'alpha-notes.md'), notes)
+  await writeFile(
+    join(bundle, 'alpha.yml'),
+    updateMetadata(
+      version,
+      installer.file,
+      await readFile(join(directory, installer.file))
+    )
+  )
   await validateBundle(bundle, source, version)
   return manifest
 }
@@ -185,6 +206,7 @@ export async function publishBundle(
         for (const file of [
           'SHA256SUMS.txt',
           'alpha-notes.md',
+          'alpha.yml',
           'release-manifest.json'
         ])
           if (
@@ -235,6 +257,7 @@ export async function publishBundle(
       manifest.installer.file,
       'SHA256SUMS.txt',
       'alpha-notes.md',
+      'alpha.yml',
       'release-manifest.json'
     ].map((file) => join(directory, file)),
     '--clobber'

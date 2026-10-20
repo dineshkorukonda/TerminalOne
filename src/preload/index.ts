@@ -1,8 +1,26 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type { DesktopApi, SessionEvent } from '../contracts/desktop-api'
 import { IPC_CHANNELS } from '../contracts/desktop-api'
+import type { UpdateStatus } from '../contracts/updates'
 
 const api: DesktopApi = Object.freeze({
+  getUpdateStatus: (...args: unknown[]) =>
+    ipcRenderer.invoke(IPC_CHANNELS.getUpdateStatus, ...args),
+  checkForUpdates: (...args: unknown[]) =>
+    ipcRenderer.invoke(IPC_CHANNELS.checkForUpdates, ...args),
+  downloadUpdate: (...args: unknown[]) =>
+    ipcRenderer.invoke(IPC_CHANNELS.downloadUpdate, ...args),
+  installUpdate: (...args: unknown[]) =>
+    ipcRenderer.invoke(IPC_CHANNELS.installUpdate, ...args),
+  onUpdateStatus: (listener: (status: UpdateStatus) => void) => {
+    if (typeof listener !== 'function')
+      throw new Error('Expected an update listener')
+    const receive = (_event: unknown, status: UpdateStatus) => listener(status)
+    ipcRenderer.on(IPC_CHANNELS.updateStatusEvent, receive)
+    return () => {
+      ipcRenderer.removeListener(IPC_CHANNELS.updateStatusEvent, receive)
+    }
+  },
   getPreferences: (...args: unknown[]) =>
     ipcRenderer.invoke(IPC_CHANNELS.getPreferences, ...args),
   savePreferences: (...args: unknown[]) =>

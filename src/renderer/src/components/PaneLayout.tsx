@@ -1,8 +1,9 @@
 import type { Appearance } from '../theme/appearance'
-import { useRef } from 'react'
+import { useRef, type Ref } from 'react'
 import type { Tab } from '../workspace/store'
 import { layout, minimum } from '../workspace/layout'
-import { TerminalPane } from './TerminalPane'
+import { TerminalPane, type TerminalActions } from './TerminalPane'
+import { Icon } from './Icon'
 import type { Preferences } from '../../../contracts/preferences'
 
 export function PaneLayout({
@@ -12,7 +13,8 @@ export function PaneLayout({
   focusPane,
   closePane,
   resizeSplit,
-  shortcuts
+  shortcuts,
+  actionsRef
 }: {
   tab: Tab
   appearance: Appearance
@@ -21,6 +23,7 @@ export function PaneLayout({
   closePane(id: string): void
   resizeSplit(id: string, ratio: number): void
   shortcuts: Preferences['shortcuts']
+  actionsRef: Ref<TerminalActions>
 }) {
   const space = useRef<HTMLDivElement>(null)
   const bounds = minimum(tab.root)
@@ -60,14 +63,19 @@ export function PaneLayout({
                     projectId={node.projectId}
                     privateSession={node.private}
                     shortcuts={shortcuts}
+                    actionsRef={
+                      active && tab.activePaneId === id ? actionsRef : undefined
+                    }
                   />
-                  <button
-                    className="pane-close"
-                    aria-label="Close pane"
-                    onClick={() => closePane(id)}
-                  >
-                    ×
-                  </button>
+                  {tab.root.kind === 'split' && (
+                    <button
+                      className="pane-close"
+                      aria-label="Close pane"
+                      onClick={() => closePane(id)}
+                    >
+                      <Icon name="close" />
+                    </button>
+                  )}
                 </div>
               )
           )}

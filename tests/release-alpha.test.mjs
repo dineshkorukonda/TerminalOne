@@ -7,7 +7,8 @@ import { join } from 'node:path'
 import {
   prepareBundle,
   validateBundle,
-  publishBundle
+  publishBundle,
+  updateMetadata
 } from '../scripts/release-alpha.mjs'
 
 const source = 'a'.repeat(40)
@@ -136,6 +137,26 @@ test('tampering, extra assets, traversal and stable/beta channels cannot reach G
     )
 })
 
+test('update metadata is bound to installer bytes and rejects remote paths or hash tampering', async (t) => {
+  const f = await fixture(t)
+  await prepareBundle(f.root, source, version)
+  const path = join(f.directory, 'alpha.yml')
+  const original = await readFile(path, 'utf8')
+  for (const altered of [
+    original.replace(filename, 'https://evil.test/app.exe'),
+    original.replace('sha512:', 'sha256:'),
+    original.replace('size:', 'size: 999 #')
+  ]) {
+    await writeFile(path, altered)
+    await assert.rejects(
+      validateBundle(f.directory, source, version),
+      /update metadata/
+    )
+  }
+  await writeFile(path, original)
+  await validateBundle(f.directory, source, version)
+})
+
 test('complete alpha stays draft until remote installer and metadata are verified', async (t) => {
   const f = await fixture(t)
   await prepareBundle(f.root, source, version)
@@ -185,6 +206,10 @@ test('published retry verifies original remote bytes and performs no mutations',
   await writeFile(
     join(f.directory, 'SHA256SUMS.txt'),
     `${digest(rebuilt)}  ${filename}\n`
+  )
+  await writeFile(
+    join(f.directory, 'alpha.yml'),
+    updateMetadata(version, filename, rebuilt)
   )
   const r = remote(published, { existing: true })
   assert.equal(

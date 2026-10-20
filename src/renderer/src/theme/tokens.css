@@ -1,34 +1,34 @@
 @theme static {
-  --color-canvas: #161821;
-  --color-panel: #1e202b;
-  --color-elevated: #282c3c;
-  --color-ink: #c6c8d1;
-  --color-muted: #a4abc0;
-  --color-border: #34394c;
-  --color-control-border: #75809b;
-  --color-focus: #91bfff;
-  --color-accent: #89b8c2;
-  --font-ui: 'Segoe UI', system-ui, sans-serif;
+  --color-canvas: #0c0c0c;
+  --color-panel: #202020;
+  --color-elevated: #303030;
+  --color-ink: #cccccc;
+  --color-muted: #b3b3b3;
+  --color-border: #404040;
+  --color-control-border: #858585;
+  --color-focus: #60cdff;
+  --color-accent: #cccccc;
+  --font-ui: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
   --font-terminal: 'Cascadia Mono', Consolas, 'Liberation Mono', monospace;
   --radius-panel: 0.75rem;
 }
 
 :root {
   color-scheme: dark;
-  --ansi-black: #20232b;
-  --ansi-red: #e89b9b;
-  --ansi-green: #b4be82;
-  --ansi-yellow: #e2c08d;
-  --ansi-blue: #91bfff;
-  --ansi-magenta: #b4a5dc;
-  --ansi-cyan: #89b8c2;
-  --ansi-white: #c7cbd6;
-  --ansi-bright-black: #747e94;
-  --ansi-bright-red: #ffacb3;
-  --ansi-bright-green: #c3e8b1;
-  --ansi-bright-yellow: #f4e2b5;
-  --ansi-bright-blue: #89b8c2;
-  --ansi-bright-magenta: #dec5fa;
-  --ansi-bright-cyan: #b1ece3;
-  --ansi-bright-white: #c6c8d1;
+  --ansi-black: #0c0c0c;
+  --ansi-red: #c50f1f;
+  --ansi-green: #13a10e;
+  --ansi-yellow: #c19c00;
+  --ansi-blue: #0037da;
+  --ansi-magenta: #881798;
+  --ansi-cyan: #3a96dd;
+  --ansi-white: #cccccc;
+  --ansi-bright-black: #767676;
+  --ansi-bright-red: #e74856;
+  --ansi-bright-green: #16c60c;
+  --ansi-bright-yellow: #f9f1a5;
+  --ansi-bright-blue: #3b78ff;
+  --ansi-bright-magenta: #b4009e;
+  --ansi-bright-cyan: #61d6d6;
+  --ansi-bright-white: #f2f2f2;
 }

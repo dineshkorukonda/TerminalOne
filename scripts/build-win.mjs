@@ -9,7 +9,12 @@ import { shellResources } from './shell-resources.mjs'
 
 if (process.platform !== 'win32' || process.arch !== 'x64')
   throw new Error('Windows x64 is required for the installer build')
-if (config.publish !== null || config.win.signExecutable !== false)
+if (
+  config.publish?.provider !== 'github' ||
+  config.publish.owner !== 'dineshkorukonda' ||
+  config.publish.repo !== 'TerminalOne' ||
+  config.win.signExecutable !== false
+)
   throw new Error('This workflow permits unsigned non-publishing builds only')
 const metadata = JSON.parse(await readFile('package.json', 'utf8'))
 if (
@@ -38,6 +43,23 @@ if (
 const executable = join(
   config.directories.output,
   'win-unpacked/TerminalOne.exe'
+)
+const updateConfig = await readFile(
+  join(config.directories.output, 'win-unpacked/resources/app-update.yml'),
+  'utf8'
+)
+for (const required of [
+  'provider: github',
+  'owner: dineshkorukonda',
+  'repo: TerminalOne'
+])
+  if (!updateConfig.includes(required))
+    throw new Error('Packaged update source does not match Terminal One')
+await access(
+  join(
+    config.directories.output,
+    'win-unpacked/resources/branding/terminal-one.ico'
+  )
 )
 const fuses = await getCurrentFuseWire(executable)
 for (const option of [

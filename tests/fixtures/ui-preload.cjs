@@ -8,14 +8,27 @@ const listeners = new Set(),
 const emit = (event) => {
   for (const listener of listeners) listener(event)
 }
+const updateListeners = new Set()
+let updateStatus = {
+  phase: 'idle',
+  currentVersion: '0.2.0-alpha.1',
+  version: null,
+  progress: 0,
+  message: 'Check for updates when you are ready.'
+}
+const update = (change) => {
+  updateStatus = { ...updateStatus, ...change }
+  for (const listener of updateListeners) listener({ ...updateStatus })
+  return { ...updateStatus }
+}
 let settings = {
   version: 1,
   appearance: {
     theme: 'midnight',
     font: {
       family: 'Cascadia Mono',
-      size: 14,
-      lineHeight: 1.5,
+      size: 16,
+      lineHeight: 1.2,
       ligatures: false
     }
   },
@@ -35,6 +48,35 @@ let settings = {
   explanations: false
 }
 contextBridge.exposeInMainWorld('desktop', {
+  getUpdateStatus: async () => ({ ...updateStatus }),
+  checkForUpdates: async () =>
+    update({
+      phase: 'available',
+      version: '0.2.0-alpha.2',
+      message: 'Version 0.2.0-alpha.2 is available.'
+    }),
+  downloadUpdate: async () => {
+    update({
+      phase: 'downloading',
+      progress: 50,
+      message: 'Downloading update…'
+    })
+    await new Promise((resolve) => setTimeout(resolve, 250))
+    return update({
+      phase: 'downloaded',
+      progress: 100,
+      message: 'Update ready. Restart when your terminal work is finished.'
+    })
+  },
+  installUpdate: async () =>
+    update({
+      phase: 'installing',
+      message: 'Closing terminal sessions and installing the update…'
+    }),
+  onUpdateStatus: (listener) => {
+    updateListeners.add(listener)
+    return () => updateListeners.delete(listener)
+  },
   getPreferences: async () => ({ settings, warning: '' }),
   savePreferences: async (value) => {
     settings = value

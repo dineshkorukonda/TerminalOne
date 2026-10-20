@@ -1,3 +1,7 @@
+import {
+  clickTerminalOption,
+  openTerminalOptions
+} from './fixtures/terminal-options'
 import { _electron as electron, expect, test } from '@playwright/test'
 import { mkdtemp, rm, readFile, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -21,9 +25,7 @@ test('developer settings validate shortcuts and history suggestions remain draft
     const page = await app.firstWindow()
     await page.getByRole('button', { name: 'Terminal options' }).click()
     await expect(page.getByRole('status')).toHaveText('running')
-    await page
-      .getByRole('button', { name: 'Developer settings', exact: true })
-      .click()
+    await clickTerminalOption(page, 'Developer settings')
     const settings = page.getByRole('dialog', {
       name: 'Developer settings',
       exact: true
@@ -59,7 +61,7 @@ test('developer settings validate shortcuts and history suggestions remain draft
     await expect(page.getByRole('tab')).toHaveCount(2)
     await page.keyboard.press('Control+Shift+W')
     await expect(page.getByRole('tab')).toHaveCount(1)
-    await page.getByRole('button', { name: 'History', exact: true }).click()
+    await clickTerminalOption(page, 'History')
     const history = page.getByRole('dialog', {
       name: 'History and command draft'
     })
@@ -97,17 +99,14 @@ test('developer settings validate shortcuts and history suggestions remain draft
     await expect(history.getByRole('status')).toContainText('Nothing executed')
     await history.getByRole('button', { name: 'Close command draft' }).click()
     await expect(page.locator('.xterm-helper-textarea')).toBeFocused()
-    await page
-      .getByRole('button', { name: 'Open project', exact: true })
-      .click()
+    await clickTerminalOption(page, 'Open project')
+    await openTerminalOptions(page)
     await expect(
       page.getByRole('combobox', { name: 'Project', exact: true })
     ).toHaveValue('fixture-project')
     await page.getByRole('button', { name: 'New session', exact: true }).click()
     await expect(page.getByRole('tab').last()).toContainText('Fixture project')
-    await page
-      .getByRole('button', { name: 'Developer settings', exact: true })
-      .click()
+    await clickTerminalOption(page, 'Developer settings')
     await settings
       .getByRole('button', { name: 'Save current layout', exact: true })
       .click()
