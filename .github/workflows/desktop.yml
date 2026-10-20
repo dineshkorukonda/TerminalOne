@@ -63,6 +63,8 @@ jobs:
         run: npm run test:profile
       - name: Generate reviewable release notes
         run: npm run release:notes
+      - name: Dry-run alpha release preparation
+        run: node scripts/release-alpha.mjs --prepare
       - name: Audit dependencies
         run: npm audit --audit-level=moderate
       - name: Preserve launch screenshots and failure traces
