@@ -287,6 +287,12 @@ button svg {
   border: 0;
 }
 .terminal-toolbar {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  right: 8px;
+  z-index: 2;
+  background: var(--color-canvas);
   display: flex;
   align-items: center;
   justify-content: space-between;

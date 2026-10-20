@@ -95,6 +95,7 @@ export function TerminalPane({
     if (!element) return
     let disposed = false
     let stopping = false
+    let running = false
     let id: string | undefined
     let pending: SessionEvent[] = []
     let buffered = 0
@@ -158,10 +159,12 @@ export function TerminalPane({
     }
     const grids = createGridSender(
       async (grid) => {
-        if (id && !disposed && !stopping)
+        if (id && running && !disposed && !stopping)
           await window.desktop.resizeSession(id, grid)
       },
-      () => fail('Could not resize the terminal. Start a new session.')
+      () => {
+        if (running) fail('Could not resize the terminal. Start a new session.')
+      }
     )
     function measure() {
       if (disposed || element!.clientWidth <= 0 || element!.clientHeight <= 0)
@@ -173,7 +176,7 @@ export function TerminalPane({
         rows: Math.max(1, Math.min(300, proposed.rows))
       }
       terminal.resize(grid.cols, grid.rows)
-      if (id) grids.update(grid)
+      if (id && running && !stopping) grids.update(grid)
     }
     let frame = 0
     const scheduleFit = () => {
@@ -204,6 +207,7 @@ export function TerminalPane({
         if (privateSession && integrationReady && !stopping)
           terminal.options.disableStdin = false
       } else if (event.type === 'state') {
+        running = event.state === 'running'
         setStatus(
           event.state === 'exited' ? `Exited (${event.exitCode})` : event.state
         )
@@ -286,11 +290,12 @@ export function TerminalPane({
           await window.desktop.closeSession(id)
           return
         }
-        for (const event of pending) receive(event)
-        pending = []
+        running = session.state === 'running'
         setStatus(session.state)
         terminal.options.disableStdin =
           session.state !== 'running' || (privateSession && !integrationReady)
+        for (const event of pending) receive(event)
+        pending = []
         scheduleFit()
       })
       .catch(() =>

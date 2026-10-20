@@ -134,6 +134,10 @@ test('xterm renders live ANSI and Unicode, sends Ctrl+C, fits grids, and restart
     ).toHaveCSS('height', /\d+px/)
     await command(page, 'exit 0')
     await expect(page.getByRole('status')).toHaveText('Exited (0)')
+    await app.evaluate(({ BrowserWindow }) => {
+      BrowserWindow.getAllWindows()[0]!.setContentSize(900, 600)
+    })
+    await expect(page.getByRole('status')).toHaveText('Exited (0)')
     await page.getByRole('button', { name: 'New session' }).click()
     await expect(page.getByRole('status')).toHaveText('running')
     await command(page, "Write-Output ('RESTART_' + 'OK')")
