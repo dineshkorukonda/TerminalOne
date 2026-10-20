@@ -56,6 +56,9 @@ A completed release is left intact on retries. No tag-triggered workflow chainin
 is required. Failed checks produce no public release; rerun after resolving the
 failure. Concurrent merges have independent versions and are not cancelled.
 
+See [release bot operations](release-bot.md) for manual dry runs, recovery, exact
+asset verification and upstream references.
+
 The owner's request authorizes automated unsigned alpha publication. Stable/beta
 promotion, signing and visibility changes retain their separate approval gates.
 CI evidence does not claim manual Windows 10/11 or screen-reader qualification.

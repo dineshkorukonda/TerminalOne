@@ -1,8 +1,14 @@
-name: Alpha release
+name: Alpha release bot
 
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the validated alpha (false builds and validates only)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -10,10 +16,11 @@ permissions:
 # Do not cancel or coalesce main updates: each merge gets its own alpha.
 jobs:
   build:
+    if: github.ref == 'refs/heads/main'
     runs-on: windows-latest
     timeout-minutes: 40
     outputs:
-      tag: ${{ steps.version.outputs.tag }}
+      version: ${{ steps.version.outputs.version }}
     env:
       HUSKY: '0'
       CSC_IDENTITY_AUTO_DISCOVERY: 'false'
@@ -44,27 +51,12 @@ jobs:
       - run: npm run test:profile
       - run: npm run release:notes
       - run: npm audit --audit-level=moderate
-      - name: Write alpha notes
-        shell: pwsh
-        env:
-          RELEASE_TAG: ${{ steps.version.outputs.tag }}
-        run: |
-          @"
-          # Terminal One $env:RELEASE_TAG
-
-          Experimental alpha built from $env:GITHUB_SHA.
-
-          Unsigned Windows x64 installer. This is not a stable or beta release.
-          Windows CI checks do not replace Windows 10/11 manual qualification.
-          See docs/release-readiness.md for outstanding qualification work.
-          "@ | Set-Content artifacts/windows/alpha-notes.md
+      - name: Prepare and validate the release bundle
+        run: node scripts/release-alpha.mjs --prepare
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: alpha-release
-          path: |
-            artifacts/windows/*-unsigned-x64.exe
-            artifacts/windows/SHA256SUMS.txt
-            artifacts/windows/alpha-notes.md
+          path: artifacts/alpha-release/
           if-no-files-found: error
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
@@ -74,39 +66,25 @@ jobs:
           if-no-files-found: ignore
 
   publish:
+    if: github.event_name == 'push' || inputs.publish == true
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
       - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: alpha-release
-          path: release
-      - name: Publish verified alpha assets
+          path: artifacts/alpha-release
+      - name: Verify remote assets and publish the complete alpha
         env:
           GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          RELEASE_TAG: ${{ needs.build.outputs.tag }}
-          SOURCE_SHA: ${{ github.sha }}
-        working-directory: release
-        shell: bash
-        run: |
-          set -euo pipefail
-          sha256sum --check SHA256SUMS.txt
-          if target=$(gh api "repos/$GH_REPO/git/ref/tags/$RELEASE_TAG" --jq '.object.sha' 2>/dev/null); then
-            test "$target" = "$SOURCE_SHA"
-          fi
-          if gh release view "$RELEASE_TAG" --json isDraft >/dev/null 2>&1; then
-            target=$(gh release view "$RELEASE_TAG" --json targetCommitish --jq .targetCommitish)
-            test "$target" = "$SOURCE_SHA"
-            if test "$(gh release view "$RELEASE_TAG" --json isDraft --jq .isDraft)" = false; then
-              echo 'This alpha is already published.'
-              exit 0
-            fi
-          else
-            gh release create "$RELEASE_TAG" --target "$SOURCE_SHA" --draft --prerelease --title "Terminal One $RELEASE_TAG" --notes-file alpha-notes.md
-          fi
-          gh release upload "$RELEASE_TAG" ./*-unsigned-x64.exe SHA256SUMS.txt --clobber
-          gh release edit "$RELEASE_TAG" --draft=false --prerelease --latest=false
+          RELEASE_VERSION: ${{ needs.build.outputs.version }}
+        run: node scripts/release-alpha.mjs --publish

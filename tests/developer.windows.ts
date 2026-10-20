@@ -1,4 +1,9 @@
-import { _electron as electron, expect, test } from '@playwright/test'
+import {
+  _electron as electron,
+  expect,
+  test,
+  type Locator
+} from '@playwright/test'
 import { mkdtemp, rm, realpath } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -191,6 +196,27 @@ test('PowerShell complete-command history is opt-in and private sessions never r
   }
 })
 
+async function waitForIdlePowerShell(panel: Locator) {
+  // A spawned process can report running before PSReadLine accepts input.
+  // Require the final visible row, rather than a historical prompt or echo.
+  await expect
+    .poll(
+      async () => {
+        const rows = await panel
+          .locator('.xterm-accessibility-tree > div')
+          .allTextContents()
+        return (
+          rows
+            .map((row) => row.trim())
+            .filter(Boolean)
+            .at(-1) ?? ''
+        )
+      },
+      { timeout: 15000 }
+    )
+    .toMatch(/^PS [^\r\n]*>\s*$/)
+}
+
 test('saved projects restore fresh sessions only after explicit confirmation', async () => {
   const profile = await mkdtemp(join(tmpdir(), 'terminal-restore-native-'))
   const folder = await mkdtemp(join(tmpdir(), 'Terminal project 世界 '))
@@ -232,6 +258,7 @@ test('saved projects restore fresh sessions only after explicit confirmation', a
     await expect(panel.getByRole('status')).toHaveText('running', {
       timeout: 20000
     })
+    await waitForIdlePowerShell(panel)
     await panel.locator('.xterm-helper-textarea').focus()
     await page.keyboard.type(
       "$env:TERMINAL_RESTORE_TEST='synthetic'; Write-Output ('SET_' + 'OK')"
@@ -240,6 +267,7 @@ test('saved projects restore fresh sessions only after explicit confirmation', a
     await expect(panel.locator('.xterm-accessibility-tree')).toContainText(
       'SET_OK'
     )
+    await waitForIdlePowerShell(panel)
     await page
       .getByRole('button', { name: 'Developer settings', exact: true })
       .click()
@@ -270,6 +298,7 @@ test('saved projects restore fresh sessions only after explicit confirmation', a
     await expect(panel.getByRole('status')).toHaveText('running', {
       timeout: 20000
     })
+    await waitForIdlePowerShell(panel)
     await panel.locator('.xterm-helper-textarea').focus()
     await page.keyboard.type(
       "Write-Output ('RESTORED_' + (Get-Location).Path); if (!$env:TERMINAL_RESTORE_TEST) { Write-Output ('FRESH_' + 'OK') }"

@@ -2,6 +2,9 @@
 
 Phase 5 covers #40–#48 in one PR targeting main. Building an artifact is separate from approving a public beta. The owner has separately authorized automatic unsigned alpha prereleases from main in #71; see [alpha delivery](bash-experience.md). Stable/beta release, signing provider, paid account and visibility changes still require separate approval.
 
+See [automatic alpha release operations](release-bot.md) for the bot, recovery,
+manual dry runs and the experimental unsigned channel.
+
 ## Build and verification
 
 ```powershell

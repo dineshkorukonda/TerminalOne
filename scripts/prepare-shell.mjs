@@ -1,8 +1,10 @@
 import { createHash } from 'node:crypto'
-import { readFile, mkdir, rm } from 'node:fs/promises'
+import { readFile, mkdir, rm, access } from 'node:fs/promises'
 import { execFileSync } from 'node:child_process'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+import { shellResources } from './shell-resources.mjs'
 
 const archive = 'vendor/ble.tar.xz'
 const expected =
@@ -26,4 +28,5 @@ execFileSync('tar', [
   '-C',
   'shell/blesh'
 ])
+for (const file of shellResources) await access(resolve('shell', file))
 console.log('Verified and prepared bundled Bash editor.')
