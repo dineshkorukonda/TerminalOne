@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto'
 import { basename, join } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import config from '../electron-builder.config.mjs'
+import { shellResources } from './shell-resources.mjs'
 
 if (process.platform !== 'win32' || process.arch !== 'x64')
   throw new Error('Windows x64 is required for the installer build')
@@ -18,21 +19,14 @@ if (
   throw new Error('Version tag must match package.json')
 await access('native/pty-job-host.exe')
 await access('node_modules/node-pty/build/Release/conpty.node')
-await access('shell/bashrc')
-await access('shell/blesh/ble.sh')
-await access('shell/blesh/doc/LICENSE.md')
+for (const file of shellResources) await access(join('shell', file))
 const artifacts = await build({
   targets: Platform.WINDOWS.createTarget(['nsis'], Arch.x64),
   publish: 'never',
   config
 })
 const installers = artifacts.filter((path) => path.endsWith('.exe'))
-for (const file of [
-  'bashrc',
-  'adapters.bash',
-  'blesh/ble.sh',
-  'blesh/doc/LICENSE.md'
-])
+for (const file of shellResources)
   await access(
     join(config.directories.output, 'win-unpacked/resources/shell', file)
   )
