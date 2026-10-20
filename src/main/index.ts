@@ -9,6 +9,9 @@ import { validatePackagedArguments } from '../infrastructure/ipc/policy'
 import { PreferenceRepository } from '../infrastructure/preferences/repository'
 import { registerPreferencesIpc } from '../infrastructure/ipc/register-preferences-ipc'
 
+if (process.platform === 'win32')
+  app.setAppUserModelId('com.github.dineshkorukonda.terminalone')
+
 if (app.isPackaged) {
   try {
     validatePackagedArguments(process.argv)
@@ -43,6 +46,11 @@ function createWindow(): void {
     ? rendererFile
     : realpathSync.native(rendererFile)
   const window = createDesktopWindow({
+    iconPath: join(
+      app.isPackaged ? process.resourcesPath : join(app.getAppPath(), 'assets'),
+      'branding',
+      process.platform === 'win32' ? 'terminal-one.ico' : 'terminal-one.png'
+    ),
     preloadPath: join(__dirname, '../preload/index.js'),
     allowDevTools: !app.isPackaged,
     content: rendererUrl ? { url: rendererUrl } : { filePath: rendererPath }

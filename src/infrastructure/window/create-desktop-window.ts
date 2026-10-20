@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url'
 interface DesktopWindowOptions {
   preloadPath: string
   allowDevTools: boolean
+  iconPath: string
   content: { url: string } | { filePath: string }
 }
 
@@ -16,6 +17,7 @@ export function createDesktopWindow(
     minWidth: 640,
     minHeight: 420,
     title: 'Terminal One',
+    icon: options.iconPath,
     autoHideMenuBar: true,
     backgroundColor: '#0c0c0c',
     ...(process.platform === 'win32'

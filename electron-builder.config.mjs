@@ -5,7 +5,14 @@ export default {
   directories: { output: 'artifacts/windows' },
   files: ['out/**/*', 'native/pty-job-host.exe', 'package.json', 'LICENSE'],
   asar: true,
-  extraResources: [{ from: 'shell', to: 'shell' }],
+  extraResources: [
+    { from: 'shell', to: 'shell' },
+    {
+      from: 'assets/branding',
+      to: 'branding',
+      filter: ['terminal-one.png', 'terminal-one.ico']
+    }
+  ],
   asarUnpack: ['**/node-pty/**', '**/native/**'],
   npmRebuild: false,
   nodeGypRebuild: false,
@@ -24,11 +31,14 @@ export default {
     requestedExecutionLevel: 'asInvoker'
   },
   nsis: {
+    icon: 'assets/branding/terminal-one.ico',
     oneClick: false,
     perMachine: false,
     allowToChangeInstallationDirectory: true,
     runAfterFinish: false,
     deleteAppDataOnUninstall: false,
+    installerIcon: 'assets/branding/terminal-one.ico',
+    uninstallerIcon: 'assets/branding/terminal-one.ico',
     createDesktopShortcut: false,
     uninstallDisplayName: 'Terminal One (unsigned development)'
   }
