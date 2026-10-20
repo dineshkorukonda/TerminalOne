@@ -24,6 +24,11 @@ export type SessionEvent =
   | { type: 'exit'; id: string; exitCode: number }
   | { type: 'error'; id: string; message: string }
 export interface DesktopApi {
+  getUpdateStatus(): Promise<UpdateStatus>
+  checkForUpdates(): Promise<UpdateStatus>
+  downloadUpdate(): Promise<UpdateStatus>
+  installUpdate(): Promise<UpdateStatus>
+  onUpdateStatus(listener: (status: UpdateStatus) => void): () => void
   getPreferences(): Promise<{ settings: Preferences; warning: string }>
   savePreferences(
     settings: Preferences
@@ -57,6 +62,11 @@ export interface DesktopApi {
   onSessionEvent(listener: (event: SessionEvent) => void): () => void
 }
 export const IPC_CHANNELS = {
+  getUpdateStatus: 'updates:status',
+  checkForUpdates: 'updates:check',
+  downloadUpdate: 'updates:download',
+  installUpdate: 'updates:install',
+  updateStatusEvent: 'updates:event',
   getPreferences: 'preferences:get',
   savePreferences: 'preferences:save',
   resetPreferences: 'preferences:reset',
@@ -79,3 +89,4 @@ export const IPC_CHANNELS = {
   sessionEvent: 'terminal:event'
 } as const
 import type { Preferences, HistoryEntry, Project } from './preferences'
+import type { UpdateStatus } from './updates'

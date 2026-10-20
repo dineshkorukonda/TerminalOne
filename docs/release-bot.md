@@ -28,9 +28,10 @@ The release bundle contains exactly:
 - `SHA256SUMS.txt`
 - `release-manifest.json`, binding version, exact source commit and installer hash
 - `alpha-notes.md`, including actual conventional history and qualification limits
+- `alpha.yml`, binding the updater's installer URL, SHA-512 and size to those exact bytes
 
 Preparation requires build and successful installed-app evidence for that exact
-installer hash. It copies only those four files into a separate artifact; unpacked
+installer hash. It copies only those five files into a separate artifact; unpacked
 executables and test traces cannot become release assets accidentally. The Windows
 PR workflow performs the same preparation as a dry run without publishing.
 
@@ -92,6 +93,7 @@ Reviewed on 2026-10-20:
   introduce additional configuration for the requested every-merge alpha channel.
 
 This workflow publishes experimental unsigned alpha artifacts. It does not prove
-manual Windows 10/11, Narrator or IME qualification, sign installers, configure an
-updater, approve a stable/beta release or change repository visibility. The strict
+manual Windows 10/11, Narrator or IME qualification, sign installers, approve a
+stable/beta release or change repository visibility. In-app update behavior is
+documented separately in [Windows updates](updates.md). The strict
 qualification manifest remains unchanged for those later decisions.

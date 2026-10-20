@@ -16,6 +16,8 @@ import {
 import type { Preferences } from '../../../contracts/preferences'
 import { DeveloperSettings } from './DeveloperSettings'
 import { CommandDraft } from './CommandDraft'
+import { UpdateSettings } from './UpdateSettings'
+import type { UpdateStatus } from '../../../contracts/updates'
 
 const PANE_ACTIONS = [
   { label: 'Search terminal', icon: 'search', action: 'search' },
@@ -63,6 +65,24 @@ export function App() {
   const [palette, setPalette] = useState(false)
   const [settings, setSettings] = useState(false)
   const [toolsOpen, setToolsOpen] = useState(false)
+  const [updatesOpen, setUpdatesOpen] = useState(false)
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null)
+  useEffect(() => {
+    let active = true
+    const detach = window.desktop.onUpdateStatus((status) => {
+      if (active) setUpdateStatus(status)
+    })
+    void window.desktop
+      .getUpdateStatus()
+      .then((status) => {
+        if (active) setUpdateStatus(status)
+      })
+      .catch(() => {})
+    return () => {
+      active = false
+      detach()
+    }
+  }, [])
   useEffect(() => {
     if (!toolsOpen) return
     const dismiss = (event: PointerEvent) => {
@@ -185,6 +205,11 @@ export function App() {
     focusTerminal()
   }
   const actions: PaletteAction[] = [
+    {
+      id: 'updates',
+      label: 'Check for updates',
+      run: () => setUpdatesOpen(true)
+    },
     { id: 'new', label: 'New terminal tab', run: newTab },
     {
       id: 'close',
@@ -359,6 +384,16 @@ export function App() {
         </button>
       </header>
       <main className="workspace">
+        {updatesOpen && (
+          <UpdateSettings
+            status={updateStatus}
+            change={setUpdateStatus}
+            close={() => {
+              setUpdatesOpen(false)
+              focusTerminal()
+            }}
+          />
+        )}
         {developer && (
           <DeveloperSettings
             settings={preferences}
@@ -563,6 +598,16 @@ export function App() {
             </button>
           </div>
           <div className="workspace-actions">
+            <button aria-label="Updates" onClick={() => setUpdatesOpen(true)}>
+              <Icon name="download" />
+              <span>
+                {updateStatus?.phase === 'available'
+                  ? 'Update available'
+                  : updateStatus?.phase === 'downloaded'
+                    ? 'Update ready to install'
+                    : 'Updates'}
+              </span>
+            </button>
             <button
               aria-label="Commands"
               onClick={() => setPalette(true)}

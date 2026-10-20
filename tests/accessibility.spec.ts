@@ -112,6 +112,22 @@ test('terminal chrome passes automated accessibility checks and keyboard workflo
     ).toBeFocused()
     await audit('history-draft')
     await page.getByRole('button', { name: 'Close command draft' }).click()
+    await clickTerminalOption(page, 'Updates')
+    await expect(
+      page.getByRole('dialog', { name: 'Updates', exact: true })
+    ).toBeVisible()
+    await audit('updates')
+    await page
+      .getByRole('button', { name: 'Check for updates', exact: true })
+      .click()
+    await page
+      .getByRole('button', { name: 'Download 0.2.0-alpha.2', exact: true })
+      .click()
+    await expect(
+      page.getByRole('button', { name: 'Restart and install', exact: true })
+    ).toBeVisible()
+    await audit('update-ready')
+    await page.getByRole('button', { name: 'Close updates' }).click()
     await page.keyboard.press('Control+Shift+W')
     await page.keyboard.press('Control+Shift+W')
     await expect(page.getByRole('tab')).toHaveCount(0)

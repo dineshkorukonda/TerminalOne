@@ -10,7 +10,12 @@ import {
 import { releaseBlockers } from '../scripts/check-release-readiness.mjs'
 
 test('packaging and release builds remain unsigned and publishing is unavailable on feature branches', async () => {
-  assert.equal(config.publish, null)
+  assert.deepEqual(config.publish, {
+    provider: 'github',
+    owner: 'dineshkorukonda',
+    repo: 'TerminalOne',
+    releaseType: 'prerelease'
+  })
   assert.equal(config.win.signExecutable, false)
   assert.deepEqual(config.win.target, [{ target: 'nsis', arch: ['x64'] }])
   assert.equal(config.npmRebuild, false)

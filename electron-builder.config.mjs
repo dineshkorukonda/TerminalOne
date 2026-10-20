@@ -16,7 +16,12 @@ export default {
   asarUnpack: ['**/node-pty/**', '**/native/**'],
   npmRebuild: false,
   nodeGypRebuild: false,
-  publish: null,
+  publish: {
+    provider: 'github',
+    owner: 'dineshkorukonda',
+    repo: 'TerminalOne',
+    releaseType: 'prerelease'
+  },
   artifactName: 'TerminalOne-${version}-unsigned-${arch}.${ext}',
   electronFuses: {
     runAsNode: false,
@@ -26,19 +31,19 @@ export default {
     onlyLoadAppFromAsar: true
   },
   win: {
+    icon: 'assets/branding/terminal-one.ico',
     target: [{ target: 'nsis', arch: ['x64'] }],
     signExecutable: false,
     requestedExecutionLevel: 'asInvoker'
   },
   nsis: {
-    icon: 'assets/branding/terminal-one.ico',
+    installerIcon: 'assets/branding/terminal-one.ico',
+    uninstallerIcon: 'assets/branding/terminal-one.ico',
     oneClick: false,
     perMachine: false,
     allowToChangeInstallationDirectory: true,
     runAfterFinish: false,
     deleteAppDataOnUninstall: false,
-    installerIcon: 'assets/branding/terminal-one.ico',
-    uninstallerIcon: 'assets/branding/terminal-one.ico',
     createDesktopShortcut: false,
     uninstallDisplayName: 'Terminal One (unsigned development)'
   }
