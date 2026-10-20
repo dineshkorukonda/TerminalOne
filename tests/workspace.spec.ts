@@ -1,9 +1,91 @@
+import {
+  clickTerminalOption,
+  openTerminalOptions
+} from './fixtures/terminal-options'
 import { _electron as electron, expect, test } from '@playwright/test'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { ViteDevServer } from 'vite'
 import type { DesktopApi } from '../src/contracts/desktop-api'
+
+// eslint-disable-next-line no-empty-pattern -- Playwright requires destructured fixtures before testInfo.
+test('profile dropdown and per-tab close preserve the active terminal', async ({}, info) => {
+  const profile = await mkdtemp(join(tmpdir(), 'terminal-classic-ui-'))
+  const env = Object.fromEntries(
+    Object.entries(process.env).filter(
+      (entry): entry is [string, string] => entry[1] !== undefined
+    )
+  )
+  delete env['ELECTRON_RUN_AS_NODE']
+  delete env['ELECTRON_RENDERER_URL']
+  const app = await electron.launch({
+    args: ['tests/fixtures/ui-window.cjs', `--user-data-dir=${profile}`],
+    env
+  })
+  try {
+    const page = await app.firstWindow()
+    await expect(page.getByRole('status')).toHaveText('running')
+    const firstTerminal = page.locator('.xterm').first()
+    await firstTerminal.evaluate((element) =>
+      Reflect.set(globalThis, '__classicTerminal', element)
+    )
+    await expect(page.locator('.terminal-panel')).toHaveCSS(
+      'border-width',
+      '0px'
+    )
+    await page.locator('.terminal-surface').hover()
+    await expect(
+      page.getByRole('button', { name: 'Close pane', exact: true })
+    ).toHaveCount(0)
+    await expect(page.locator('.terminal-toolbar')).toHaveCSS(
+      'clip-path',
+      'inset(50%)'
+    )
+    const options = page.getByRole('button', {
+      name: 'Terminal options',
+      exact: true
+    })
+    await options.click()
+    await page
+      .getByRole('button', { name: 'New CMD fixture tab', exact: true })
+      .click()
+    await expect(options).toHaveAttribute('aria-expanded', 'false')
+    await expect(page.getByRole('tab')).toHaveCount(2)
+    await expect(page.getByRole('tab', { selected: true })).toHaveText(
+      'CMD fixture'
+    )
+    await page.getByRole('tab').first().click()
+    await page
+      .getByRole('button', { name: 'Close tab CMD fixture', exact: true })
+      .click()
+    await expect(page.getByRole('tab')).toHaveCount(1)
+    expect(
+      await firstTerminal.evaluate(
+        (element) => element === Reflect.get(globalThis, '__classicTerminal')
+      )
+    ).toBe(true)
+    await expect(page.locator('.xterm-helper-textarea')).toBeFocused()
+    await options.click()
+    await page.keyboard.press('Escape')
+    await expect(options).toHaveAttribute('aria-expanded', 'false')
+    await expect(options).toBeFocused()
+    await options.click()
+    await page.getByRole('tab').click()
+    await expect(options).toHaveAttribute('aria-expanded', 'false')
+    await page.screenshot({ path: info.outputPath('classic-dark.png') })
+    await options.click()
+    await page.screenshot({ path: info.outputPath('classic-options.png') })
+  } finally {
+    await app.close()
+    await rm(profile, {
+      recursive: true,
+      force: true,
+      maxRetries: 5,
+      retryDelay: 200
+    })
+  }
+})
 
 for (const { scale, mode } of [
   ...[1, 1.25, 1.5, 2].map((scale) => ({ scale, mode: 'built' })),
@@ -59,9 +141,7 @@ for (const { scale, mode } of [
         return true
       })
       expect(identity).toBe(true)
-      await page
-        .getByRole('button', { name: 'Split right', exact: true })
-        .click()
+      await clickTerminalOption(page, 'Split right')
       await expect(panel.locator('.xterm')).toHaveCount(2)
       await expect(
         panel.locator('.pane-active .xterm-helper-textarea')
@@ -155,9 +235,7 @@ for (const { scale, mode } of [
       await expect(
         panel.getByText('Match 1 of 2', { exact: true })
       ).toBeVisible()
-      await panel
-        .getByRole('button', { name: 'Copy selection', exact: true })
-        .click()
+      await clickTerminalOption(page, 'Copy selection')
       expect(
         await page.evaluate(() =>
           (Reflect.get(globalThis, 'desktop') as DesktopApi).readClipboard()
@@ -171,15 +249,11 @@ for (const { scale, mode } of [
           'PASTE_世界\r\nsecond line'
         )
       )
-      await panel
-        .getByRole('button', { name: 'Paste clipboard', exact: true })
-        .click()
+      await clickTerminalOption(page, 'Paste clipboard')
       await expect(panel.locator('.xterm-accessibility-tree')).toContainText(
         'PASTE_世界'
       )
-      await page
-        .getByRole('button', { name: 'Appearance', exact: true })
-        .click()
+      await clickTerminalOption(page, 'Appearance')
       await page
         .getByRole('combobox', { name: 'Terminal theme' })
         .selectOption('contrast')
@@ -198,6 +272,7 @@ for (const { scale, mode } of [
             Reflect.get(globalThis, 'document').documentElement.clientWidth
         )
       ).toBe(true)
+      await openTerminalOptions(page)
       await expect(
         page.getByRole('button', { name: 'Commands', exact: true })
       ).toBeVisible()

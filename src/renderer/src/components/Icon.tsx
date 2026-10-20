@@ -14,7 +14,8 @@ const paths = {
   history: 'M4 5v5h5 M4.5 10a8 8 0 1 1 .5 6 M12 8v5l3 2',
   settings: 'M4 7h16 M4 17h16 M8 4v6 M16 14v6',
   folder: 'M3 7h6l2 2h10v10H3z M3 7V5h6l2 2h8v2',
-  lock: 'M6 11h12v10H6z M8 11V7a4 4 0 0 1 8 0v4'
+  lock: 'M6 11h12v10H6z M8 11V7a4 4 0 0 1 8 0v4',
+  chevron: 'm7 10 5 5 5-5'
 }
 
 export function Icon({ name }: { name: keyof typeof paths }) {
@@ -25,9 +26,9 @@ export function Icon({ name }: { name: keyof typeof paths }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      strokeWidth="1.25"
+      strokeLinecap="square"
+      strokeLinejoin="miter"
       aria-hidden="true"
       focusable="false"
     >

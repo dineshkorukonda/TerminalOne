@@ -1,3 +1,7 @@
+import {
+  clickTerminalOption,
+  openTerminalOptions
+} from './fixtures/terminal-options'
 import { _electron as electron, expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 import { mkdtemp, rm } from 'node:fs/promises'
@@ -28,6 +32,7 @@ async function launch() {
     timeout: 20000
   })
   await page.getByRole('button', { name: 'Terminal options' }).click()
+  await openTerminalOptions(page)
   await page.getByRole('combobox', { name: 'Shell' }).selectOption('powershell')
   await page.keyboard.press('Control+Shift+W')
   await page.getByRole('button', { name: 'New session', exact: true }).click()
@@ -96,6 +101,7 @@ test('xterm renders live ANSI and Unicode, sends Ctrl+C, fits grids, and restart
   const fixture = await launch()
   const { app, page } = fixture
   try {
+    await openTerminalOptions(page)
     await page
       .getByRole('combobox', { name: 'Shell' })
       .selectOption('powershell')
@@ -134,7 +140,7 @@ test('xterm renders live ANSI and Unicode, sends Ctrl+C, fits grids, and restart
     await expect(
       page.locator('.tab-viewport:not([hidden]) .xterm-accessibility-tree')
     ).toContainText('RESTART_OK')
-    await page.getByRole('button', { name: 'Close session' }).click()
+    await clickTerminalOption(page, 'Close session')
     await expect(page.getByRole('status')).toHaveText('closed')
   } finally {
     await fixture.dispose()
@@ -333,6 +339,7 @@ test('real tabs and panes preserve sessions, search output and use the scoped Wi
     await expect(visible.locator('.xterm-accessibility-tree')).toContainText(
       'TAB_ONE_OK'
     )
+    await openTerminalOptions(page)
     await page
       .getByRole('combobox', { name: 'Shell' })
       .selectOption('powershell')
@@ -361,7 +368,7 @@ test('real tabs and panes preserve sessions, search output and use the scoped Wi
       'HIDDEN_OUTPUT'
     )
     const split = await captureStart(() =>
-      page.getByRole('button', { name: 'Split right', exact: true }).click()
+      clickTerminalOption(page, 'Split right')
     )
     await expect(visible.locator('.xterm')).toHaveCount(2)
     const watcher = await watchProcesses([split.pid])
@@ -380,9 +387,7 @@ test('real tabs and panes preserve sessions, search output and use the scoped Wi
         "Write-Output ('PASTE_' + 'OK')\r\nWrite-Output ('LINE_' + 'TWO')\r\n"
       )
     )
-    await visible
-      .getByRole('button', { name: 'Paste clipboard', exact: true })
-      .click()
+    await clickTerminalOption(page, 'Paste clipboard')
     await page.keyboard.press('Enter')
     await expect(visible.locator('.xterm-accessibility-tree')).toContainText(
       'PASTE_OK'
@@ -390,18 +395,14 @@ test('real tabs and panes preserve sessions, search output and use the scoped Wi
     await expect(visible.locator('.xterm-accessibility-tree')).toContainText(
       'LINE_TWO'
     )
-    await visible
-      .getByRole('button', { name: 'Search terminal', exact: true })
-      .click()
+    await clickTerminalOption(page, 'Search terminal')
     await visible
       .getByRole('textbox', { name: 'Search terminal output' })
       .fill('PASTE_OK')
     await visible
       .getByRole('button', { name: 'Next match', exact: true })
       .click()
-    await visible
-      .getByRole('button', { name: 'Copy selection', exact: true })
-      .click()
+    await clickTerminalOption(page, 'Copy selection')
     await expect
       .poll(() =>
         page.evaluate(() =>

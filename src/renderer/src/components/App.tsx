@@ -1,6 +1,8 @@
 import { useEffect, useState, useRef } from 'react'
 import { useStore } from 'zustand'
 import { Icon } from './Icon'
+import { ShellIcon } from './ShellIcon'
+import type { TerminalActions } from './TerminalPane'
 import { CommandPalette, type PaletteAction } from './CommandPalette'
 import { DEFAULT_APPEARANCE, parseAppearance } from '../theme/appearance'
 import { FONT_FAMILIES } from '../theme/font'
@@ -15,6 +17,13 @@ import type { Preferences } from '../../../contracts/preferences'
 import { DeveloperSettings } from './DeveloperSettings'
 import { CommandDraft } from './CommandDraft'
 
+const PANE_ACTIONS = [
+  { label: 'Search terminal', icon: 'search', action: 'search' },
+  { label: 'Copy selection', icon: 'copy', action: 'copy' },
+  { label: 'Paste clipboard', icon: 'paste', action: 'paste' },
+  { label: 'Close session', icon: 'stop', action: 'stop' }
+] as const
+
 export function App() {
   const [store] = useState(createWorkspaceStore)
   const workspace = useStore(store)
@@ -28,6 +37,7 @@ export function App() {
   const [projectId, setProjectId] = useState('')
   const [restoreOffered, setRestoreOffered] = useState(false)
   const saving = useRef(0)
+  const terminalActions = useRef<TerminalActions | null>(null)
   async function saveSettings(value: Preferences) {
     const next = parsePreferences(value),
       revision = ++saving.current
@@ -53,6 +63,18 @@ export function App() {
   const [palette, setPalette] = useState(false)
   const [settings, setSettings] = useState(false)
   const [toolsOpen, setToolsOpen] = useState(false)
+  useEffect(() => {
+    if (!toolsOpen) return
+    const dismiss = (event: PointerEvent) => {
+      if (
+        event.target instanceof Element &&
+        !event.target.closest('.workspace-toolbar, .workspace-menu-button')
+      )
+        setToolsOpen(false)
+    }
+    document.addEventListener('pointerdown', dismiss)
+    return () => document.removeEventListener('pointerdown', dismiss)
+  }, [toolsOpen])
   useEffect(() => {
     let active = true
     void window.desktop
@@ -96,8 +118,8 @@ export function App() {
       active = false
     }
   }, [store])
-  const newTab = (privateSession = false) => {
-    const shell = shells.find((shell) => shell.id === shellId)
+  const newTab = (privateSession = false, profileId = shellId) => {
+    const shell = shells.find((shell) => shell.id === profileId)
     if (shell) {
       const project = preferences.projects.find((item) => item.id === projectId)
       workspace.newTab(
@@ -135,12 +157,8 @@ export function App() {
         ?.focus()
     )
   }
-  function paneAction(label: string) {
-    document
-      .querySelector<HTMLButtonElement>(
-        `.tab-viewport:not([hidden]) .pane-active [aria-label="${label}"]`
-      )
-      ?.click()
+  function paneAction(action: keyof TerminalActions) {
+    terminalActions.current?.[action]()
   }
   const activeTab = workspace.tabs.find(
     (tab) => tab.id === workspace.activeTabId
@@ -190,7 +208,7 @@ export function App() {
     {
       id: 'search',
       label: 'Search terminal output',
-      run: () => paneAction('Search terminal')
+      run: () => paneAction('search')
     },
     {
       id: 'settings',
@@ -218,6 +236,13 @@ export function App() {
   ]
   useEffect(() => {
     const keydown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && toolsOpen) {
+        setToolsOpen(false)
+        document
+          .querySelector<HTMLButtonElement>('.workspace-menu-button')
+          ?.focus()
+        return
+      }
       if (!event.ctrlKey || !event.shiftKey || event.altKey || event.metaKey)
         return
       if (
@@ -232,13 +257,14 @@ export function App() {
       )?.[0]
       if (action === 'palette') {
         event.preventDefault()
+        setToolsOpen(false)
         setPalette((open) => !open)
         if (palette) focusTerminal()
         return
       }
       if (action === 'copy' || action === 'paste') {
         event.preventDefault()
-        paneAction(action === 'copy' ? 'Copy selection' : 'Paste clipboard')
+        paneAction(action)
         return
       }
       if (action) {
@@ -254,15 +280,24 @@ export function App() {
     <div
       className={`min-h-screen bg-canvas font-ui text-ink app-shell theme-${appearance.theme}`}
     >
-      <header className="app-header">
+      <header className="app-header" aria-label="Terminal One">
+        <h1 className="visually-hidden">Terminal One</h1>
         <div className="tab-chrome">
-          <div
-            className="tab-strip"
-            role={workspace.tabs.length ? 'tablist' : undefined}
-            aria-label={workspace.tabs.length ? 'Terminal tabs' : undefined}
-          >
+          {/* Close buttons remain independent of ARIA tab ownership. */}
+          {workspace.tabs.length > 0 && (
+            <div
+              className="visually-hidden"
+              role="tablist"
+              aria-label="Terminal tabs"
+              aria-owns={workspace.tabs.map((tab) => `tab-${tab.id}`).join(' ')}
+            />
+          )}
+          <div className="tab-strip">
             {workspace.tabs.map((tab) => (
-              <div className="tab-item" key={tab.id}>
+              <div
+                className={`tab-item ${tab.id === workspace.activeTabId ? 'tab-selected' : ''}`}
+                key={tab.id}
+              >
                 <button
                   id={`tab-${tab.id}`}
                   role="tab"
@@ -283,24 +318,25 @@ export function App() {
                     focusTerminal()
                   }}
                 >
-                  <Icon name="terminal" />
+                  <ShellIcon
+                    shellId={activeShell(tab.root, tab.activePaneId) ?? ''}
+                  />
                   <span>{tab.title}</span>
+                </button>
+                <button
+                  className="tab-close"
+                  aria-label={`Close tab ${tab.title}`}
+                  title={`Close tab ${tab.title}`}
+                  onClick={() => {
+                    workspace.closeTab(tab.id)
+                    focusTerminal()
+                  }}
+                >
+                  <Icon name="close" />
                 </button>
               </div>
             ))}
           </div>
-          {activeTab && (
-            <button
-              aria-label={`Close tab ${activeTab.title}`}
-              title="Close active tab"
-              onClick={() => {
-                workspace.closeTab(activeTab.id)
-                focusTerminal()
-              }}
-            >
-              <Icon name="close" />
-            </button>
-          )}
         </div>
         <button
           className="new-tab-button"
@@ -319,12 +355,8 @@ export function App() {
           title="Terminal options"
           onClick={() => setToolsOpen((open) => !open)}
         >
-          <span aria-hidden="true">⌄</span>
+          <Icon name="chevron" />
         </button>
-        <div className="brand">
-          <Icon name="terminal" />
-          <h1>Terminal One</h1>
-        </div>
       </header>
       <main className="workspace">
         {developer && (
@@ -401,7 +433,7 @@ export function App() {
                   )
                 }
               >
-                <option value="midnight">iTerm Night</option>
+                <option value="midnight">Windows Terminal dark</option>
                 <option value="contrast">High contrast</option>
               </select>
             </label>
@@ -457,10 +489,47 @@ export function App() {
         <div
           className="workspace-toolbar"
           id="workspace-options"
+          role="region"
+          aria-label="Terminal options"
           hidden={!toolsOpen}
+          onClick={(event) => {
+            if (
+              event.target instanceof Element &&
+              event.target.closest('button')
+            )
+              setToolsOpen(false)
+          }}
         >
+          <div className="profile-list" aria-label="New tab profiles">
+            {shells.map((shell) => (
+              <button
+                key={shell.id}
+                aria-label={`New ${shell.name} tab`}
+                onClick={() => {
+                  setShellId(shell.id)
+                  newTab(false, shell.id)
+                  setToolsOpen(false)
+                }}
+              >
+                <ShellIcon shellId={shell.id} />
+                <span>{shell.name}</span>
+              </button>
+            ))}
+          </div>
+          <div className="pane-actions">
+            {PANE_ACTIONS.map(({ label, icon, action }) => (
+              <button
+                key={label}
+                disabled={!activeTab}
+                onClick={() => paneAction(action)}
+              >
+                <Icon name={icon} />
+                <span>{label}</span>
+              </button>
+            ))}
+          </div>
           <div className="session-controls">
-            <label htmlFor="shell">Shell override</label>
+            <label htmlFor="shell">Default profile</label>
             <select
               id="shell"
               aria-label="Shell"
@@ -521,6 +590,7 @@ export function App() {
               onClick={() => setDeveloper(true)}
             >
               <Icon name="settings" />
+              <span>Developer settings</span>
             </button>
             <button
               aria-label="History"
@@ -528,6 +598,7 @@ export function App() {
               onClick={() => setDraftOpen(true)}
             >
               <Icon name="history" />
+              <span>History</span>
             </button>
             <button
               aria-label="Private tab"
@@ -583,6 +654,21 @@ export function App() {
                 ))}
               </select>
             </label>
+            <button
+              aria-label="Project documentation"
+              onClick={() => {
+                void window.desktop
+                  .openExternal(
+                    'https://github.com/dineshkorukonda/TerminalOne'
+                  )
+                  .catch(() =>
+                    setError('Could not open project documentation.')
+                  )
+              }}
+            >
+              <Icon name="external" />
+              <span>Documentation</span>
+            </button>
           </div>
         </div>
         {(error || workspace.error) && (
@@ -606,41 +692,10 @@ export function App() {
             }}
             resizeSplit={workspace.resizeSplit}
             shortcuts={preferences.shortcuts}
+            actionsRef={terminalActions}
           />
         ))}
       </main>
-      <footer className="workspace-status" hidden={!toolsOpen}>
-        <div className="workspace-status-left">
-          <Icon name="folder" />
-          <span>
-            {preferences.projects.find((item) => item.id === projectId)?.name ??
-              'Home directory'}
-          </span>
-          <span className="status-divider" />
-          <span>
-            {workspace.tabs.length}{' '}
-            {workspace.tabs.length === 1 ? 'tab' : 'tabs'}
-          </span>
-        </div>
-        <div className="workspace-status-right">
-          <span>
-            {appearance.theme === 'contrast' ? 'High contrast' : 'iTerm Night'}
-          </span>
-          <span className="status-divider" />
-          <button
-            aria-label="Project documentation"
-            title="Project documentation"
-            onClick={() => {
-              void window.desktop
-                .openExternal('https://github.com/dineshkorukonda/TerminalOne')
-                .catch(() => setError('Could not open project documentation.'))
-            }}
-          >
-            Documentation
-            <Icon name="external" />
-          </button>
-        </div>
-      </footer>
     </div>
   )
 }

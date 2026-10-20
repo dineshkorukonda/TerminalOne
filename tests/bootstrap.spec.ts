@@ -46,7 +46,7 @@ for (const mode of ['built', 'development'] as const) {
           await expect(window).toHaveTitle('Terminal One')
           await expect(
             window.getByRole('heading', { name: 'Terminal One' })
-          ).toBeVisible()
+          ).toBeAttached()
           await expect(
             window.getByRole('combobox', { name: 'Shell' })
           ).toBeHidden()
@@ -167,11 +167,11 @@ for (const mode of ['built', 'development'] as const) {
           await expect(documentation).toHaveCSS('outline-style', 'solid')
           await expect(documentation).toHaveCSS(
             'outline-color',
-            'rgb(145, 191, 255)'
+            'rgb(96, 205, 255)'
           )
           await expect(window.locator('.min-h-screen')).toHaveCSS(
             'background-color',
-            'rgb(22, 24, 33)'
+            'rgb(12, 12, 12)'
           )
           expect(
             await window.evaluate(() => {

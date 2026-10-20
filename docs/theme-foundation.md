@@ -1,31 +1,29 @@
 # Theme foundation
 
-The renderer consumes Tailwind v4 theme tokens from `src/renderer/src/theme/tokens.css`, compiled locally through the Vite plugin. Tokens cover near-black canvas/panel/elevated surfaces, text, muted text, decorative/control borders, focus/accent colors, system font stacks, radius, and sixteen ANSI colors. Only renderer sources are scanned for utilities. No remote CSS, font service, or image is loaded.
+The desktop renderer uses the classic dark Windows Terminal appearance approved in #78: a neutral charcoal tab strip, black terminal canvas, Campbell ANSI colors and no accent line or perimeter pane border. Only split dividers separate terminal panes. Native Windows caption buttons remain owned by Electron's title-bar overlay; the renderer reserves their reported width. Terminal One retains its product identity and does not ship Microsoft's application branding.
 
-Phase 1 replaces the original typography/palette sample with a live xterm terminal. It uses the same typography and 16 ANSI tokens; settings, tabs, and theme selection remain later issues. The Project documentation button uses the existing allowlisted external-link capability. Icons use a shared 24×24 SVG component with consistent 1.5px strokes and inherit text color; decorative SVGs are hidden from assistive technology.
+The renderer consumes locally compiled Tailwind v4 tokens from `src/renderer/src/theme/tokens.css`. No remote CSS, font service or image is loaded. Controls use Segoe UI Variable with Segoe UI and system fallbacks. Shell icons distinguish PowerShell, CMD and Bash; action icons share lightweight square-ended SVG strokes and inherit text color.
 
-## Font model
+## Tabs and controls
 
-`TerminalFontConfig` has a whitelisted family, integer size 10–32px, finite line height 1–2, and a boolean ligature setting. Defaults are Cascadia Mono, 14px, line height 1.5, ligatures disabled. Available families are Cascadia Mono, Consolas, and Liberation Mono, with local monospace fallbacks. Missing fonts use the fallback; no font installation or download is implied. The xterm component consumes the typed model. No settings persistence or user font picker is shipped.
+Each tab contains its own close button. Arrow keys switch tabs, and closing an inactive tab preserves the active session. The compact plus button uses the selected launch shell. The adjacent profile/options dropdown can open a detected shell directly and exposes pane search, clipboard, stop, split, appearance, projects and developer settings. Escape dismisses it and returns focus to its trigger.
 
-The parser rejects missing/extra fields, unknown families, non-finite/fractional/out-of-range metrics, and invalid ligature values. Unit tests exercise the boundary, including CSS-injection-shaped family values.
+The single-pane view has no duplicate title, pane close button, floating action toolbar or footer. Running state remains available to assistive technology; errors and exit status remain visible. Split panes retain a close control on hover or keyboard focus. Pane actions use a typed renderer ref for the active terminal; no IPC capabilities were added.
 
-## Focus and contrast
+## Font and preferences
 
-All keyboard-focused controls use a 2px solid `focus` outline, offset 3px from the control. The documentation button is reachable by Tab and has a visible text label. The Electron component tests verify focus, outline width/style/color, shared canvas color, absence of horizontal overflow, and live terminal startup on Windows. Font validation and token contrast remain unit checks; Windows integration verifies ANSI and Unicode terminal output.
+`TerminalFontConfig` accepts a whitelisted family, integer size 10–32px, finite line height 1–2 and boolean ligature setting. New preferences default to Cascadia Mono, 16px (12pt at 96 DPI), line height 1.2 and ligatures disabled. Consolas and Liberation Mono remain available. Missing fonts use local fallbacks; no font installation is implied.
 
-Measured sRGB contrast from the actual token definitions:
+Existing saved font choices are preserved. The persisted `midnight` theme ID remains valid and is presented as Windows Terminal dark; high contrast remains available. The parser rejects extra fields, invalid metrics and unknown families.
 
-- Ink on canvas: 16.57:1.
-- Muted text on panel: 7.67:1.
-- Ink on elevated button: 13.11:1.
-- Focus outline on canvas: 11.11:1; on panel: 10.15:1.
-- Control border on elevated button: 3.20:1.
+## Focus, contrast and verification
 
-Unit checks enforce 4.5:1 for text and 3:1 for focus/control boundaries. Subtle decorative dividers do not carry control or status meaning. A full assistive-technology and contrast audit remains in #46.
+Keyboard focus uses a 2px outline. Token unit checks enforce at least 4.5:1 for UI text and 3:1 for focus and control boundaries. Campbell ANSI colors represent terminal content, including intentionally low-intensity colors; these are separate from UI text tokens.
 
-## Scale verification
+Desktop smoke tests cover built and development renderers, viewport resizing, keyboard navigation, splits, clipboard, search, appearance and automated WCAG checks. Forced Chromium scaling covers renderer geometry; it does not establish native cross-monitor DPI or packaged Windows compatibility. Historical phase evidence remains in [Phase 0 verification](phase-0-verification.md); current verification belongs in the implementing PR.
 
-`npm run test:smoke` launches built and development renderers at Chromium device-scale factors 1, 1.5, and 2, retaining a focused-window screenshot from each case. These correspond to 100%, 150%, and 200% renderer scaling. All six tests passed on Linux during implementation. The Windows theme CI run passed all six cases; its 100%, 150%, and 200% built-window screenshots were visually inspected and retained in the [Phase 0 verification record](phase-0-verification.md).
+The following Windows screenshots use synthetic fixture sessions. They show renderer content; native caption controls and window frames are outside the captured surface.
 
-Forced Chromium scale does not test native window chrome or changing Windows system DPI across monitors. Those checks remain in #23/#45; no Windows 10/11 compatibility guarantee is made here.
+![Classic dark renderer with synthetic terminal output](screenshots/ui-78/renderer-fixture.png)
+
+![Profile and options dropdown with synthetic shell profiles](screenshots/ui-78/profile-menu-fixture.png)

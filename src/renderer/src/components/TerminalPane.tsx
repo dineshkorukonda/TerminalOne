@@ -1,5 +1,10 @@
-import { Icon } from './Icon'
-import { useEffect, useRef, useState } from 'react'
+import {
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type Ref
+} from 'react'
 import { SearchAddon } from '@xterm/addon-search'
 import { terminalTheme, type Appearance } from '../theme/appearance'
 import { FitAddon } from '@xterm/addon-fit'
@@ -10,18 +15,27 @@ import type { SessionEvent } from '../../../contracts/desktop-api'
 import { terminalFontStyle } from '../theme/font'
 import type { Preferences } from '../../../contracts/preferences'
 
+export interface TerminalActions {
+  search(): void
+  copy(): void
+  paste(): void
+  stop(): void
+}
+
 export function TerminalPane({
   shellId,
   appearance,
   projectId,
   privateSession,
-  shortcuts
+  shortcuts,
+  actionsRef
 }: {
   shellId: string
   appearance: Appearance
   projectId: string | null
   privateSession: boolean
   shortcuts: Preferences['shortcuts']
+  actionsRef?: Ref<TerminalActions> | undefined
 }) {
   const shortcutRef = useRef(shortcuts)
   shortcutRef.current = shortcuts
@@ -66,6 +80,16 @@ export function TerminalPane({
   const [status, setStatus] = useState('Starting…')
   const [error, setError] = useState('')
   const closeSession = useRef<() => void>(() => {})
+  useImperativeHandle(actionsRef, () => ({
+    search: () => setSearchOpen((value) => !value),
+    copy: () => {
+      void clipboard('copy')
+    },
+    paste: () => {
+      void clipboard('paste')
+    },
+    stop: () => closeSession.current()
+  }))
   useEffect(() => {
     const element = container.current
     if (!element) return
@@ -90,6 +114,7 @@ export function TerminalPane({
       fontSize: appearance.font.size,
       lineHeight: appearance.font.lineHeight,
       cursorBlink: true,
+      cursorStyle: 'bar',
       allowProposedApi: true,
       screenReaderMode: true,
       theme
@@ -311,40 +336,6 @@ export function TerminalPane({
         {integrated && !privateSession && (
           <span className="session-privacy">History integration ready</span>
         )}
-        <div className="terminal-tools">
-          <button
-            aria-label="Search terminal"
-            title={`Search terminal (${shortcuts.search})`}
-            onClick={() => setSearchOpen((value) => !value)}
-          >
-            <Icon name="search" />
-          </button>
-          <button
-            aria-label="Copy selection"
-            title={`Copy selection (${shortcuts.copy})`}
-            onClick={() => {
-              void clipboard('copy')
-            }}
-          >
-            <Icon name="copy" />
-          </button>
-          <button
-            aria-label="Paste clipboard"
-            title={`Paste clipboard (${shortcuts.paste})`}
-            onClick={() => {
-              void clipboard('paste')
-            }}
-          >
-            <Icon name="paste" />
-          </button>
-          <button
-            aria-label="Close session"
-            title="Close session"
-            onClick={() => closeSession.current()}
-          >
-            <Icon name="stop" />
-          </button>
-        </div>
       </div>
       {searchOpen && (
         <form

@@ -17,14 +17,14 @@ export function createDesktopWindow(
     minHeight: 420,
     title: 'Terminal One',
     autoHideMenuBar: true,
-    backgroundColor: '#161821',
+    backgroundColor: '#0c0c0c',
     ...(process.platform === 'win32'
       ? {
           titleBarStyle: 'hidden' as const,
           titleBarOverlay: {
-            color: '#101218',
-            symbolColor: '#c6c8d1',
-            height: 46
+            color: '#202020',
+            symbolColor: '#cccccc',
+            height: 40
           }
         }
       : {}),

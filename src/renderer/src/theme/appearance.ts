@@ -35,7 +35,7 @@ export function terminalTheme(
     background:
       config.theme === 'contrast' ? '#000000' : read('--color-canvas'),
     foreground: config.theme === 'contrast' ? '#ffffff' : read('--color-ink'),
-    cursor: read('--color-focus'),
+    cursor: read('--color-ink'),
     scrollbarSliderBackground: read('--color-border'),
     scrollbarSliderHoverBackground: read('--color-control-border'),
     scrollbarSliderActiveBackground: read('--color-muted')

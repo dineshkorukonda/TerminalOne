@@ -20,7 +20,7 @@ test('native content resizing preserves the terminal chrome viewport', async () 
     const page = await app.firstWindow()
     await expect(
       page.getByRole('heading', { name: 'Terminal One' })
-    ).toBeVisible()
+    ).toBeAttached()
     for (const [width, height] of [
       [900, 650],
       [1200, 800],

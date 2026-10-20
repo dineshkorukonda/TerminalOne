@@ -14,8 +14,8 @@ let settings = {
     theme: 'midnight',
     font: {
       family: 'Cascadia Mono',
-      size: 14,
-      lineHeight: 1.5,
+      size: 16,
+      lineHeight: 1.2,
       ligatures: false
     }
   },

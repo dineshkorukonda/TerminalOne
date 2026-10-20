@@ -13,8 +13,8 @@ export interface TerminalFontConfig {
 export const DEFAULT_TERMINAL_FONT: Readonly<TerminalFontConfig> =
   Object.freeze({
     family: 'Cascadia Mono',
-    size: 14,
-    lineHeight: 1.5,
+    size: 16,
+    lineHeight: 1.2,
     ligatures: false
   })
 

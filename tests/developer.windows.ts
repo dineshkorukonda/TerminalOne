@@ -1,4 +1,8 @@
 import {
+  clickTerminalOption,
+  openTerminalOptions
+} from './fixtures/terminal-options'
+import {
   _electron as electron,
   expect,
   test,
@@ -235,6 +239,7 @@ test('saved projects restore fresh sessions only after explicit confirmation', a
   try {
     let page = await app.firstWindow()
     await page.getByRole('button', { name: 'Terminal options' }).click()
+    await openTerminalOptions(page)
     await page
       .getByRole('combobox', { name: 'Shell' })
       .selectOption('powershell')
@@ -247,9 +252,8 @@ test('saved projects restore fresh sessions only after explicit confirmation', a
         filePaths: [folder]
       })
     }, folder)
-    await page
-      .getByRole('button', { name: 'Open project', exact: true })
-      .click()
+    await clickTerminalOption(page, 'Open project')
+    await openTerminalOptions(page)
     await expect(
       page.getByRole('combobox', { name: 'Project', exact: true })
     ).not.toHaveValue('')
@@ -268,9 +272,7 @@ test('saved projects restore fresh sessions only after explicit confirmation', a
       'SET_OK'
     )
     await waitForIdlePowerShell(panel)
-    await page
-      .getByRole('button', { name: 'Developer settings', exact: true })
-      .click()
+    await clickTerminalOption(page, 'Developer settings')
     const settings = page.getByRole('dialog', {
       name: 'Developer settings',
       exact: true
