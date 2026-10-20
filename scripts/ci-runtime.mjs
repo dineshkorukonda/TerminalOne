@@ -55,10 +55,42 @@ export async function verifyRuntime(root, source, version) {
     await readFile(join(root, 'test-results/ci-runtime.json'), 'utf8')
   )
   const current = await snapshot(root, source, version)
-  if (JSON.stringify(manifest) !== JSON.stringify(current))
-    throw new Error(
-      'Shared runtime does not match this source, version and exact file bytes'
+  const errors = []
+  if (manifest.sourceCommit !== current.sourceCommit) {
+    errors.push(
+      `sourceCommit: expected ${manifest.sourceCommit}, got ${current.sourceCommit}`
     )
+  }
+  if (manifest.version !== current.version) {
+    errors.push(`version: expected ${manifest.version}, got ${current.version}`)
+  }
+  const manifestFiles = manifest.files || {}
+  const currentFiles = current.files || {}
+  const missing = Object.keys(manifestFiles).filter((f) => !(f in currentFiles))
+  const extra = Object.keys(currentFiles).filter((f) => !(f in manifestFiles))
+  const changed = Object.keys(manifestFiles).filter(
+    (f) => f in currentFiles && manifestFiles[f] !== currentFiles[f]
+  )
+  if (missing.length) {
+    errors.push(
+      `missing files (${missing.length}): ${missing.slice(0, 10).join(', ')}`
+    )
+  }
+  if (extra.length) {
+    errors.push(
+      `extra files (${extra.length}): ${extra.slice(0, 10).join(', ')}`
+    )
+  }
+  if (changed.length) {
+    errors.push(
+      `changed files (${changed.length}): ${changed.slice(0, 10).join(', ')}`
+    )
+  }
+  if (errors.length) {
+    throw new Error(
+      `Shared runtime does not match this source, version and exact file bytes:\n${errors.join('\n')}`
+    )
+  }
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

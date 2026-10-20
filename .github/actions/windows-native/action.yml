@@ -24,4 +24,4 @@ runs:
     - name: Verify compiled outputs exist
       shell: pwsh
       run: |
-        node --input-type=module -e "import {access} from 'node:fs/promises'; await access('node_modules/node-pty/build/Release/conpty.node'); await access('native/pty-job-host.exe')"
+        node --input-type=module -e "import {access} from 'node:fs/promises'; await access('node_modules/node-pty/build/Release/conpty.node'); await access('node_modules/node-pty/build/Release/conpty/conpty.dll'); await access('native/pty-job-host.exe')"

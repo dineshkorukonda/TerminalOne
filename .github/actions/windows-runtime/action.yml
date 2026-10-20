@@ -18,6 +18,10 @@ runs:
       shell: pwsh
     - run: npm run electron:install
       shell: pwsh
+    - name: Clean replaced runtime targets
+      shell: pwsh
+      run: |
+        Remove-Item -Recurse -Force out, native/pty-job-host.exe, node_modules/node-pty/build/Release, shell/blesh -ErrorAction SilentlyContinue
     - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
       with:
         name: desktop-runtime

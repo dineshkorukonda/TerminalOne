@@ -1,5 +1,7 @@
 import { rebuild } from '@electron/rebuild'
 import { readFile } from 'node:fs/promises'
+import { spawnSync } from 'node:child_process'
+import { join } from 'node:path'
 
 if (process.platform !== 'win32')
   throw new Error('Native ConPTY verification requires Windows')
@@ -15,8 +17,15 @@ await rebuild({
   onlyModules: ['node-pty']
 })
 
-const { spawnSync } = await import('node:child_process')
-const { join } = await import('node:path')
+const postInstall = spawnSync(
+  process.execPath,
+  ['node_modules/node-pty/scripts/post-install.js'],
+  { stdio: 'inherit' }
+)
+if (postInstall.error) throw postInstall.error
+if (postInstall.status !== 0)
+  throw new Error('node-pty post-install step failed')
+
 const compiler = join(
   process.env['SystemRoot'] ?? 'C:\\Windows',
   'Microsoft.NET/Framework64/v4.0.30319/csc.exe'
