@@ -5,6 +5,7 @@ import SiteHeader from '../components/SiteHeader.astro';
 import TerminalPreview from '../components/TerminalPreview.astro';
 import ProductSections from '../components/ProductSections.astro';
 import SiteFooter from '../components/SiteFooter.astro';
+import AlphaDownload from '../components/AlphaDownload.astro';
 ---
 
 <SiteLayout>
@@ -20,19 +21,19 @@ import SiteFooter from '../components/SiteFooter.astro';
           <br /> <span>Every shell.</span>
         </h1>
         <p class="hero-description">
-          An all-in-one terminal for Windows. Type your command; TerminalOne is
-          designed to choose between Bash, CMD, and PowerShell automatically. A
-          Unix-like experience, without switching shells yourself.
+          A Windows terminal for Git Bash, PowerShell, and CMD. Start in Bash
+          with syntax highlighting and suggestions, and run supported Windows
+          commands from the same prompt.
         </p>
         <div class="hero-actions">
+          <a class="button button-primary" href="#download">
+            Download alpha <ArrowRight size={16} aria-hidden="true" />
+          </a>
           <a
-            class="button button-primary"
+            class="button button-quiet"
             href="https://github.com/dineshkorukonda/TerminalOne"
           >
-            View on GitHub <ArrowRight size={16} aria-hidden="true" />
-          </a>
-          <a class="button button-quiet" href="#features">
-            Meet TerminalOne <ArrowUpRight size={15} aria-hidden="true" />
+            View on GitHub <ArrowUpRight size={15} aria-hidden="true" />
           </a>
         </div>
         <div class="hero-meta">
@@ -41,17 +42,18 @@ import SiteFooter from '../components/SiteFooter.astro';
           </span>
           <span class="meta-divider">/</span>
           <span>MIT licensed</span>
-          <span class="development-label">In development</span>
+          <span class="development-label">Alpha available</span>
         </div>
       </div>
       <TerminalPreview />
       <div class="hero-bottom">
-        <span>YOU TYPE THE COMMAND. TERMINALONE CHOOSES THE SHELL.</span>
+        <span>YOUR SHELLS. ONE WINDOWS WORKSPACE.</span>
         <a href="#features" aria-label="Explore the workspace">
           <span aria-hidden="true">↓</span>
         </a>
       </div>
     </section>
+    <AlphaDownload />
     <ProductSections />
   </main>
   <SiteFooter />

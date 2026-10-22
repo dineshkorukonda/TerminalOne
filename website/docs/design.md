@@ -42,7 +42,7 @@ Roadmap: https://github.com/dineshkorukonda/Terminal/milestones
 Releases: https://github.com/dineshkorukonda/Terminal/releases
 License: https://github.com/dineshkorukonda/Terminal/blob/main/LICENSE
 
-The repository is currently private; link targets are real but require repository access until the owner makes it public. Do not change visibility. No published installer is available. Do not invent a production domain or canonical URL. Open Graph metadata uses a relative local asset until a production URL is supplied.
+The repository is currently private; link targets are real but require repository access until the owner makes it public. Do not change visibility. Published unsigned Windows x64 alpha installers are now available; see the #91 update below. Do not invent a production domain or canonical URL. Open Graph metadata uses a relative local asset until a production URL is supplied.
 
 ## Accessibility and responsiveness
 
@@ -57,3 +57,9 @@ Run independent npm installation, formatting, lint, Astro/TypeScript checks, pro
 ## Delivery
 
 Branch: feat/49-marketing-website. Conventional Commits have meaningful bodies and Refs #49. A focused PR uses Closes #49, documents validation and screenshots, is registered with T3 Code and is not merged without owner authorization.
+
+## Published alpha update (#91)
+
+The site now exposes a pinned published Windows x64 alpha, matching checksum file, downloadable notes and the full GitHub release asset list. Downloads are static links and work without JavaScript. The featured release metadata lives in src/data/alpha-release.ts; updates verify the actual release manifest, checksum, byte size and publication date together. The site uses no runtime GitHub API or `/releases/latest` redirect, which would not select prereleases.
+
+Copy now describes delivered Bash assistance, explicit shell profiles, tabs/splits and bounded command adapters. It does not promise arbitrary shell script translation. The download section states the experimental unsigned status, optional Git for Windows prerequisite, included runtime, and update/install behavior. The social card status and favicon match the available alpha and existing desktop branding.

@@ -21,7 +21,9 @@ The goal is a continuous workflow on Windows: run development tools, work with G
 
 ## Availability
 
-TerminalOne is in development and has no published installer yet. The desktop already supports native shell sessions, tabs, split panes, and appearance settings. Automatic shell selection based on your command is still in development.
+Experimental unsigned Windows x64 alpha installers are available on the [releases page](https://github.com/dineshkorukonda/TerminalOne/releases), with release notes and SHA-256 checksums. The app includes its runtime; no development tools are needed to install it.
+
+The alpha supports native shell sessions, tabs, split panes, appearance settings, and optional assisted Git Bash. A bounded set of supported PowerShell commands and CMD forms can run through Bash adapters; arbitrary scripts and shell state changes require an explicit shell profile. Git Bash requires a separate Git for Windows installation. This is an early alpha for testing and feedback.
 
 Browse the [source code](https://github.com/dineshkorukonda/TerminalOne) or check [releases](https://github.com/dineshkorukonda/TerminalOne/releases) for availability.
 

@@ -23,16 +23,16 @@ const shells = [
 
 <div class="preview-composition" data-terminal-preview>
   <div class="preview-topline">
-    <span>ONE TERMINAL / AUTOMATIC SHELL SELECTION</span>
+    <span>ONE TERMINAL / THREE SHELL PROFILES</span>
     <span>DESIGN CONCEPT</span>
   </div>
   <div class="workspace-showcase">
     <div class="workspace-sidebar">
-      <span class="workspace-label">EXPLORE SHELL EXAMPLES</span>
+      <span class="workspace-label">EXPLORE SHELL PROFILES</span>
       <div
         class="shell-tabs"
         role="tablist"
-        aria-label="Automatic shell selection concept examples"
+        aria-label="Shell profile concept examples"
         hidden
       >
         {shells.map((shell, index) => (
@@ -56,9 +56,9 @@ const shells = [
         ))}
       </div>
       <p>
-        You enter a command.
+        Start in Git Bash.
         <br />
-        TerminalOne selects the shell.
+        Choose a shell anytime.
       </p>
     </div>
     <div class="workspace-stage">
@@ -71,7 +71,7 @@ const shells = [
           tabindex="0"
           hidden={index !== 0}
         >
-          <span class="workspace-label">THE SHELL BEHIND YOUR COMMAND</span>
+          <span class="workspace-label">YOUR TOOLS, YOUR SHELL</span>
           <h2>{shell.name}</h2>
           <p>{shell.description}</p>
           <span class="workspace-detail">{shell.detail}</span>
