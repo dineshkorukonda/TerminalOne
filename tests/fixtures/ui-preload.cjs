@@ -2,7 +2,23 @@
 const { contextBridge } = require('electron')
 const preview = process.argv.includes('--terminal-ui-preview')
 let sequence = 0,
-  clipboard = ''
+  clipboard = '',
+  cancelProject = false,
+  historyDelay = 0
+const historyRequests = [],
+  historyCompletions = [],
+  sessionLaunches = []
+contextBridge.exposeInMainWorld('uiFixture', {
+  cancelNextProject: () => {
+    cancelProject = true
+  },
+  getSessionLaunches: () => sessionLaunches,
+  getHistoryRequests: () => historyRequests,
+  getHistoryCompletions: () => historyCompletions,
+  delayNextHistory: (milliseconds) => {
+    historyDelay = milliseconds
+  }
+})
 const listeners = new Set(),
   sessions = new Map()
 const emit = (event) => {
@@ -84,6 +100,10 @@ contextBridge.exposeInMainWorld('desktop', {
   },
   resetPreferences: async () => ({ settings, warning: '' }),
   chooseProject: async (shellId) => {
+    if (cancelProject) {
+      cancelProject = false
+      return null
+    }
     const project = {
       id: 'fixture-project',
       name: 'Fixture project',
@@ -95,8 +115,13 @@ contextBridge.exposeInMainWorld('desktop', {
   },
   importPreferences: async () => null,
   exportPreferences: async () => false,
-  searchHistory: async (query, shell) =>
-    settings.history.enabled
+  searchHistory: async (query, shell) => {
+    historyRequests.push(query)
+    const delay = historyDelay
+    historyDelay = 0
+    if (delay) await new Promise((resolve) => setTimeout(resolve, delay))
+    historyCompletions.push(query)
+    return settings.history.enabled
       ? [
           {
             id: 'sample-1',
@@ -115,7 +140,8 @@ contextBridge.exposeInMainWorld('desktop', {
             (shell === 'all' || shell === item.shellId) &&
             item.command.toLowerCase().includes(query.toLowerCase())
         )
-      : [],
+      : []
+  },
   clearHistory: async () => {},
   explainCommand: async () => {
     if (!settings.explanations) throw new Error('Disabled')
@@ -127,8 +153,9 @@ contextBridge.exposeInMainWorld('desktop', {
     { id: 'powershell', name: preview ? 'PowerShell' : 'PowerShell fixture' },
     { id: 'cmd', name: preview ? 'Command Prompt' : 'CMD fixture' }
   ],
-  createSession: async ({ shellId }) => {
+  createSession: async ({ shellId, projectId }) => {
     if (sessions.size >= 4) throw new Error('Fixture owner limit reached')
+    sessionLaunches.push({ shellId, projectId: projectId ?? null })
     const id = `fixture-${++sequence}`,
       session = { id, shellId, pid: sequence, state: 'running', exitCode: null }
     sessions.set(id, session)
@@ -137,7 +164,7 @@ contextBridge.exposeInMainWorld('desktop', {
       type: 'data',
       id,
       sequence: 1,
-      data: `\x1b[32mFixture ${id}\x1b[0m 世界\r\nsearch match one\r\nsearch match two\r\n`
+      data: `\x1b[32mFixture ${id}\x1b[0m 世界\r\nProject: ${projectId ?? 'home'}\r\nsearch match one\r\nsearch match two\r\n`
     })
     return session
   },

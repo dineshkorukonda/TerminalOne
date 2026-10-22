@@ -26,6 +26,26 @@ export function CommandPalette({
       ref={dialog}
       className="command-palette"
       aria-label="Application commands"
+      onKeyDown={(event) => {
+        const buttons = Array.from(
+          dialog.current?.querySelectorAll<HTMLButtonElement>(
+            '.palette-action'
+          ) ?? []
+        )
+        if (!buttons.length) return
+        const index = buttons.findIndex((button) => button === event.target)
+        const inFilter = event.target === filterInput.current
+        if (!inFilter && index < 0) return
+        let next: number
+        if (event.key === 'ArrowDown') next = (index + 1) % buttons.length
+        else if (event.key === 'ArrowUp')
+          next = index <= 0 ? buttons.length - 1 : index - 1
+        else if (!inFilter && event.key === 'Home') next = 0
+        else if (!inFilter && event.key === 'End') next = buttons.length - 1
+        else return
+        event.preventDefault()
+        buttons[next]?.focus()
+      }}
       onCancel={(event) => {
         event.preventDefault()
         close()
@@ -45,12 +65,6 @@ export function CommandPalette({
         value={filter}
         onChange={(event) => setFilter(event.target.value)}
         onKeyDown={(event) => {
-          if (event.key === 'ArrowDown') {
-            event.preventDefault()
-            dialog.current
-              ?.querySelector<HTMLButtonElement>('.palette-action')
-              ?.focus()
-          }
           if (event.key === 'Enter' && matches[0]) {
             event.preventDefault()
             matches[0].run()
