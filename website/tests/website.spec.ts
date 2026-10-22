@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
-test('presents honest product messaging and real project destinations', async ({
+test('presents published alpha downloads and real project destinations', async ({
   page,
 }) => {
   await page.goto('/');
@@ -11,9 +11,43 @@ test('presents honest product messaging and real project destinations', async ({
   );
   await expect(page.getByText('DESIGN CONCEPT')).toBeVisible();
   await expect(
-    page.getByRole('link', { name: 'View on GitHub', exact: true }).first(),
-  ).toHaveAttribute('href', 'https://github.com/dineshkorukonda/TerminalOne');
-  await expect(page.getByRole('link', { name: /download/i })).toHaveCount(0);
+    page.getByRole('link', { name: 'Download alpha', exact: true }).first(),
+  ).toHaveAttribute('href', '#download');
+  const release =
+    'https://github.com/dineshkorukonda/TerminalOne/releases/download/v0.2.0-alpha.4';
+  await expect(
+    page.getByRole('link', { name: 'Download for Windows x64', exact: true }),
+  ).toHaveAttribute(
+    'href',
+    `${release}/TerminalOne-0.2.0-alpha.4-unsigned-x64.exe`,
+  );
+  await expect(
+    page.getByRole('link', { name: 'SHA-256 checksums', exact: true }),
+  ).toHaveAttribute('href', `${release}/SHA256SUMS.txt`);
+  await expect(
+    page.getByRole('link', { name: 'Release notes', exact: true }),
+  ).toHaveAttribute('href', `${release}/alpha-notes.md`);
+  await expect(
+    page.getByRole('link', { name: 'All release files', exact: true }),
+  ).toHaveAttribute(
+    'href',
+    'https://github.com/dineshkorukonda/TerminalOne/releases/tag/v0.2.0-alpha.4',
+  );
+  await expect(page.locator('#download')).toContainText('113.2 MiB');
+  await expect(page.locator('#download')).toContainText('October 20, 2026');
+  await expect(page.locator('#download')).toContainText(
+    'Experimental and unsigned',
+  );
+  await page.getByText('Verify your download', { exact: true }).click();
+  await expect(page.locator('.checksum-value')).toHaveText(
+    '32afe7d5e5377c97f0152e753c1948044b94ba8173315f594d6894b70aef7353',
+  );
+  await expect(page.locator('.checksum-details pre')).toContainText(
+    "Get-FileHash '.\\TerminalOne-0.2.0-alpha.4-unsigned-x64.exe' -Algorithm SHA256",
+  );
+  await expect(
+    page.getByText(/No installer available|There is no published installer/),
+  ).toHaveCount(0);
   await expect(
     page.getByRole('heading', { name: 'Your tools. One workspace.' }),
   ).toBeVisible();
@@ -91,7 +125,7 @@ test('FAQ discloses the release status and remains keyboard operable', async ({
   await question.focus();
   await page.keyboard.press('Enter');
   await expect(
-    page.getByText('Not yet. TerminalOne is in development.'),
+    page.getByText('Yes. A Windows x64 alpha is available.'),
   ).toBeVisible();
 });
 
@@ -121,6 +155,7 @@ test('fits narrow and wide layouts without runtime errors or missing local asset
   for (const width of [320, 390, 768, 1440]) {
     await page.setViewportSize({ width, height: 1000 });
     await page.goto('/');
+    await page.getByText('Verify your download', { exact: true }).click();
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= window.innerWidth,
@@ -151,12 +186,17 @@ test('keeps core content and navigation available without JavaScript', async ({
       .getByRole('link', { name: 'Features' }),
   ).toBeVisible();
   await expect(page.getByRole('tabpanel')).toContainText('PowerShell');
+  await expect(
+    page.getByRole('link', { name: 'Download for Windows x64', exact: true }),
+  ).toBeVisible();
+  await page.getByText('Verify your download', { exact: true }).click();
+  await expect(page.locator('.checksum-value')).toBeVisible();
   await page
     .locator('summary')
     .filter({ hasText: 'Can I download TerminalOne today?' })
     .click();
   await expect(
-    page.getByText('Not yet. TerminalOne is in development.'),
+    page.getByText('Yes. A Windows x64 alpha is available.'),
   ).toBeVisible();
   await context.close();
 });

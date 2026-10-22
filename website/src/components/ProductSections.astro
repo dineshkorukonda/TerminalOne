@@ -12,20 +12,20 @@ const principles = [
   {
     number: '01',
     icon: AppWindow,
-    title: 'One place for every command.',
-    text: 'Keep Bash, CMD, and PowerShell commands in one terminal, without moving between shells yourself.',
+    title: 'Bash, ready to work.',
+    text: 'With Git for Windows installed, get syntax highlighting, Tab completion, and suggestions in Git Bash. Your existing dotfiles stay yours.',
   },
   {
     number: '02',
     icon: Layers,
-    title: 'The right shell, automatically.',
-    text: 'TerminalOne is designed to recognize supported commands and choose the appropriate shell for you.',
+    title: 'Windows commands, in reach.',
+    text: 'Use selected PowerShell commands and CMD directory listings from Bash. Choose a shell profile for your other scripts.',
   },
   {
     number: '03',
     icon: ShieldCheck,
-    title: 'A Unix-like flow on Windows.',
-    text: 'A continuous command-line workflow for your local tools and files, with access to the Windows shells you already use.',
+    title: 'Room for every task.',
+    text: 'Organize native shell sessions with tabs, split panes, project folders, and appearance settings. Keep your tools and files local.',
   },
 ];
 const questions = [
@@ -33,7 +33,7 @@ const questions = [
     question: 'What is TerminalOne?',
     answer: 'An all-in-one terminal for Windows.',
     detail:
-      'It is being built to choose the shell based on your command, bringing a Unix-like command-line experience to Windows.',
+      'The Windows x64 alpha brings Git Bash, PowerShell, and CMD into a shared workspace with tabs and split panes.',
   },
   {
     question: 'What would I use it for?',
@@ -43,15 +43,15 @@ const questions = [
   },
   {
     question: 'Do I need to switch shells myself?',
-    answer: 'Automatic shell selection is the core idea.',
+    answer: 'Supported Windows commands can run from Bash.',
     detail:
-      'You type a command in TerminalOne. For supported commands, it is designed to choose Bash, CMD, or PowerShell and show the result in the same terminal.',
+      'The alpha routes a small set of missing PowerShell commands and specific CMD dir forms from Git Bash. Bash quoting rules apply. For arbitrary PowerShell scripts, CMD syntax, or shell state changes, choose the explicit shell profile.',
   },
   {
     question: 'Can I download TerminalOne today?',
-    answer: 'Not yet. TerminalOne is in development.',
+    answer: 'Yes. A Windows x64 alpha is available.',
     detail:
-      'There is no published installer. The desktop supports native shell sessions, tabs, split panes, and appearance settings. Automatic shell selection based on your command is still in development.',
+      'Find the experimental unsigned installer in the download section, with matching checksums and release notes. The app includes its runtime; Git Bash is an optional separate installation. This alpha is intended for testing and feedback.',
   },
   {
     question: 'How is TerminalOne licensed?',
@@ -62,14 +62,11 @@ const questions = [
 ];
 ---
 
-<section
-  class="shell-strip container"
-  aria-label="Shells TerminalOne is designed to select automatically"
->
+<section class="shell-strip container" aria-label="Available shell profiles">
   <span class="section-kicker">
-    One command line.
+    Three shell profiles.
     <br />
-    <span>The shell is handled for you.</span>
+    <span>One local workspace.</span>
   </span>
   <div class="shell-name">PowerShell</div>
   <div class="shell-name">Command Prompt</div>
@@ -92,9 +89,9 @@ const questions = [
       </h2>
     </div>
     <p>
-      Enter a command. TerminalOne is designed to identify the right shell, run
-      supported commands through it, and bring the result back to the same
-      terminal.
+      Start with assisted Bash, reach supported Windows commands through
+      adapters, or choose PowerShell and CMD directly. Keep separate tasks
+      together with tabs and split panes.
     </p>
   </div>
   <div class="principle-grid">
@@ -152,15 +149,12 @@ const questions = [
     <span>your command line.</span>
   </h2>
   <p>
-    Explore TerminalOne on GitHub.
+    Try the Windows x64 alpha.
     <br />
-    In development. No installer available yet.
+    Experimental, unsigned, and ready for your feedback.
   </p>
-  <a
-    class="button button-primary"
-    href="https://github.com/dineshkorukonda/TerminalOne"
-  >
-    View on GitHub <ArrowRight size={16} aria-hidden="true" />
+  <a class="button button-primary" href="#download">
+    Download alpha <ArrowRight size={16} aria-hidden="true" />
   </a>
   <div class="cta-notes">
     <span>
@@ -170,7 +164,7 @@ const questions = [
       <Check size={12} aria-hidden="true" /> Designed for Windows
     </span>
     <span>
-      <Check size={12} aria-hidden="true" /> In development
+      <Check size={12} aria-hidden="true" /> Alpha available
     </span>
   </div>
 </section>

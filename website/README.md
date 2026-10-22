@@ -59,12 +59,14 @@ The hosting provider and production domain are intentionally not configured. Bef
 - src/components: header, terminal concept preview, product content and footer.
 - src/layouts/SiteLayout.astro: metadata, font loading and document shell.
 - src/styles/global.css: design tokens, layout and responsive styles.
-- public: social preview assets. The brand uses a text-only wordmark with no terminal icon.
+- src/data/alpha-release.ts: pinned, verified release version, asset URLs, size, date and SHA-256.
+- src/components/AlphaDownload.astro: downloads, checksum verification and installation guidance.
+- public: social preview assets and the desktop T1 favicon. The header retains the text wordmark.
 - tests/website.spec.ts: production browser checks.
 - docs/design.md: architecture, design decisions and content constraints.
 - docs/baseline.md: desktop repository baseline and verification limits.
 
-Shell tabs show clean workspace concepts without command output or logs; they do not execute commands. Product copy explains the workspace and intended uses without milestones or phase lists. No installer is currently published. Keep these statements accurate as the desktop product develops.
+Shell tabs show clean workspace concepts without command output or logs; they do not execute commands. Product copy explains the workspace and delivered capabilities without milestones or phase lists. The download section links a published experimental unsigned Windows x64 alpha directly from GitHub. It stays available without JavaScript.
 
 Regenerate the committed social PNG after editing public/social-card.svg:
 
@@ -77,3 +79,14 @@ This uses the existing Playwright development dependency and the installed Chrom
 ## License
 
 [MIT](../LICENSE). Inter and JetBrains Mono are bundled from their Fontsource packages under the SIL Open Font License; Lucide icons use the ISC license. Dependency licenses remain available in their installed packages.
+
+## Updating the featured alpha
+
+The featured download is pinned rather than using GitHub `/releases/latest`, which excludes prereleases. Updating only a version label can mismatch an installer and checksum. For a new published alpha:
+
+1. Inspect the GitHub release and its assets. Confirm it is published and has an unsigned Windows x64 installer, SHA256SUMS.txt, alpha-notes.md and release-manifest.json.
+2. Compare the manifest's version, installer filename and SHA-256 with SHA256SUMS.txt. Record the actual installer byte size and publication date.
+3. Update src/data/alpha-release.ts together. All download links then reference that single tag. Never use CI artifacts or unpublished releases for public download links.
+4. Run the website checks and review the download section at mobile and desktop widths. The site performs no runtime GitHub API requests, and builds do not require GitHub credentials or network release discovery.
+
+For #91, v0.2.0-alpha.4 was checked against its published manifest/checksum on 2026-10-22. Its 118,653,689-byte installer has SHA-256 32afe7d5e5377c97f0152e753c1948044b94ba8173315f594d6894b70aef7353. Newer merged source changes are not assumed to be present in that artifact.

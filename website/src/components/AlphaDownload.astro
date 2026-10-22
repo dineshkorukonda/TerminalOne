@@ -1,0 +1,97 @@
+---
+import { ArrowDownToLine, ArrowUpRight } from '@lucide/astro';
+import { alphaRelease } from '../data/alpha-release';
+const published = new Intl.DateTimeFormat('en', {
+  dateStyle: 'long',
+  timeZone: 'UTC',
+}).format(new Date(`${alphaRelease.publishedOn}T00:00:00Z`));
+const size = (alphaRelease.sizeBytes / 1024 / 1024).toFixed(1);
+---
+
+<section
+  id="download"
+  class="section container download-section"
+  aria-labelledby="download-title"
+>
+  <div class="download-intro">
+    <span class="eyebrow">
+      <span class="tiny-square"></span> AVAILABLE ALPHA
+    </span>
+    <h2 id="download-title">
+      Your next
+      <br />
+      <span class="muted-text">command starts here.</span>
+    </h2>
+    <p>
+      Try TerminalOne on Windows. This early alpha includes native shell
+      sessions, tabs, split panes, Bash assistance, and in-app update checks.
+    </p>
+    <p class="alpha-notice">
+      Experimental and unsigned. Windows may show an unrecognized-app warning.
+      Review the release notes and verify the download before installing. Bugs
+      and unfinished features are expected.
+    </p>
+  </div>
+  <div class="download-card">
+    <div class="download-card-heading">
+      <span class="release-badge">WINDOWS x64</span>
+      <span class="release-channel">ALPHA</span>
+    </div>
+    <h3>TerminalOne {alphaRelease.version}</h3>
+    <p class="release-meta">
+      {size} MiB · Released{' '}
+      <time datetime={alphaRelease.publishedOn}>{published}</time>
+    </p>
+    <a class="button button-primary" href={alphaRelease.installerUrl}>
+      Download for Windows x64 <ArrowDownToLine size={16} aria-hidden="true" />
+    </a>
+    <p class="installer-name">{alphaRelease.installerName}</p>
+    <nav class="release-links" aria-label="Alpha release files">
+      <a href={alphaRelease.checksumsUrl}>
+        SHA-256 checksums <ArrowUpRight size={12} aria-hidden="true" />
+      </a>
+      <a href={alphaRelease.notesUrl}>
+        Release notes <ArrowUpRight size={12} aria-hidden="true" />
+      </a>
+      <a href={alphaRelease.releaseUrl}>
+        All release files <ArrowUpRight size={12} aria-hidden="true" />
+      </a>
+    </nav>
+    <details class="checksum-details">
+      <summary>Verify your download</summary>
+      <p>In PowerShell, open your Downloads folder and run:</p>
+      <pre><code>{`Get-FileHash '.\\${alphaRelease.installerName}' -Algorithm SHA256`}</code></pre>
+      <p>
+        Compare the result with SHA256SUMS.txt for this release. Expected
+        SHA-256:
+      </p>
+      <code class="checksum-value">{alphaRelease.sha256}</code>
+    </details>
+  </div>
+  <ol class="install-steps" aria-label="Install TerminalOne">
+    <li>
+      <span>01 / INSTALL</span>
+      <h3>Run the installer.</h3>
+      <p>
+        The app includes its runtime. You do not need Node.js, Python, or build
+        tools to install it.
+      </p>
+    </li>
+    <li>
+      <span>02 / CHOOSE YOUR SHELL</span>
+      <h3>Bring your tools.</h3>
+      <p>
+        Install Git for Windows for assisted Git Bash. Otherwise, TerminalOne
+        uses an available PowerShell or CMD profile. Git Bash is not bundled.
+      </p>
+    </li>
+    <li>
+      <span>03 / KEEP CURRENT</span>
+      <h3>Check for updates.</h3>
+      <p>
+        Open Terminal options, then Updates. Review and download an available
+        alpha; installing it closes your terminal sessions after confirmation.
+      </p>
+    </li>
+  </ol>
+</section>
