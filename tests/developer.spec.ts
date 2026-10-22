@@ -104,8 +104,26 @@ test('developer settings validate shortcuts and history suggestions remain draft
     await expect(
       page.getByRole('combobox', { name: 'Project', exact: true })
     ).toHaveValue('fixture-project')
-    await page.getByRole('button', { name: 'New session', exact: true }).click()
+    await expect(page.getByRole('tab')).toHaveCount(2)
     await expect(page.getByRole('tab').last()).toContainText('Fixture project')
+    expect(
+      await page.evaluate(() =>
+        Reflect.get(globalThis, 'uiFixture').getSessionLaunches().slice(-1)
+      )
+    ).toEqual([{ shellId: 'powershell', projectId: 'fixture-project' }])
+    await page.evaluate(() =>
+      Reflect.get(globalThis, 'uiFixture').cancelNextProject()
+    )
+    await clickTerminalOption(page, 'Open project')
+    await expect(page.getByRole('tab')).toHaveCount(2)
+    await page.getByRole('tab').first().click()
+    await expect(
+      page.locator('.tab-viewport:not([hidden]) .xterm-accessibility-tree')
+    ).toContainText('Project: home')
+    await page.getByRole('tab').last().click()
+    await expect(
+      page.locator('.tab-viewport:not([hidden]) .xterm-accessibility-tree')
+    ).toContainText('fixture-project')
     await clickTerminalOption(page, 'Developer settings')
     await settings
       .getByRole('button', { name: 'Save current layout', exact: true })

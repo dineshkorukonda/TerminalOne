@@ -2,7 +2,15 @@
 const { contextBridge } = require('electron')
 const preview = process.argv.includes('--terminal-ui-preview')
 let sequence = 0,
-  clipboard = ''
+  clipboard = '',
+  cancelProject = false
+const sessionLaunches = []
+contextBridge.exposeInMainWorld('uiFixture', {
+  cancelNextProject: () => {
+    cancelProject = true
+  },
+  getSessionLaunches: () => sessionLaunches
+})
 const listeners = new Set(),
   sessions = new Map()
 const emit = (event) => {
@@ -84,6 +92,10 @@ contextBridge.exposeInMainWorld('desktop', {
   },
   resetPreferences: async () => ({ settings, warning: '' }),
   chooseProject: async (shellId) => {
+    if (cancelProject) {
+      cancelProject = false
+      return null
+    }
     const project = {
       id: 'fixture-project',
       name: 'Fixture project',
@@ -127,8 +139,9 @@ contextBridge.exposeInMainWorld('desktop', {
     { id: 'powershell', name: preview ? 'PowerShell' : 'PowerShell fixture' },
     { id: 'cmd', name: preview ? 'Command Prompt' : 'CMD fixture' }
   ],
-  createSession: async ({ shellId }) => {
+  createSession: async ({ shellId, projectId }) => {
     if (sessions.size >= 4) throw new Error('Fixture owner limit reached')
+    sessionLaunches.push({ shellId, projectId: projectId ?? null })
     const id = `fixture-${++sequence}`,
       session = { id, shellId, pid: sequence, state: 'running', exitCode: null }
     sessions.set(id, session)
@@ -137,7 +150,7 @@ contextBridge.exposeInMainWorld('desktop', {
       type: 'data',
       id,
       sequence: 1,
-      data: `\x1b[32mFixture ${id}\x1b[0m 世界\r\nsearch match one\r\nsearch match two\r\n`
+      data: `\x1b[32mFixture ${id}\x1b[0m 世界\r\nProject: ${projectId ?? 'home'}\r\nsearch match one\r\nsearch match two\r\n`
     })
     return session
   },

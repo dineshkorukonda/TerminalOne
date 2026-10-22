@@ -138,10 +138,13 @@ export function App() {
       active = false
     }
   }, [store])
-  const newTab = (privateSession = false, profileId = shellId) => {
+  const newTab = (
+    privateSession = false,
+    profileId = shellId,
+    project = preferences.projects.find((item) => item.id === projectId)
+  ) => {
     const shell = shells.find((shell) => shell.id === profileId)
     if (shell) {
-      const project = preferences.projects.find((item) => item.id === projectId)
       workspace.newTab(
         shell.id,
         (privateSession
@@ -666,6 +669,7 @@ export function App() {
                       await reloadPreferences()
                       setProjectId(project.id)
                       setShellId(project.shellId)
+                      newTab(false, project.shellId, project)
                     }
                   })
                   .catch(() =>
@@ -679,7 +683,7 @@ export function App() {
               <span>Open project</span>
             </button>
             <label>
-              Project
+              Project for new sessions
               <select
                 aria-label="Project"
                 value={projectId}
