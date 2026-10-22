@@ -200,9 +200,29 @@ for (const { scale, mode } of [
       await expect(
         page.getByRole('dialog', { name: 'Application commands' })
       ).toBeVisible()
-      await page
-        .getByRole('textbox', { name: 'Filter application commands' })
-        .fill('Search terminal')
+      const paletteFilter = page.getByRole('textbox', {
+        name: 'Filter application commands'
+      })
+      const paletteResults = page.locator('.palette-action')
+      await paletteFilter.press('ArrowDown')
+      await expect(paletteResults.first()).toBeFocused()
+      await page.keyboard.press('ArrowDown')
+      await expect(paletteResults.nth(1)).toBeFocused()
+      await page.keyboard.press('ArrowUp')
+      await expect(paletteResults.first()).toBeFocused()
+      await page.keyboard.press('End')
+      await expect(paletteResults.last()).toBeFocused()
+      await page.keyboard.press('Home')
+      await expect(paletteResults.first()).toBeFocused()
+      await page.keyboard.press('ArrowUp')
+      await expect(paletteResults.last()).toBeFocused()
+      await paletteFilter.fill('no matching command xyz')
+      await paletteFilter.press('ArrowDown')
+      await expect(paletteFilter).toBeFocused()
+      await expect(paletteResults).toHaveCount(0)
+      await paletteFilter.fill('Search terminal')
+      await paletteFilter.press('ArrowUp')
+      await expect(paletteResults.first()).toBeFocused()
       await page.keyboard.press('Enter')
       const search = panel.getByRole('textbox', {
         name: 'Search terminal output'
