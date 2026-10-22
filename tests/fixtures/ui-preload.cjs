@@ -3,13 +3,21 @@ const { contextBridge } = require('electron')
 const preview = process.argv.includes('--terminal-ui-preview')
 let sequence = 0,
   clipboard = '',
-  cancelProject = false
-const sessionLaunches = []
+  cancelProject = false,
+  historyDelay = 0
+const historyRequests = [],
+  historyCompletions = [],
+  sessionLaunches = []
 contextBridge.exposeInMainWorld('uiFixture', {
   cancelNextProject: () => {
     cancelProject = true
   },
-  getSessionLaunches: () => sessionLaunches
+  getSessionLaunches: () => sessionLaunches,
+  getHistoryRequests: () => historyRequests,
+  getHistoryCompletions: () => historyCompletions,
+  delayNextHistory: (milliseconds) => {
+    historyDelay = milliseconds
+  }
 })
 const listeners = new Set(),
   sessions = new Map()
@@ -107,8 +115,13 @@ contextBridge.exposeInMainWorld('desktop', {
   },
   importPreferences: async () => null,
   exportPreferences: async () => false,
-  searchHistory: async (query, shell) =>
-    settings.history.enabled
+  searchHistory: async (query, shell) => {
+    historyRequests.push(query)
+    const delay = historyDelay
+    historyDelay = 0
+    if (delay) await new Promise((resolve) => setTimeout(resolve, delay))
+    historyCompletions.push(query)
+    return settings.history.enabled
       ? [
           {
             id: 'sample-1',
@@ -127,7 +140,8 @@ contextBridge.exposeInMainWorld('desktop', {
             (shell === 'all' || shell === item.shellId) &&
             item.command.toLowerCase().includes(query.toLowerCase())
         )
-      : [],
+      : []
+  },
   clearHistory: async () => {},
   explainCommand: async () => {
     if (!settings.explanations) throw new Error('Disabled')

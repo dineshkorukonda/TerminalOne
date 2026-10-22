@@ -24,42 +24,48 @@ export function CommandDraft({
   }, [])
   useEffect(() => {
     let active = true
-    void window.desktop
-      .searchHistory(query, shellId)
-      .then((values) => {
-        if (active) setEntries(values)
-      })
-      .catch(() => {
-        if (active) setMessage('History could not be loaded.')
-      })
+    const timer = window.setTimeout(() => {
+      void window.desktop
+        .searchHistory(query, shellId)
+        .then((values) => {
+          if (active) setEntries(values)
+        })
+        .catch(() => {
+          if (active) setMessage('History could not be loaded.')
+        })
+    }, 150)
     return () => {
+      window.clearTimeout(timer)
       active = false
     }
   }, [query, shellId])
   useEffect(() => {
     let active = true
-    if (!draft || dismissed) {
-      setSuggestions([])
-      return
-    }
-    void window.desktop
-      .searchHistory(draft.slice(0, 256), shellId)
-      .then((values) => {
-        if (active)
-          setSuggestions(
-            values
-              .filter(
-                (value) =>
-                  value.command.toLowerCase().startsWith(draft.toLowerCase()) &&
-                  value.command !== draft
-              )
-              .slice(0, 5)
-          )
-      })
-      .catch(() => {
-        if (active) setSuggestions([])
-      })
+    setSuggestions([])
+    if (!draft || dismissed) return
+    const timer = window.setTimeout(() => {
+      void window.desktop
+        .searchHistory(draft.slice(0, 256), shellId)
+        .then((values) => {
+          if (active)
+            setSuggestions(
+              values
+                .filter(
+                  (value) =>
+                    value.command
+                      .toLowerCase()
+                      .startsWith(draft.toLowerCase()) &&
+                    value.command !== draft
+                )
+                .slice(0, 5)
+            )
+        })
+        .catch(() => {
+          if (active) setSuggestions([])
+        })
+    }, 150)
     return () => {
+      window.clearTimeout(timer)
       active = false
     }
   }, [draft, shellId, dismissed])
