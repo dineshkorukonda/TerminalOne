@@ -4,7 +4,22 @@ const preview = process.argv.includes('--terminal-ui-preview')
 let sequence = 0,
   clipboard = '',
   cancelProject = false,
-  historyDelay = 0
+  historyDelay = 0,
+  historyHolds = 0,
+  holdClear = false,
+  releaseClear = null,
+  failClear = false,
+  clearCount = 0
+const heldHistory = []
+let historyEntries = [
+  {
+    id: 'sample-1',
+    shellId: 'powershell',
+    command: "Get-ChildItem 'C:\\Fixture Spaces'",
+    time: 1
+  },
+  { id: 'sample-2', shellId: 'powershell', command: 'Get-Location', time: 2 }
+]
 const historyRequests = [],
   historyCompletions = [],
   sessionLaunches = []
@@ -12,9 +27,29 @@ contextBridge.exposeInMainWorld('uiFixture', {
   cancelNextProject: () => {
     cancelProject = true
   },
-  getSessionLaunches: () => sessionLaunches,
+  getSessionLaunches: () =>
+    sessionLaunches.map(({ shellId, projectId }) => ({ shellId, projectId })),
+  getSessionOptions: () => sessionLaunches,
   getHistoryRequests: () => historyRequests,
   getHistoryCompletions: () => historyCompletions,
+  holdNextHistory: () => {
+    historyHolds++
+  },
+  getPendingHistoryCount: () => heldHistory.length,
+  releaseHistoryResponses: () => {
+    for (const resolve of heldHistory.splice(0)) resolve()
+  },
+  holdNextClear: () => {
+    holdClear = true
+  },
+  finishClear: () => {
+    releaseClear?.()
+    releaseClear = null
+  },
+  failNextClear: () => {
+    failClear = true
+  },
+  getClearCount: () => clearCount,
   delayNextHistory: (milliseconds) => {
     historyDelay = milliseconds
   }
@@ -117,32 +152,37 @@ contextBridge.exposeInMainWorld('desktop', {
   exportPreferences: async () => false,
   searchHistory: async (query, shell) => {
     historyRequests.push(query)
-    const delay = historyDelay
-    historyDelay = 0
-    if (delay) await new Promise((resolve) => setTimeout(resolve, delay))
-    historyCompletions.push(query)
-    return settings.history.enabled
-      ? [
-          {
-            id: 'sample-1',
-            shellId: 'powershell',
-            command: "Get-ChildItem 'C:\\Fixture Spaces'",
-            time: 1
-          },
-          {
-            id: 'sample-2',
-            shellId: 'powershell',
-            command: 'Get-Location',
-            time: 2
-          }
-        ].filter(
+    // Capture the old result before delaying, reproducing an in-flight IPC reply.
+    const result = settings.history.enabled
+      ? historyEntries.filter(
           (item) =>
             (shell === 'all' || shell === item.shellId) &&
             item.command.toLowerCase().includes(query.toLowerCase())
         )
       : []
+    const delay = historyDelay
+    historyDelay = 0
+    if (historyHolds) {
+      historyHolds--
+      await new Promise((resolve) => heldHistory.push(resolve))
+    }
+    if (delay) await new Promise((resolve) => setTimeout(resolve, delay))
+    historyCompletions.push(query)
+    return result
   },
-  clearHistory: async () => {},
+  clearHistory: async () => {
+    clearCount++
+    const fail = failClear
+    failClear = false
+    if (holdClear) {
+      holdClear = false
+      await new Promise((resolve) => {
+        releaseClear = resolve
+      })
+    }
+    if (fail) throw new Error('Synthetic clear failure')
+    historyEntries = []
+  },
   explainCommand: async () => {
     if (!settings.explanations) throw new Error('Disabled')
     return 'Synthetic local reference. Nothing executed.'
@@ -153,9 +193,13 @@ contextBridge.exposeInMainWorld('desktop', {
     { id: 'powershell', name: preview ? 'PowerShell' : 'PowerShell fixture' },
     { id: 'cmd', name: preview ? 'Command Prompt' : 'CMD fixture' }
   ],
-  createSession: async ({ shellId, projectId }) => {
+  createSession: async ({ shellId, projectId, private: privateSession }) => {
     if (sessions.size >= 4) throw new Error('Fixture owner limit reached')
-    sessionLaunches.push({ shellId, projectId: projectId ?? null })
+    sessionLaunches.push({
+      shellId,
+      projectId: projectId ?? null,
+      private: privateSession
+    })
     const id = `fixture-${++sequence}`,
       session = { id, shellId, pid: sequence, state: 'running', exitCode: null }
     sessions.set(id, session)

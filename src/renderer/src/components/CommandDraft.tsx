@@ -18,36 +18,64 @@ export function CommandDraft({
     [suggestions, setSuggestions] = useState<HistoryEntry[]>([])
   const [message, setMessage] = useState('')
   const [dismissed, setDismissed] = useState(false)
+  const [clearPending, setClearPending] = useState(false)
+  const clearInFlight = useRef(false)
+  const requestGeneration = useRef(0)
+  async function clearHistory() {
+    if (clearInFlight.current) return
+    clearInFlight.current = true
+    requestGeneration.current++
+    setClearPending(true)
+    setEntries([])
+    setSuggestions([])
+    setMessage('Clearing app history…')
+    try {
+      await window.desktop.clearHistory()
+      setMessage('App history cleared.')
+    } catch {
+      setMessage('Could not clear history. Try again.')
+    } finally {
+      clearInFlight.current = false
+      setClearPending(false)
+    }
+  }
   useEffect(() => {
     dialog.current?.showModal()
     queryInput.current?.focus()
   }, [])
   useEffect(() => {
+    if (clearPending) return
     let active = true
+    const generation = requestGeneration.current
+    const current = () => active && generation === requestGeneration.current
     const timer = window.setTimeout(() => {
+      if (!current()) return
       void window.desktop
         .searchHistory(query, shellId)
         .then((values) => {
-          if (active) setEntries(values)
+          if (current()) setEntries(values)
         })
         .catch(() => {
-          if (active) setMessage('History could not be loaded.')
+          if (current()) setMessage('History could not be loaded.')
         })
     }, 150)
     return () => {
       window.clearTimeout(timer)
       active = false
     }
-  }, [query, shellId])
+  }, [query, shellId, clearPending])
   useEffect(() => {
-    let active = true
     setSuggestions([])
-    if (!draft || dismissed) return
+    if (!draft || dismissed || clearPending) return
+    let active = true
+    const generation = requestGeneration.current
+    const current = () => active && generation === requestGeneration.current
     const timer = window.setTimeout(() => {
+      if (!current()) return
       void window.desktop
         .searchHistory(draft.slice(0, 256), shellId)
         .then((values) => {
-          if (active)
+          if (current())
             setSuggestions(
               values
                 .filter(
@@ -61,14 +89,14 @@ export function CommandDraft({
             )
         })
         .catch(() => {
-          if (active) setSuggestions([])
+          if (current()) setSuggestions([])
         })
     }, 150)
     return () => {
       window.clearTimeout(timer)
       active = false
     }
-  }, [draft, shellId, dismissed])
+  }, [draft, shellId, dismissed, clearPending])
   return (
     <dialog
       ref={dialog}
@@ -187,18 +215,12 @@ export function CommandDraft({
           Explain locally
         </button>
         <button
+          disabled={clearPending}
           onClick={() => {
-            void window.desktop
-              .clearHistory()
-              .then(() => {
-                setEntries([])
-                setSuggestions([])
-                setMessage('App history cleared.')
-              })
-              .catch(() => setMessage('Could not clear history.'))
+            void clearHistory()
           }}
         >
-          Clear history
+          {clearPending ? 'Clearing history…' : 'Clear history'}
         </button>
       </div>
       {!explanations && (

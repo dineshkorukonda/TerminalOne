@@ -169,7 +169,7 @@ export function App() {
     )
   }
   function split(direction: 'horizontal' | 'vertical') {
-    workspace.split(direction, shellId)
+    workspace.split(direction)
     focusTerminal()
   }
   function openSettings() {

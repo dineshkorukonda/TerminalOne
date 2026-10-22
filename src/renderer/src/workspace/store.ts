@@ -64,7 +64,7 @@ export interface Workspace {
   selectTab(id: string): void
   closeTab(id: string): void
   focusPane(id: string): void
-  split(direction: 'horizontal' | 'vertical', shellId: string): void
+  split(direction: 'horizontal' | 'vertical'): void
   closePane(id: string): void
   resizeSplit(id: string, ratio: number): void
 }
@@ -158,7 +158,7 @@ export function createWorkspaceStore() {
         )
       })
     },
-    split(direction, shellId) {
+    split(direction) {
       const state = get(),
         tab = state.tabs.find((tab) => tab.id === state.activeTabId)
       if (!tab) return
@@ -171,13 +171,8 @@ export function createWorkspaceStore() {
       const source = panes(tab.root).find(
         (pane) => pane.id === tab.activePaneId
       )
-      const pane: Pane = {
-        kind: 'pane',
-        id: next(),
-        shellId,
-        projectId: source?.projectId ?? null,
-        private: source?.private ?? false
-      }
+      if (!source) return
+      const pane: Pane = { ...source, id: next() }
       const root = replace(tab.root, tab.activePaneId, (original) => ({
         kind: 'split',
         id: next(),

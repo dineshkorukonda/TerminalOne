@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import type { DesktopApi } from '../src/contracts/desktop-api'
 import { clickTerminalOption } from './fixtures/terminal-options'
 
-test('history lookups coalesce edits and reject superseded draft responses', async () => {
+test('history coalesces edits and rejects stale replies after edits or clearing', async () => {
   const profile = await mkdtemp(join(tmpdir(), 'terminal-history-requests-'))
   const env = Object.fromEntries(
     Object.entries(process.env).filter(
@@ -88,6 +88,95 @@ test('history lookups coalesce edits and reject superseded draft responses', asy
       )
       .toContain('Get-')
     await expect(suggestions).toHaveCount(0)
+
+    await query.fill('')
+    await draft.fill('Get')
+    await page.clock.runFor(150)
+    const entries = history.getByRole('button', {
+      name: 'Use command',
+      exact: true
+    })
+    await expect(entries).toHaveCount(2)
+    await expect(suggestions).toHaveCount(2)
+
+    // A failed clear suspends new lookups and can be retried without losing the draft.
+    await page.evaluate(() => {
+      const fixture = Reflect.get(globalThis, 'uiFixture')
+      fixture.holdNextClear()
+      fixture.failNextClear()
+    })
+    const clearButton = history.getByRole('button', { name: /^Clear/ })
+    await clearButton.click()
+    await expect(clearButton).toBeDisabled()
+    const whileClearing = (await requests()).length
+    await query.fill('Location')
+    await draft.fill('Get-Child')
+    await page.clock.runFor(500)
+    expect(await requests()).toHaveLength(whileClearing)
+    expect(
+      await page.evaluate(() =>
+        Reflect.get(globalThis, 'uiFixture').getClearCount()
+      )
+    ).toBe(1)
+    await page.evaluate(() =>
+      Reflect.get(globalThis, 'uiFixture').finishClear()
+    )
+    await expect(history.getByRole('status')).toHaveText(
+      'Could not clear history. Try again.'
+    )
+    await expect(clearButton).toBeEnabled()
+    await expect(draft).toHaveValue('Get-Child')
+    await page.clock.runFor(150)
+    await expect(entries).toHaveCount(1)
+    await expect(suggestions).toHaveCount(1)
+
+    await page.evaluate(() => {
+      const fixture = Reflect.get(globalThis, 'uiFixture')
+      fixture.holdNextHistory()
+      fixture.holdNextHistory()
+    })
+    await query.fill('')
+    await draft.fill('Get-')
+    await page.clock.runFor(150)
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          Reflect.get(globalThis, 'uiFixture').getPendingHistoryCount()
+        )
+      )
+      .toBe(2)
+    const completions = await page.evaluate(
+      () =>
+        Reflect.get(globalThis, 'uiFixture').getHistoryCompletions()
+          .length as number
+    )
+    await clearButton.click()
+    await expect(history.getByRole('status')).toHaveText('App history cleared.')
+    await expect(draft).toHaveValue('Get-')
+    await expect(entries).toHaveCount(0)
+    await expect(suggestions).toHaveCount(0)
+    await page.evaluate(() =>
+      Reflect.get(globalThis, 'uiFixture').releaseHistoryResponses()
+    )
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            Reflect.get(globalThis, 'uiFixture').getHistoryCompletions()
+              .length as number
+        )
+      )
+      .toBe(completions + 2)
+    await expect(entries).toHaveCount(0)
+    await expect(suggestions).toHaveCount(0)
+    await page.clock.runFor(150)
+    await expect(entries).toHaveCount(0)
+    await expect(suggestions).toHaveCount(0)
+    expect(
+      await page.evaluate(() =>
+        Reflect.get(globalThis, 'uiFixture').getClearCount()
+      )
+    ).toBe(2)
 
     const count = (await requests()).length
     await draft.fill('Get-Child')

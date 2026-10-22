@@ -12,3 +12,5 @@ node scripts/capture-ui.mjs
 ```
 
 The screenshot script launches the controlled Electron renderer fixture and writes workspace, split-pane and command-palette PNGs under `artifacts/ui/`. Linux needs the same display and Electron libraries as the smoke suite. All depicted commands/output are synthetic; no PowerShell commands are executed and the previews do not establish Windows compatibility or title-bar behavior. The preview flag and sample output exist only in test/tooling files and are not part of the production application.
+
+Splitting inherits the focused pane's launch shell, saved project and private-session policy together. The new-session shell selector affects newly opened tabs, not splits of an existing pane. Split creation preserves the original pane and its running process; the new pane starts a fresh session in the saved launch folder, not an inferred current working directory.
