@@ -12,7 +12,9 @@ contextBridge.exposeInMainWorld('uiFixture', {
   cancelNextProject: () => {
     cancelProject = true
   },
-  getSessionLaunches: () => sessionLaunches,
+  getSessionLaunches: () =>
+    sessionLaunches.map(({ shellId, projectId }) => ({ shellId, projectId })),
+  getSessionOptions: () => sessionLaunches,
   getHistoryRequests: () => historyRequests,
   getHistoryCompletions: () => historyCompletions,
   delayNextHistory: (milliseconds) => {
@@ -153,9 +155,13 @@ contextBridge.exposeInMainWorld('desktop', {
     { id: 'powershell', name: preview ? 'PowerShell' : 'PowerShell fixture' },
     { id: 'cmd', name: preview ? 'Command Prompt' : 'CMD fixture' }
   ],
-  createSession: async ({ shellId, projectId }) => {
+  createSession: async ({ shellId, projectId, private: privateSession }) => {
     if (sessions.size >= 4) throw new Error('Fixture owner limit reached')
-    sessionLaunches.push({ shellId, projectId: projectId ?? null })
+    sessionLaunches.push({
+      shellId,
+      projectId: projectId ?? null,
+      private: privateSession
+    })
     const id = `fixture-${++sequence}`,
       session = { id, shellId, pid: sequence, state: 'running', exitCode: null }
     sessions.set(id, session)
