@@ -138,13 +138,22 @@ test('xterm renders live ANSI and Unicode, sends Ctrl+C, fits grids, and restart
       BrowserWindow.getAllWindows()[0]!.setContentSize(900, 600)
     })
     await expect(page.getByRole('status')).toHaveText('Exited (0)')
-    await page.getByRole('button', { name: 'New session' }).click()
+    const options = page.getByRole('button', {
+      name: 'Terminal options',
+      exact: true
+    })
+    if ((await options.getAttribute('aria-expanded')) === 'true')
+      await options.click()
+    await page
+      .getByRole('button', { name: 'Restart session', exact: true })
+      .click()
     await expect(page.getByRole('status')).toHaveText('running')
+    await waitForPrompt(page)
     await command(page, "Write-Output ('RESTART_' + 'OK')")
     await expect(
       page.locator('.tab-viewport:not([hidden]) .xterm-accessibility-tree')
     ).toContainText('RESTART_OK')
-    await clickTerminalOption(page, 'Close session')
+    await clickTerminalOption(page, 'Stop session')
     await expect(page.getByRole('status')).toHaveText('closed')
   } finally {
     await fixture.dispose()
