@@ -23,7 +23,7 @@ const PANE_ACTIONS = [
   { label: 'Search terminal', icon: 'search', action: 'search' },
   { label: 'Copy selection', icon: 'copy', action: 'copy' },
   { label: 'Paste clipboard', icon: 'paste', action: 'paste' },
-  { label: 'Close session', icon: 'stop', action: 'stop' }
+  { label: 'Stop session', icon: 'stop', action: 'stop' }
 ] as const
 
 export function App() {
@@ -559,6 +559,11 @@ export function App() {
               <button
                 key={label}
                 disabled={!activeTab}
+                title={
+                  action === 'stop'
+                    ? 'Stop the process and keep its pane and output. Close pane removes the terminal view.'
+                    : label
+                }
                 onClick={() => paneAction(action)}
               >
                 <Icon name={icon} />

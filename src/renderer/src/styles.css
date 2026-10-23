@@ -632,3 +632,12 @@ textarea {
 .pane-close:focus-visible {
   opacity: 1;
 }
+
+.session-recovery {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  color: var(--color-ink);
+}

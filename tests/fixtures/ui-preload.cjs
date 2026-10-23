@@ -9,7 +9,8 @@ let sequence = 0,
   holdClear = false,
   releaseClear = null,
   failClear = false,
-  clearCount = 0
+  clearCount = 0,
+  failStart = false
 const heldHistory = []
 let historyEntries = [
   {
@@ -24,6 +25,24 @@ const historyRequests = [],
   historyCompletions = [],
   sessionLaunches = []
 contextBridge.exposeInMainWorld('uiFixture', {
+  failNextSession: () => {
+    failStart = true
+  },
+  getSessionIds: () => [...sessions.keys()],
+  getSessionListenerCount: () => listeners.size,
+  exitSession: (id) => {
+    const session = sessions.get(id)
+    if (!session) throw new Error('Unknown fixture session')
+    session.state = 'exited'
+    session.exitCode = 7
+    emit({ type: 'state', ...session })
+  },
+  failSession: (id) =>
+    emit({
+      type: 'error',
+      id,
+      message: 'Synthetic session failure. Use Restart session to retry.'
+    }),
   cancelNextProject: () => {
     cancelProject = true
   },
@@ -194,6 +213,10 @@ contextBridge.exposeInMainWorld('desktop', {
     { id: 'cmd', name: preview ? 'Command Prompt' : 'CMD fixture' }
   ],
   createSession: async ({ shellId, projectId, private: privateSession }) => {
+    if (failStart) {
+      failStart = false
+      throw new Error('Synthetic startup failure')
+    }
     if (sessions.size >= 4) throw new Error('Fixture owner limit reached')
     sessionLaunches.push({
       shellId,
