@@ -1,5 +1,7 @@
 # Phase 5 follow-up: CI and remaining issues
 
+Historical snapshot: issue statuses and pending work below describe that phase, not current qualification. See [current UI evidence reconciliation](current-ui-qualification.md) for #89 and the current manual gaps.
+
 This follow-up targets main independently of the UI change in PR #68. It does not authorize signing, publishing or a beta release. The five open issues are #41, #43, #45, #46 and #48; none is closed by a fabricated approval or a Windows Server result.
 
 ## Installed-app readiness failure
