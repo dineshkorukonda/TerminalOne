@@ -100,3 +100,7 @@ The `Refresh featured alpha` workflow runs when the main `Alpha release bot` wor
 The CLI needs Node and an authenticated `gh` with read access to the fixed repository. Only the Actions PR-creation step needs write permission. No token enters site data or browser code. Run `npm run test:unit` for missing, malformed, mismatched and failed-download cases, alongside the existing website checks. No release publication is required to test the verifier.
 
 The existing #71 policy creates an alpha after every main merge, including website metadata PRs. This updater opens review PRs only; it does not auto-merge or change that publication policy.
+
+### Repositories that prohibit bot-created PRs
+
+The repository currently sets `can_approve_pull_request_reviews` to false (inspected 2026-10-24). The refresh job preserves this policy: after verification it pushes only the featured-data review branch, attempts PR creation, and keeps the branch with an explicit compare link in the job summary if creation is unavailable. Open that link to create the PR manually. Repeated runs reuse an existing PR/branch, without force pushing. Asset verification, normal CI/review and owner merge authorization remain required. No repository permission change is needed. Branch preparation or asset verification failures still fail the job; only PR creation has this explicit manual fallback.
