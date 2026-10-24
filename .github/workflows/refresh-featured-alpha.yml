@@ -1,0 +1,66 @@
+name: Refresh featured alpha
+
+on:
+  workflow_run:
+    workflows: [Alpha release bot]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: featured-alpha-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      # Always execute trusted main code, never an upstream PR checkout/artifact.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+      - name: Verify the published release before replacing featured metadata
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node website/scripts/refresh-alpha.mjs
+      - name: Open a metadata-only review PR
+        if: steps.release.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          set -euo pipefail
+          branch="automation/98-alpha-$VERSION"
+          existing=$(gh pr list --state open --base main --head "$branch" --json number --jq 'length')
+          if [ "$existing" -gt 0 ]; then
+            echo 'A review PR already exists for this verified alpha.'
+            exit 0
+          fi
+          git switch -c "$branch"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add website/src/data/featured-alpha.json
+          git commit -m "chore(website): feature verified alpha $VERSION" -m 'Update the pinned installer metadata together after validating published release assets, manifest and checksums.' -m 'Refs #98'
+          gh auth setup-git
+          git push origin "$branch"
+          cat > /tmp/featured-alpha-pr.md <<EOF
+          Feature the verified published alpha v$VERSION. The updater checked actual asset bytes, metadata, manifest, checksums and notes before changing the single featured-data file. Static downloads remain available without JavaScript.
+
+          This PR requires normal CI/review and owner merge authorization. If GitHub requests workflow approval for this bot-created PR, a maintainer must approve the workflows before merge. Review and close superseded older metadata PRs before merging this update.
+
+          Refs #98
+          EOF
+          gh pr create --base main --head "$branch" --title "chore(website): feature verified alpha $VERSION" --body-file /tmp/featured-alpha-pr.md
