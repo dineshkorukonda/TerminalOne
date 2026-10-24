@@ -35,13 +35,12 @@ function replace(
   transform: (node: PaneNode) => PaneNode
 ): PaneNode {
   if (node.id === id) return transform(node)
-  return node.kind === 'pane'
+  if (node.kind === 'pane') return node
+  const first = replace(node.first, id, transform)
+  const second = replace(node.second, id, transform)
+  return first === node.first && second === node.second
     ? node
-    : {
-        ...node,
-        first: replace(node.first, id, transform),
-        second: replace(node.second, id, transform)
-      }
+    : { ...node, first, second }
 }
 function remove(node: PaneNode, id: string): PaneNode | null {
   if (node.id === id) return null
@@ -160,11 +159,13 @@ export function createWorkspaceStore() {
       })
     },
     focusPane(id) {
+      const tab = get().tabs.find((item) =>
+        panes(item.root).some((pane) => pane.id === id)
+      )
+      if (!tab || tab.activePaneId === id) return
       set({
-        tabs: get().tabs.map((tab) =>
-          panes(tab.root).some((pane) => pane.id === id)
-            ? { ...tab, activePaneId: id }
-            : tab
+        tabs: get().tabs.map((item) =>
+          item === tab ? { ...tab, activePaneId: id } : item
         )
       })
     },
@@ -227,16 +228,17 @@ export function createWorkspaceStore() {
     },
     resizeSplit(id, ratio) {
       if (!Number.isFinite(ratio)) return
-      set({
-        tabs: get().tabs.map((tab) => ({
-          ...tab,
-          root: replace(tab.root, id, (node) =>
-            node.kind === 'split'
-              ? { ...node, ratio: Math.max(0.2, Math.min(0.8, ratio)) }
-              : node
-          )
-        }))
+      const clamped = Math.max(0.2, Math.min(0.8, ratio))
+      const previous = get().tabs
+      const tabs = previous.map((tab) => {
+        const root = replace(tab.root, id, (node) =>
+          node.kind === 'split' && node.ratio !== clamped
+            ? { ...node, ratio: clamped }
+            : node
+        )
+        return root === tab.root ? tab : { ...tab, root }
       })
+      if (tabs.some((tab, index) => tab !== previous[index])) set({ tabs })
     }
   }))
 }

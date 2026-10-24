@@ -35,7 +35,7 @@
     "build:win": "npm run native:build && npm run build && node scripts/build-win.mjs",
     "test:installed": "node scripts/test-installed.mjs",
     "release:notes": "node scripts/release-notes.mjs",
-    "test:profile": "playwright test -c playwright.performance.config.ts",
+    "test:profile": "playwright test -c playwright.performance.config.ts && node scripts/profile-workspace.mjs",
     "test:qualification": "node scripts/qualify-windows.mjs",
     "release:check": "node scripts/check-release-readiness.mjs",
     "shell:prepare": "node scripts/prepare-shell.mjs",

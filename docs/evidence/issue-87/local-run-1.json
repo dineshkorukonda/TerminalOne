@@ -1,0 +1,476 @@
+{
+  "sourceCommit": "1d8ca45ef981a581f1bef4d5034058158220850d",
+  "sourceDirty": false,
+  "platform": "win32",
+  "os": "10.0.26300",
+  "arch": "x64",
+  "cpu": "Intel(R) Core(TM) Ultra 7 255H",
+  "logicalCpus": 16,
+  "systemMemoryBytes": 16360173568,
+  "versions": {
+    "node": "24.22.0",
+    "acorn": "8.18.0",
+    "ada": "4.0.0",
+    "amaro": "1.1.11",
+    "ares": "1.34.8",
+    "brotli": "1.2.0",
+    "cldr": "48.0",
+    "icu": "78.2",
+    "llhttp": "9.4.3",
+    "merve": "1.2.2",
+    "modules": "149",
+    "napi": "10",
+    "nbytes": "0.1.4",
+    "ncrypto": "0.0.1",
+    "nghttp2": "1.70.0",
+    "nghttp3": "",
+    "ngtcp2": "",
+    "openssl": "0.0.0",
+    "simdjson": "4.6.11",
+    "simdutf": "7.7.0",
+    "sqlite": "3.53.4",
+    "tz": "2026d",
+    "undici": "7.29.1",
+    "unicode": "17.0",
+    "uv": "1.52.1",
+    "uvwasi": "0.0.23",
+    "v8": "15.2.124.43-electron.0",
+    "zlib": "1.3.2.1-motley",
+    "zstd": "1.6.0",
+    "electron": "44.9.3",
+    "chrome": "152.0.7977.167"
+  },
+  "instrumented": true,
+  "workload": "production bundle in Playwright Electron, one fresh profile then two same-profile launches; 1024 lines of 1024 ASCII characters in one bulk Console.Write; up to 10 keyboard command samples during 128 paced sibling output chunks of 4096 ASCII characters; 20 native session create/close cycles; idle samples through 40 seconds after workload",
+  "startupMs": [1612.3980000000001, 1584.8849, 1131.4789],
+  "outputMs": 2258.9948000000004,
+  "siblingInputMs": [
+    476.03189999999813, 997.2260999999999, 1087.0102000000006,
+    996.2705999999998, 1044.617000000002, 963.9336000000003
+  ],
+  "outputBytes": 1048576,
+  "observedStreamCharacters": 1151785,
+  "outputMiBPerSecond": 0.4426747684412553,
+  "cleanupMs": [
+    57.97410000000309, 69.10780000000159, 62.26540000000023, 55.52599999999802,
+    58.53909999999814, 61.67059999999765, 59.48460000000341, 62.08230000000185,
+    62.26850000000559, 68.31870000000345, 50.76640000000043, 64.9426999999996,
+    54.248099999997066, 63.18450000000303, 71.96970000000147, 56.38609999999608,
+    55.4149000000034, 66.94899999999325, 93.97440000000643, 63.727200000001176
+  ],
+  "resizeMs": [43.51339999999982, 26.70900000000256, 62.924299999998766],
+  "resizeSamples": [
+    {
+      "requested": {
+        "width": 900,
+        "height": 650
+      },
+      "nativeContent": {
+        "width": 900,
+        "height": 651
+      },
+      "actual": {
+        "width": 900,
+        "height": 651,
+        "scale": 1.25
+      }
+    },
+    {
+      "requested": {
+        "width": 1200,
+        "height": 800
+      },
+      "nativeContent": {
+        "width": 1200,
+        "height": 801
+      },
+      "actual": {
+        "width": 1200,
+        "height": 802,
+        "scale": 1.25
+      }
+    },
+    {
+      "requested": {
+        "width": 1000,
+        "height": 700
+      },
+      "nativeContent": {
+        "width": 1000,
+        "height": 701
+      },
+      "actual": {
+        "width": 1000,
+        "height": 702,
+        "scale": 1.25
+      }
+    }
+  ],
+  "memory": {
+    "scope": "Electron processes reported by app.getAppMetrics; external shell/helper/conhost memory is excluded",
+    "before": {
+      "workingSetKiB": 554348,
+      "processCount": 5,
+      "cpuPercentSum": 0,
+      "processes": [
+        {
+          "pid": 10304,
+          "type": "Browser",
+          "workingSetKiB": 117600,
+          "cpuPercent": 0
+        },
+        {
+          "pid": 10876,
+          "type": "GPU",
+          "serviceName": "GPU",
+          "workingSetKiB": 161416,
+          "cpuPercent": 0
+        },
+        {
+          "pid": 15448,
+          "type": "Utility",
+          "serviceName": "network.mojom.NetworkService",
+          "name": "Network Service",
+          "workingSetKiB": 53336,
+          "cpuPercent": 0
+        },
+        {
+          "pid": 16180,
+          "type": "Tab",
+          "workingSetKiB": 109468,
+          "cpuPercent": 0
+        },
+        {
+          "pid": 24152,
+          "type": "Utility",
+          "serviceName": "node.mojom.NodeService",
+          "name": "Terminal PTY host",
+          "workingSetKiB": 112528,
+          "cpuPercent": 0
+        }
+      ]
+    },
+    "idle": {
+      "workingSetKiB": 562916,
+      "processCount": 5,
+      "cpuPercentSum": 0.5693509919143636,
+      "processes": [
+        {
+          "pid": 10304,
+          "type": "Browser",
+          "workingSetKiB": 117700,
+          "cpuPercent": 0.03474695744311481
+        },
+        {
+          "pid": 10876,
+          "type": "GPU",
+          "serviceName": "GPU",
+          "workingSetKiB": 164852,
+          "cpuPercent": 0.1656371717114472
+        },
+        {
+          "pid": 15448,
+          "type": "Utility",
+          "serviceName": "network.mojom.NetworkService",
+          "name": "Network Service",
+          "workingSetKiB": 53448,
+          "cpuPercent": 0.0066488134406056795
+        },
+        {
+          "pid": 16180,
+          "type": "Tab",
+          "workingSetKiB": 114380,
+          "cpuPercent": 0.36135084443679055
+        },
+        {
+          "pid": 24152,
+          "type": "Utility",
+          "serviceName": "node.mojom.NodeService",
+          "name": "Terminal PTY host",
+          "workingSetKiB": 112536,
+          "cpuPercent": 0.0009672048824053471
+        }
+      ]
+    },
+    "multiPane": {
+      "workingSetKiB": 892052,
+      "processCount": 7,
+      "cpuPercentSum": 5.708305000856951,
+      "processes": [
+        {
+          "pid": 10304,
+          "type": "Browser",
+          "workingSetKiB": 121500,
+          "cpuPercent": 1.5163309701718362
+        },
+        {
+          "pid": 10876,
+          "type": "GPU",
+          "serviceName": "GPU",
+          "workingSetKiB": 199968,
+          "cpuPercent": 1.0102717848462175
+        },
+        {
+          "pid": 15448,
+          "type": "Utility",
+          "serviceName": "network.mojom.NetworkService",
+          "name": "Network Service",
+          "workingSetKiB": 53472,
+          "cpuPercent": 0.0011328402478998326
+        },
+        {
+          "pid": 16180,
+          "type": "Tab",
+          "workingSetKiB": 171244,
+          "cpuPercent": 2.529611672741444
+        },
+        {
+          "pid": 24152,
+          "type": "Utility",
+          "serviceName": "node.mojom.NodeService",
+          "name": "Terminal PTY host",
+          "workingSetKiB": 115904,
+          "cpuPercent": 0.6509577328495536
+        },
+        {
+          "pid": 23660,
+          "type": "Utility",
+          "serviceName": "node.mojom.NodeService",
+          "name": "Terminal PTY host",
+          "workingSetKiB": 114940,
+          "cpuPercent": 0
+        },
+        {
+          "pid": 21500,
+          "type": "Utility",
+          "serviceName": "node.mojom.NodeService",
+          "name": "Terminal PTY host",
+          "workingSetKiB": 115024,
+          "cpuPercent": 0
+        }
+      ]
+    },
+    "after": {
+      "workingSetKiB": 604004,
+      "processCount": 5,
+      "cpuPercentSum": 4.090255002338764,
+      "processes": [
+        {
+          "pid": 10304,
+          "type": "Browser",
+          "workingSetKiB": 117816,
+          "cpuPercent": 2.988705261099159
+        },
+        {
+          "pid": 10876,
+          "type": "GPU",
+          "serviceName": "GPU",
+          "workingSetKiB": 177904,
+          "cpuPercent": 0.31594217151848936
+        },
+        {
+          "pid": 15448,
+          "type": "Utility",
+          "serviceName": "network.mojom.NetworkService",
+          "name": "Network Service",
+          "workingSetKiB": 53356,
+          "cpuPercent": 0
+        },
+        {
+          "pid": 16180,
+          "type": "Tab",
+          "workingSetKiB": 142816,
+          "cpuPercent": 0.7856075697211156
+        },
+        {
+          "pid": 24152,
+          "type": "Utility",
+          "serviceName": "node.mojom.NodeService",
+          "name": "Terminal PTY host",
+          "workingSetKiB": 112112,
+          "cpuPercent": 0
+        }
+      ]
+    },
+    "settled": {
+      "workingSetKiB": 604356,
+      "processCount": 5,
+      "cpuPercentSum": 0.8052026993614788,
+      "processes": [
+        {
+          "pid": 10304,
+          "type": "Browser",
+          "workingSetKiB": 117848,
+          "cpuPercent": 0.014687923877378195
+        },
+        {
+          "pid": 10876,
+          "type": "GPU",
+          "serviceName": "GPU",
+          "workingSetKiB": 177932,
+          "cpuPercent": 0.24895110021251138
+        },
+        {
+          "pid": 15448,
+          "type": "Utility",
+          "serviceName": "network.mojom.NetworkService",
+          "name": "Network Service",
+          "workingSetKiB": 53356,
+          "cpuPercent": 0
+        },
+        {
+          "pid": 16180,
+          "type": "Tab",
+          "workingSetKiB": 143108,
+          "cpuPercent": 0.5415636752715892
+        },
+        {
+          "pid": 24152,
+          "type": "Utility",
+          "serviceName": "node.mojom.NodeService",
+          "name": "Terminal PTY host",
+          "workingSetKiB": 112112,
+          "cpuPercent": 0
+        }
+      ]
+    },
+    "longerSettled": [
+      {
+        "secondsAfterWork": 20,
+        "workingSetKiB": 596300,
+        "processCount": 5,
+        "cpuPercentSum": 1.133183195308392,
+        "processes": [
+          {
+            "pid": 10304,
+            "type": "Browser",
+            "workingSetKiB": 116612,
+            "cpuPercent": 0.013538775031737837
+          },
+          {
+            "pid": 10876,
+            "type": "GPU",
+            "serviceName": "GPU",
+            "workingSetKiB": 177096,
+            "cpuPercent": 0.3846633316315948
+          },
+          {
+            "pid": 15448,
+            "type": "Utility",
+            "serviceName": "network.mojom.NetworkService",
+            "name": "Network Service",
+            "workingSetKiB": 53284,
+            "cpuPercent": 0.0017990054574030926
+          },
+          {
+            "pid": 16180,
+            "type": "Tab",
+            "workingSetKiB": 138456,
+            "cpuPercent": 0.7297487353809681
+          },
+          {
+            "pid": 24152,
+            "type": "Utility",
+            "serviceName": "node.mojom.NodeService",
+            "name": "Terminal PTY host",
+            "workingSetKiB": 110852,
+            "cpuPercent": 0.0034333478066881267
+          }
+        ]
+      },
+      {
+        "secondsAfterWork": 30,
+        "workingSetKiB": 594248,
+        "processCount": 5,
+        "cpuPercentSum": 1.0027740603555775,
+        "processes": [
+          {
+            "pid": 10304,
+            "type": "Browser",
+            "workingSetKiB": 115980,
+            "cpuPercent": 0.009624112683085167
+          },
+          {
+            "pid": 10876,
+            "type": "GPU",
+            "serviceName": "GPU",
+            "workingSetKiB": 177052,
+            "cpuPercent": 0.3321528989764968
+          },
+          {
+            "pid": 15448,
+            "type": "Utility",
+            "serviceName": "network.mojom.NetworkService",
+            "name": "Network Service",
+            "workingSetKiB": 53280,
+            "cpuPercent": 0.0008203010997822249
+          },
+          {
+            "pid": 16180,
+            "type": "Tab",
+            "workingSetKiB": 137084,
+            "cpuPercent": 0.6587334935834103
+          },
+          {
+            "pid": 24152,
+            "type": "Utility",
+            "serviceName": "node.mojom.NodeService",
+            "name": "Terminal PTY host",
+            "workingSetKiB": 110852,
+            "cpuPercent": 0.0014432540128031161
+          }
+        ]
+      },
+      {
+        "secondsAfterWork": 40,
+        "workingSetKiB": 591464,
+        "processCount": 5,
+        "cpuPercentSum": 0.587722352558565,
+        "processes": [
+          {
+            "pid": 10304,
+            "type": "Browser",
+            "workingSetKiB": 115988,
+            "cpuPercent": 0.006696859966710464
+          },
+          {
+            "pid": 10876,
+            "type": "GPU",
+            "serviceName": "GPU",
+            "workingSetKiB": 176356,
+            "cpuPercent": 0.19660757880883656
+          },
+          {
+            "pid": 15448,
+            "type": "Utility",
+            "serviceName": "network.mojom.NetworkService",
+            "name": "Network Service",
+            "workingSetKiB": 53280,
+            "cpuPercent": 0.00016230969188626336
+          },
+          {
+            "pid": 16180,
+            "type": "Tab",
+            "workingSetKiB": 134988,
+            "cpuPercent": 0.38369189224175126
+          },
+          {
+            "pid": 24152,
+            "type": "Utility",
+            "serviceName": "node.mojom.NodeService",
+            "name": "Terminal PTY host",
+            "workingSetKiB": 110852,
+            "cpuPercent": 0.0005637118493803889
+          }
+        ]
+      }
+    ],
+    "cycleWorkingSetKiB": [
+      680148, 680184, 680212, 680224, 680316, 679600, 635916, 629328, 629732,
+      605156, 605208, 605624, 605664, 602436, 603116, 603500, 604068, 604116,
+      603816, 604004
+    ],
+    "deltaWorkingSetKiB": 49656
+  },
+  "cleanupPassed": true
+}

@@ -1,0 +1,34 @@
+{
+  "retrievedOn": "2026-10-24",
+  "ci": {
+    "run": "https://github.com/dineshkorukonda/TerminalOne/actions/runs/40064151158",
+    "headCommit": "630430ce9d6f350522e6aaa04ae8b9ac63a99727",
+    "artifactBuildCommit": "9f0c9d4b000fefa821e57e0f8b7c67969743316a",
+    "artifactId": 12548284864,
+    "artifactDigest": "sha256:3c4aa047e0e846dc6016d0245a3003e36a0642ef35eee6438d3b96df060c03ab",
+    "scope": "Windows Server 2025 build 26100; post-session-host retirement; before the current workspace usability phases"
+  },
+  "local": {
+    "sourceCommit": "1d8ca45ef981a581f1bef4d5034058158220850d",
+    "sourceDirty": false,
+    "osCaption": "Microsoft Windows 11 Home Single Language",
+    "osVersion": "10.0.26300",
+    "arch": "64-bit",
+    "scope": "Automated instrumented source build, not installed artifact/manual client qualification"
+  },
+  "sha256": {
+    "ci-profile.json": "799e6c449ea0063ff5366a3f743a4b78a32406a7b445143906054aaf61704d67",
+    "local-run-1.json": "7aa6539f5e3685033282c533ca111c132e4ab996c71dd98cd8ef8be2352a65d5",
+    "local-run-2.json": "db0a4568afd7affe80a597443455d04d8ab25fc6f5252939fa6918e356f1f2ba",
+    "workspace-before.json": "ea8bfc36280781c92534b38434f293e7c640b1aa0d934120fff9300b48cea386",
+    "workspace-after.json": "13152da401f946e7863c04ba7d07e3e9086eca386f2560bff12a1f717bba8ec0"
+  },
+  "originalSha256": {
+    "ci-profile.json": "7ce6afb5809c696dea6c9defd54e2240217bfd720106b1e86bc688ce2d08df6f",
+    "local-run-1.json": "adc29832c753a8518e79f9739db713975203fff3b5fa202f54b3c4b0f5be507d",
+    "local-run-2.json": "4bfb7598e635b3fdcc4f3eb363275e898f27b421c4243f4b25865d1dfaf61df3",
+    "workspace-before.json": "ea8bfc36280781c92534b38434f293e7c640b1aa0d934120fff9300b48cea386",
+    "workspace-after.json": "13152da401f946e7863c04ba7d07e3e9086eca386f2560bff12a1f717bba8ec0"
+  },
+  "formatNote": "JSON formatting is normalized for the repository. originalSha256 records retrieved bytes; sha256 records the committed formatted files."
+}

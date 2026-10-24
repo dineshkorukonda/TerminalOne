@@ -1,8 +1,10 @@
 # Windows profiling
 
+[Current post-fix measurements (#87)](post-fix-performance.md) preserve actual Windows CI evidence and two additional instrumented client runs, sibling input observations, forty-second settled memory and proposed review budgets. Historical reports below retain their original scope.
+
 Measured main-branch Windows Server results and the outstanding memory-growth finding are recorded in [Phase 5 verification](phase-5-verification.md). The raw profile is preserved alongside that report. These measurements are not approved budgets or client-Windows qualification.
 
-The [follow-up report](phase-5-followup.md) preserves newer per-process/settled-memory evidence and documents session-scoped host retirement. Post-fix Windows measurements remain pending. The harness now records utility service names and asserts that twenty temporary session cycles return to the original live pane's host PID set.
+The [follow-up report](phase-5-followup.md) preserves newer per-process/settled-memory evidence and documents session-scoped host retirement. Post-fix measurements are now recorded in the current report linked above. The harness now records utility service names and asserts that twenty temporary session cycles return to the original live pane's host PID set.
 
 Issue #43 uses npm run test:profile after native:build and build in an interactive Windows environment. The harness runs real ConPTY with the built application under Playwright, records CPU model/logical cores/system memory, OS/build, architecture and runtime versions, and writes test-results/performance/baseline.json.
 

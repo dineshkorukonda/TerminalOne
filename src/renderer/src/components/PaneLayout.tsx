@@ -1,5 +1,6 @@
+import { createSplitDrag } from '../workspace/split-drag.ts'
 import type { Appearance } from '../theme/appearance'
-import { useRef, type Ref } from 'react'
+import { useEffect, useRef, type Ref } from 'react'
 import type { Tab } from '../workspace/store'
 import { layout, minimum } from '../workspace/layout'
 import { TerminalPane, type TerminalActions } from './TerminalPane'
@@ -32,6 +33,19 @@ export function PaneLayout({
   actionsRef: Ref<TerminalActions>
 }) {
   const space = useRef<HTMLDivElement>(null)
+  const drag = useRef<ReturnType<typeof createSplitDrag> | null>(null)
+  useEffect(() => {
+    const pending = createSplitDrag(
+      resizeSplit,
+      requestAnimationFrame,
+      cancelAnimationFrame
+    )
+    drag.current = pending
+    return () => {
+      pending.dispose()
+      drag.current = null
+    }
+  }, [resizeSplit])
   const bounds = minimum(tab.root)
   return (
     <div
@@ -156,9 +170,12 @@ export function PaneLayout({
                         rectangle.width
                       : ((event.clientY - box.top) / box.height - rectangle.y) /
                         rectangle.height
-                  resizeSplit(id, ratio)
+                  drag.current?.update(id, ratio)
                 }}
+                onLostPointerCapture={() => drag.current?.flush()}
+                onPointerCancel={() => drag.current?.flush()}
                 onPointerUp={(event) => {
+                  drag.current?.flush()
                   event.currentTarget.releasePointerCapture(event.pointerId)
                 }}
               />
