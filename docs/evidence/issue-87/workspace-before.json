@@ -1,0 +1,15 @@
+{
+  "source": "7807ca7ff0eed0f6c47c3c8d62703a1e7e359ded",
+  "node": "v24.21.0",
+  "focus": {
+    "calls": 1000,
+    "notifications": 1000,
+    "elapsedMs": 3.5172000000000025
+  },
+  "unchangedResize": {
+    "calls": 1000,
+    "notifications": 1000,
+    "elapsedMs": 0.8605000000000018
+  },
+  "scope": "Deterministic workspace store calls; not OS pointer-event or frame-rate measurement"
+}

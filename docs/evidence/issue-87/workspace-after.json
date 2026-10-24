@@ -1,0 +1,20 @@
+{
+  "sourceCommit": "1d8ca45ef981a581f1bef4d5034058158220850d",
+  "node": "v24.21.0",
+  "focus": {
+    "calls": 1000,
+    "notifications": 0,
+    "elapsedMs": 2.6473000000000013
+  },
+  "unchangedResize": {
+    "calls": 1000,
+    "notifications": 0,
+    "elapsedMs": 1.0435999999999979
+  },
+  "pointerBurst": {
+    "updates": 1000,
+    "requestedFrames": 1,
+    "callbacks": 1
+  },
+  "scope": "Deterministic store calls and synchronous synthetic pointer-update burst, not hardware pointer frequency or frame-rate measurement"
+}
