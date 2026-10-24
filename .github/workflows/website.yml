@@ -49,6 +49,8 @@ jobs:
         run: npm run typecheck
       - name: Audit dependencies
         run: npm audit --audit-level=moderate
+      - name: Verify release-data update inputs
+        run: npm run test:unit
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Build and test production website

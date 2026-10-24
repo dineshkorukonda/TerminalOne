@@ -1,3 +1,4 @@
+import featured from '../src/data/featured-alpha.json' with { type: 'json' };
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
@@ -13,13 +14,12 @@ test('presents published alpha downloads and real project destinations', async (
   await expect(
     page.getByRole('link', { name: 'Download alpha', exact: true }).first(),
   ).toHaveAttribute('href', '#download');
-  const release =
-    'https://github.com/dineshkorukonda/TerminalOne/releases/download/v0.2.0-alpha.4';
+  const release = `https://github.com/dineshkorukonda/TerminalOne/releases/download/v${featured.version}`;
   await expect(
     page.getByRole('link', { name: 'Download for Windows x64', exact: true }),
   ).toHaveAttribute(
     'href',
-    `${release}/TerminalOne-0.2.0-alpha.4-unsigned-x64.exe`,
+    `${release}/TerminalOne-${featured.version}-unsigned-x64.exe`,
   );
   await expect(
     page.getByRole('link', { name: 'SHA-256 checksums', exact: true }),
@@ -31,19 +31,24 @@ test('presents published alpha downloads and real project destinations', async (
     page.getByRole('link', { name: 'All release files', exact: true }),
   ).toHaveAttribute(
     'href',
-    'https://github.com/dineshkorukonda/TerminalOne/releases/tag/v0.2.0-alpha.4',
+    `https://github.com/dineshkorukonda/TerminalOne/releases/tag/v${featured.version}`,
   );
-  await expect(page.locator('#download')).toContainText('113.2 MiB');
-  await expect(page.locator('#download')).toContainText('October 20, 2026');
+  await expect(page.locator('#download')).toContainText(
+    `${(featured.sizeBytes / 1024 / 1024).toFixed(1)} MiB`,
+  );
+  await expect(page.locator('#download')).toContainText(
+    new Intl.DateTimeFormat('en', {
+      dateStyle: 'long',
+      timeZone: 'UTC',
+    }).format(new Date(`${featured.publishedOn}T00:00:00Z`)),
+  );
   await expect(page.locator('#download')).toContainText(
     'Experimental and unsigned',
   );
   await page.getByText('Verify your download', { exact: true }).click();
-  await expect(page.locator('.checksum-value')).toHaveText(
-    '32afe7d5e5377c97f0152e753c1948044b94ba8173315f594d6894b70aef7353',
-  );
+  await expect(page.locator('.checksum-value')).toHaveText(featured.sha256);
   await expect(page.locator('.checksum-details pre')).toContainText(
-    "Get-FileHash '.\\TerminalOne-0.2.0-alpha.4-unsigned-x64.exe' -Algorithm SHA256",
+    `Get-FileHash '.\\TerminalOne-${featured.version}-unsigned-x64.exe' -Algorithm SHA256`,
   );
   await expect(
     page.getByText(/No installer available|There is no published installer/),
