@@ -92,6 +92,10 @@ test('profile startup throughput and repeated native session cleanup', async () 
     await page.waitForTimeout(10000)
     const idle = await memory()
     const resizeMs: number[] = []
+    const resizeSamples: {
+      requested: { width: number; height: number }
+      actual: { width: number; height: number; scale: number }
+    }[] = []
     for (const [width, height] of [
       [900, 650],
       [1200, 800],
@@ -108,13 +112,26 @@ test('profile startup throughput and repeated native session cleanup', async () 
         { width, height }
       )
       await expect
-        .poll(() =>
-          page.evaluate(() => ({
+        .poll(async () => {
+          const actual = await page.evaluate(() => ({
             width: Number(Reflect.get(globalThis, 'innerWidth')),
             height: Number(Reflect.get(globalThis, 'innerHeight'))
           }))
-        )
-        .toEqual({ width, height })
+          // Fractional physical-pixel scaling can round the client area by one CSS pixel.
+          return (
+            Math.abs(actual.width - width) <= 1 &&
+            Math.abs(actual.height - height) <= 1
+          )
+        })
+        .toBe(true)
+      resizeSamples.push({
+        requested: { width, height },
+        actual: await page.evaluate(() => ({
+          width: Number(Reflect.get(globalThis, 'innerWidth')),
+          height: Number(Reflect.get(globalThis, 'innerHeight')),
+          scale: Number(Reflect.get(globalThis, 'devicePixelRatio'))
+        }))
+      })
       resizeMs.push(performance.now() - started)
     }
     await page.evaluate(() => {
@@ -345,6 +362,7 @@ test('profile startup throughput and repeated native session cleanup', async () 
           outputMiBPerSecond: 1000 / outputMs,
           cleanupMs,
           resizeMs,
+          resizeSamples,
           memory: {
             scope:
               'Electron processes reported by app.getAppMetrics; external shell/helper/conhost memory is excluded',
