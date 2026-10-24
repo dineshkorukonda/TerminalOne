@@ -36,31 +36,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: node website/scripts/refresh-alpha.mjs
-      - name: Open a metadata-only review PR
+      - name: Prepare the review PR or a review branch when bot PRs are prohibited
         if: steps.release.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.release.outputs.version }}
-        run: |
-          set -euo pipefail
-          branch="automation/98-alpha-$VERSION"
-          existing=$(gh pr list --state open --base main --head "$branch" --json number --jq 'length')
-          if [ "$existing" -gt 0 ]; then
-            echo 'A review PR already exists for this verified alpha.'
-            exit 0
-          fi
-          git switch -c "$branch"
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add website/src/data/featured-alpha.json
-          git commit -m "chore(website): feature verified alpha $VERSION" -m 'Update the pinned installer metadata together after validating published release assets, manifest and checksums.' -m 'Refs #98'
-          gh auth setup-git
-          git push origin "$branch"
-          cat > /tmp/featured-alpha-pr.md <<EOF
-          Feature the verified published alpha v$VERSION. The updater checked actual asset bytes, metadata, manifest, checksums and notes before changing the single featured-data file. Static downloads remain available without JavaScript.
-
-          This PR requires normal CI/review and owner merge authorization. If GitHub requests workflow approval for this bot-created PR, a maintainer must approve the workflows before merge. Review and close superseded older metadata PRs before merging this update.
-
-          Refs #98
-          EOF
-          gh pr create --base main --head "$branch" --title "chore(website): feature verified alpha $VERSION" --body-file /tmp/featured-alpha-pr.md
+        run: node website/scripts/open-release-review.mjs
