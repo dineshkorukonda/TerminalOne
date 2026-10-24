@@ -1,5 +1,7 @@
 # Accessibility verification
 
+The reports below are historical evidence for their recorded builds. [Current UI qualification (#89)](current-ui-qualification.md) records the current manual-evidence gap and distinguishes it from closed historical issues.
+
 The subsequent main-branch Windows Server run also recorded zero automated violations in all seven scenes, with incomplete contrast checks in six. See [Phase 5 verification](phase-5-verification.md) for the preserved reports and exact source/run provenance. Manual Narrator and client-Windows qualification remain outstanding.
 
 Issue #46 adds automated WCAG 2 A/AA and 2.1 AA checks using axe and actual keyboard workflows in the Electron renderer. Checks cover terminal chrome, command palette, search and appearance, plus existing tab/split/clipboard/focus and 100/125/150/200% scale cases. Contrast tokens have focused numeric checks in the unit suite.
@@ -10,4 +12,4 @@ Linux verification reports no automated violations across workspace, palette, se
 
 The installed-app test uses Windows UI Automation to find the terminal and verify actual interaction. It does not run Narrator speech or establish screen-reader usability. xterm screen-reader mode is enabled, but manual Narrator testing is still required on the actual packaged Windows artifact. Record exact Narrator/OS versions, keyboard/focus outcomes, reading order and limitations as described in release-readiness.md. Physical IME and actual multi-monitor transitions remain unverified until executed.
 
-Do not close #46 using automated axe results alone. The required Windows Narrator/manual keyboard evidence is an explicit release gate.
+Do not close current issue #89 using automated axe results alone. Historical #46 closure does not establish the required Windows Narrator/manual keyboard evidence.
