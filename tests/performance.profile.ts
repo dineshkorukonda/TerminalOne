@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process'
 import {
   clickTerminalOption,
   openTerminalOptions
@@ -193,6 +194,67 @@ test('profile startup throughput and repeated native session cleanup', async () 
       })
       .toEqual(['running', 'running', 'running'])
     const multiPane = await memory()
+    const outputPane = page.locator('.terminal-panel').nth(0)
+    const inputPane = page.locator('.terminal-panel').nth(1)
+    await page.evaluate(() => {
+      const state = { characters: 0, complete: false, tail: '' }
+      Reflect.set(globalThis, '__siblingOutput', state)
+      const detach = (
+        Reflect.get(globalThis, 'desktop') as DesktopApi
+      ).onSessionEvent((event) => {
+        if (event.type === 'data') {
+          state.characters += event.data.length
+          state.tail = (state.tail + event.data).slice(-256)
+          state.complete ||= state.tail.includes('SIBLING_DONE')
+        }
+      })
+      Reflect.set(globalThis, '__siblingDetach', detach)
+    })
+    await outputPane.locator('.xterm-helper-textarea').focus()
+    await page.keyboard.type(
+      "1..128 | ForEach-Object { [Console]::Write(('Z'*4096)+[Environment]::NewLine); Start-Sleep -Milliseconds 20 }; Write-Output ('SIBLING_'+'DONE')"
+    )
+    await page.keyboard.press('Enter')
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => Reflect.get(globalThis, '__siblingOutput').characters
+        )
+      )
+      .toBeGreaterThan(4096)
+    const siblingInputMs: number[] = []
+    for (let sample = 0; sample < 10; sample++) {
+      if (
+        await page.evaluate(
+          () => Reflect.get(globalThis, '__siblingOutput').complete
+        )
+      )
+        break
+      const started = performance.now()
+      await inputPane.locator('.xterm-helper-textarea').focus()
+      await page.keyboard.type(`Write-Output ('RESP_'+'${sample}')`)
+      await page.keyboard.press('Enter')
+      await expect(
+        inputPane.locator('.xterm-accessibility-tree')
+      ).toContainText(`RESP_${sample}`, { timeout: 20000 })
+      siblingInputMs.push(performance.now() - started)
+    }
+    expect(
+      siblingInputMs.length,
+      'input samples overlap sibling output'
+    ).toBeGreaterThan(0)
+    await expect
+      .poll(
+        () =>
+          page.evaluate(
+            () => Reflect.get(globalThis, '__siblingOutput').complete
+          ),
+        { timeout: 30000 }
+      )
+      .toBe(true)
+    await page.evaluate(() =>
+      (Reflect.get(globalThis, '__siblingDetach') as () => void)()
+    )
     await page
       .getByRole('button', { name: 'Close pane', exact: true })
       .last()
@@ -244,11 +306,27 @@ test('profile startup throughput and repeated native session cleanup', async () 
     // Observe normal reclamation without forcing GC or changing production flags.
     await page.waitForTimeout(10000)
     const settled = await memory()
+    const longerSettled = []
+    // Additional measured idle workload; normal GC and production flags only.
+    for (let sample = 0; sample < 3; sample++) {
+      await page.waitForTimeout(10000)
+      longerSettled.push({
+        secondsAfterWork: 20 + sample * 10,
+        ...(await memory())
+      })
+    }
     await mkdir('test-results/performance', { recursive: true })
     await writeFile(
       'test-results/performance/baseline.json',
       JSON.stringify(
         {
+          sourceCommit: execFileSync('git', ['rev-parse', 'HEAD'], {
+            encoding: 'utf8'
+          }).trim(),
+          sourceDirty:
+            execFileSync('git', ['status', '--porcelain'], {
+              encoding: 'utf8'
+            }).trim().length > 0,
           platform: 'win32',
           os: release(),
           arch: process.arch,
@@ -261,6 +339,7 @@ test('profile startup throughput and repeated native session cleanup', async () 
             'production bundle in Playwright Electron, one fresh profile then two same-profile launches; 1024 lines of 1024 ASCII characters in one bulk Console.Write; 20 native session create/close cycles',
           startupMs,
           outputMs,
+          siblingInputMs,
           outputBytes: 1024 * 1024,
           observedStreamCharacters: lastCharacters,
           outputMiBPerSecond: 1000 / outputMs,
@@ -274,6 +353,7 @@ test('profile startup throughput and repeated native session cleanup', async () 
             multiPane,
             after,
             settled,
+            longerSettled,
             cycleWorkingSetKiB,
             deltaWorkingSetKiB: after.workingSetKiB - before.workingSetKiB
           },
