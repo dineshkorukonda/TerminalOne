@@ -50,6 +50,7 @@ export interface Preferences {
   projects: Project[]
   restoration: { enabled: boolean; tabs: { title: string; root: SavedNode }[] }
   explanations: boolean
+  confirmClose: boolean
 }
 export function defaultPreferences(): Preferences {
   return {
@@ -67,7 +68,8 @@ export function defaultPreferences(): Preferences {
     shortcuts: { ...DEFAULT_SHORTCUTS },
     projects: [],
     restoration: { enabled: false, tabs: [] },
-    explanations: false
+    explanations: false,
+    confirmClose: false
   }
 }
 export function object(value: unknown, keys: string): Record<string, unknown> {
@@ -120,10 +122,20 @@ export function parseShortcuts(value: unknown): Record<ShortcutAction, string> {
 export function parsePreferences(value: unknown): Preferences {
   const obj = object(
     value,
-    'version,appearance,history,shortcuts,projects,restoration,explanations'
+    'version,appearance,history,shortcuts,projects,restoration,explanations' +
+      (value &&
+      typeof value === 'object' &&
+      Object.hasOwn(value, 'confirmClose')
+        ? ',confirmClose'
+        : '')
   )
   if (obj['version'] !== 1 || typeof obj['explanations'] !== 'boolean')
     throw new Error('Unsupported settings version')
+  if (
+    obj['confirmClose'] !== undefined &&
+    typeof obj['confirmClose'] !== 'boolean'
+  )
+    throw new Error('Invalid close confirmation preference')
   const appearance = object(obj['appearance'], 'theme,font')
   const font = object(appearance['font'], 'family,size,lineHeight,ligatures')
   if (
@@ -231,6 +243,7 @@ export function parsePreferences(value: unknown): Preferences {
     projects,
     shortcuts: parseShortcuts(obj['shortcuts']),
     restoration: { enabled: restoration['enabled'], tabs },
+    confirmClose: obj['confirmClose'] === true,
     explanations: obj['explanations']
   }
 }
