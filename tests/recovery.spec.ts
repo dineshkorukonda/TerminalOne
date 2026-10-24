@@ -19,6 +19,11 @@ test('recovery preserves output, session ownership, sibling identity and search 
   })
   try {
     const page = await app.firstWindow()
+    // xterm's accessibility tree exposes the viewport, not the whole scrollback.
+    // Keep all synthetic restart output visible for the retention assertions.
+    await app.evaluate(({ BrowserWindow }) =>
+      BrowserWindow.getAllWindows()[0]!.setContentSize(1000, 1000)
+    )
     const fixture = (method: string, id?: string) =>
       page.evaluate(
         ({ method, id }) => {

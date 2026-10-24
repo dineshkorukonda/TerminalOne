@@ -1,3 +1,4 @@
+import { parseTabTitle } from '../../../contracts/preferences.ts'
 import { createStore } from 'zustand/vanilla'
 import type { SavedNode, Preferences } from '../../../contracts/preferences'
 export type Pane = {
@@ -63,6 +64,7 @@ export interface Workspace {
   restore(tabs: Preferences['restoration']['tabs']): void
   selectTab(id: string): void
   closeTab(id: string): void
+  renameTab(id: string, title: string): void
   focusPane(id: string): void
   split(direction: 'horizontal' | 'vertical'): void
   closePane(id: string): void
@@ -131,6 +133,14 @@ export function createWorkspaceStore() {
       }
       const tab: Tab = { id: next(), title, root: pane, activePaneId: pane.id }
       set({ tabs: [...get().tabs, tab], activeTabId: tab.id, error: '' })
+    },
+    renameTab(id, title) {
+      const name = parseTabTitle(title)
+      set({
+        tabs: get().tabs.map((tab) =>
+          tab.id === id ? { ...tab, title: name } : tab
+        )
+      })
     },
     selectTab(id) {
       if (get().tabs.some((tab) => tab.id === id)) set({ activeTabId: id })

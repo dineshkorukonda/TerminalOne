@@ -24,6 +24,8 @@ export interface TerminalActions {
 
 export function TerminalPane({
   shellId,
+  shellName,
+  projectName,
   appearance,
   projectId,
   privateSession,
@@ -31,6 +33,8 @@ export function TerminalPane({
   actionsRef
 }: {
   shellId: string
+  shellName: string
+  projectName: string | null
   appearance: Appearance
   projectId: string | null
   privateSession: boolean
@@ -396,6 +400,21 @@ export function TerminalPane({
   }, [appearance])
   return (
     <section className="terminal-panel" aria-label="Terminal session">
+      <div className="pane-context" aria-label="Session launch context">
+        <span title={shellName}>{shellName}</span>
+        <span
+          title={
+            projectName
+              ? `Saved launch project: ${projectName}`
+              : 'Launch folder: Home'
+          }
+        >
+          {projectName
+            ? `Launch project: ${projectName}`
+            : 'Launch folder: Home'}
+        </span>
+        <span>{privateSession ? 'Private session' : 'Standard session'}</span>
+      </div>
       <div className="terminal-toolbar">
         <span role="status" data-state={status}>
           {status}

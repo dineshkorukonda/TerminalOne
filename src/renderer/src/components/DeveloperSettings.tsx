@@ -46,9 +46,9 @@ export function DeveloperSettings({
   reload(): Promise<void>
 }) {
   const dialog = useRef<HTMLDialogElement>(null)
-  const [draft, setDraft] = useState(settings)
-  const [saved, setSaved] = useState(settings)
-  const baseline = useRef(settings)
+  const [draft, setDraft] = useState(() => parsePreferences(settings))
+  const [saved, setSaved] = useState(() => parsePreferences(settings))
+  const baseline = useRef(parsePreferences(settings))
   const [discardPrompt, setDiscardPrompt] = useState(false)
   const continueButton = useRef<HTMLButtonElement>(null)
   const returnFocus = useRef<HTMLElement | null>(null)
@@ -60,13 +60,14 @@ export function DeveloperSettings({
   }, [])
   useEffect(() => {
     const previous = baseline.current
+    const normalized = parsePreferences(settings)
     setDraft((current) =>
       preferenceSignature(current) === preferenceSignature(previous)
-        ? settings
+        ? normalized
         : current
     )
-    baseline.current = settings
-    setSaved(settings)
+    baseline.current = normalized
+    setSaved(normalized)
   }, [settings])
   useEffect(() => {
     if (discardPrompt) continueButton.current?.focus()
@@ -125,78 +126,9 @@ export function DeveloperSettings({
           ×
         </button>
       </div>
-      <p>
-        Preferences stay on this device. App history is opt-in and stored as
-        local text. Never capture sensitive commands; filtering cannot find
-        every secret.
-      </p>
-      <form
-        onSubmit={(event) => {
-          event.preventDefault()
-          void perform(
-            () => save(parsePreferences(draft)),
-            'Developer settings saved. History policy applies to new sessions.'
-          )
-        }}
-      >
-        <fieldset disabled={busy}>
-          <legend>Privacy and assistance</legend>
-          <label>
-            <input
-              type="checkbox"
-              checked={!!draft.confirmClose}
-              onChange={(event) =>
-                setDraft({ ...draft, confirmClose: event.target.checked })
-              }
-            />
-            Confirm before closing terminal views
-          </label>
-          <p>
-            Applies to pane and tab closure. App quit, Stop session and update
-            installation keep their separate behavior.
-          </p>
-          <label>
-            <input
-              type="checkbox"
-              checked={draft.history.enabled}
-              onChange={(event) =>
-                setDraft({
-                  ...draft,
-                  history: { ...draft.history, enabled: event.target.checked }
-                })
-              }
-            />
-            Enable local command history for new PowerShell tabs
-          </label>
-          <label>
-            History retention
-            <input
-              aria-label="History retention"
-              type="number"
-              min={50}
-              max={1000}
-              value={draft.history.limit}
-              onChange={(event) =>
-                setDraft({
-                  ...draft,
-                  history: {
-                    ...draft.history,
-                    limit: Number(event.target.value)
-                  }
-                })
-              }
-            />
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={draft.explanations}
-              onChange={(event) =>
-                setDraft({ ...draft, explanations: event.target.checked })
-              }
-            />
-            Enable offline command explanations
-          </label>
+      {discardPrompt && (
+        <section role="alertdialog" aria-label="Unsaved settings edits">
+          <h3>Discard unsaved settings edits?</h3>
           <p>
             Your local draft has not been saved. Discarding keeps your saved
             preferences.
@@ -229,6 +161,20 @@ export function DeveloperSettings({
         >
           <fieldset disabled={busy}>
             <legend>Privacy and assistance</legend>
+            <label>
+              <input
+                type="checkbox"
+                checked={draft.confirmClose}
+                onChange={(event) =>
+                  setDraft({ ...draft, confirmClose: event.target.checked })
+                }
+              />
+              Confirm before closing terminal views
+            </label>
+            <p>
+              Applies to pane and tab closure. App quit, Stop session and update
+              installation keep their separate behavior.
+            </p>
             <label>
               <input
                 type="checkbox"
