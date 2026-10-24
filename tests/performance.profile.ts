@@ -336,7 +336,7 @@ test('profile startup throughput and repeated native session cleanup', async () 
           versions,
           instrumented: true,
           workload:
-            'production bundle in Playwright Electron, one fresh profile then two same-profile launches; 1024 lines of 1024 ASCII characters in one bulk Console.Write; 20 native session create/close cycles',
+            'production bundle in Playwright Electron, one fresh profile then two same-profile launches; 1024 lines of 1024 ASCII characters in one bulk Console.Write; up to 10 keyboard command samples during 128 paced sibling output chunks of 4096 ASCII characters; 20 native session create/close cycles; idle samples through 40 seconds after workload',
           startupMs,
           outputMs,
           siblingInputMs,
