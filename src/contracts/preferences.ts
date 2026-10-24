@@ -91,6 +91,11 @@ export function text(value: unknown, max: number): string {
     throw new Error('Invalid settings text')
   return value
 }
+export function parseTabTitle(value: unknown): string {
+  const title = text(value, 80).trim()
+  if (!title) throw new Error('Enter a tab name with 1 to 80 characters.')
+  return title
+}
 export function shellId(value: unknown): string {
   if (
     !['auto', 'powershell', 'pwsh', 'cmd', 'git-bash'].includes(String(value))
@@ -214,7 +219,7 @@ export function parsePreferences(value: unknown): Preferences {
   }
   const tabs = restoration['tabs'].map((value) => {
     const item = object(value, 'title,root')
-    return { title: text(item['title'], 80), root: node(item['root']) }
+    return { title: parseTabTitle(item['title']), root: node(item['root']) }
   })
   return {
     version: 1,

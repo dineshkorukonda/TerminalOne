@@ -4,11 +4,15 @@ import type { Tab } from '../workspace/store'
 import { layout, minimum } from '../workspace/layout'
 import { TerminalPane, type TerminalActions } from './TerminalPane'
 import { Icon } from './Icon'
+import type { ShellInfo } from '../../../contracts/desktop-api'
+import type { Project } from '../../../contracts/preferences'
 import type { Preferences } from '../../../contracts/preferences'
 
 export function PaneLayout({
   tab,
   appearance,
+  shells,
+  projects,
   active,
   focusPane,
   closePane,
@@ -18,6 +22,8 @@ export function PaneLayout({
 }: {
   tab: Tab
   appearance: Appearance
+  shells: ShellInfo[]
+  projects: Project[]
   active: boolean
   focusPane(id: string): void
   closePane(id: string): void
@@ -59,6 +65,17 @@ export function PaneLayout({
                 >
                   <TerminalPane
                     shellId={node.shellId}
+                    shellName={
+                      shells.find((shell) => shell.id === node.shellId)?.name ??
+                      `Unavailable shell (${node.shellId})`
+                    }
+                    projectName={
+                      node.projectId
+                        ? (projects.find(
+                            (project) => project.id === node.projectId
+                          )?.name ?? 'Unavailable saved project')
+                        : null
+                    }
                     appearance={appearance}
                     projectId={node.projectId}
                     privateSession={node.private}

@@ -1,3 +1,4 @@
+import { RenameTab } from './RenameTab'
 import { useEffect, useState, useRef } from 'react'
 import { useStore } from 'zustand'
 import { Icon } from './Icon'
@@ -34,6 +35,7 @@ export function App() {
   const [error, setError] = useState('')
   const [appearance, setAppearanceState] = useState(DEFAULT_APPEARANCE)
   const [preferences, setPreferences] = useState(defaultPreferences)
+  const [renameId, setRenameId] = useState<string | null>(null)
   const [developer, setDeveloper] = useState(false)
   const [draftOpen, setDraftOpen] = useState(false)
   const [projectId, setProjectId] = useState('')
@@ -215,6 +217,13 @@ export function App() {
     },
     { id: 'new', label: 'New terminal tab', run: newTab },
     {
+      id: 'rename',
+      label: 'Rename active tab',
+      run: () => {
+        if (activeTab) setRenameId(activeTab.id)
+      }
+    },
+    {
       id: 'close',
       label: 'Close active pane',
       run: () => {
@@ -387,6 +396,22 @@ export function App() {
         </button>
       </header>
       <main className="workspace">
+        {renameId && (
+          <RenameTab
+            title={
+              workspace.tabs.find((tab) => tab.id === renameId)?.title ?? ''
+            }
+            save={(title) => {
+              workspace.renameTab(renameId, title)
+              setRenameId(null)
+              focusTerminal()
+            }}
+            close={() => {
+              setRenameId(null)
+              focusTerminal()
+            }}
+          />
+        )}
         {updatesOpen && (
           <UpdateSettings
             status={updateStatus}
@@ -555,6 +580,17 @@ export function App() {
             ))}
           </div>
           <div className="pane-actions">
+            <button
+              disabled={!activeTab}
+              onClick={() => {
+                if (activeTab) {
+                  setRenameId(activeTab.id)
+                  setToolsOpen(false)
+                }
+              }}
+            >
+              Rename active tab
+            </button>
             {PANE_ACTIONS.map(({ label, icon, action }) => (
               <button
                 key={label}
@@ -738,6 +774,8 @@ export function App() {
             key={tab.id}
             tab={tab}
             appearance={appearance}
+            shells={shells}
+            projects={preferences.projects}
             active={tab.id === workspace.activeTabId}
             focusPane={workspace.focusPane}
             closePane={(id) => {
