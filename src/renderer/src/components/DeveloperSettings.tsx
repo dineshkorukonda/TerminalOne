@@ -78,6 +78,20 @@ export function DeveloperSettings({
           <label>
             <input
               type="checkbox"
+              checked={!!draft.confirmClose}
+              onChange={(event) =>
+                setDraft({ ...draft, confirmClose: event.target.checked })
+              }
+            />
+            Confirm before closing terminal views
+          </label>
+          <p>
+            Applies to pane and tab closure. App quit, Stop session and update
+            installation keep their separate behavior.
+          </p>
+          <label>
+            <input
+              type="checkbox"
               checked={draft.history.enabled}
               onChange={(event) =>
                 setDraft({

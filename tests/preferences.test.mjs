@@ -130,3 +130,15 @@ test('repository preserves corruption, validates imports before mutation, round-
     await rm(directory, { recursive: true, force: true })
   }
 })
+
+test('close confirmation remains opt-in for legacy preferences and rejects malformed values', () => {
+  const current = defaultPreferences()
+  const { confirmClose, ...legacy } = current
+  assert.equal(confirmClose, false)
+  assert.equal(parsePreferences(legacy).confirmClose, false)
+  assert.equal(
+    parsePreferences({ ...current, confirmClose: true }).confirmClose,
+    true
+  )
+  assert.throws(() => parsePreferences({ ...current, confirmClose: 'true' }))
+})
