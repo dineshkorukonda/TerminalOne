@@ -31,7 +31,7 @@ test('developer settings validate shortcuts and history suggestions remain draft
       exact: true
     })
     await settings
-      .getByRole('textbox', { name: 'Shortcut new', exact: true })
+      .getByRole('textbox', { name: 'Shortcut New terminal tab', exact: true })
       .fill('Ctrl+Shift+P')
     await settings
       .getByRole('button', { name: 'Save developer settings', exact: true })
@@ -40,7 +40,7 @@ test('developer settings validate shortcuts and history suggestions remain draft
       'Shortcut collision'
     )
     await settings
-      .getByRole('textbox', { name: 'Shortcut new', exact: true })
+      .getByRole('textbox', { name: 'Shortcut New terminal tab', exact: true })
       .fill('Ctrl+Shift+N')
     await settings
       .getByRole('checkbox', {

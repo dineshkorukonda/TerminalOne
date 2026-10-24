@@ -7,6 +7,8 @@ import type { TerminalActions } from './TerminalPane'
 import { CommandPalette, type PaletteAction } from './CommandPalette'
 import { DEFAULT_APPEARANCE, parseAppearance } from '../theme/appearance'
 import { FONT_FAMILIES } from '../theme/font'
+import { CloseConfirmation } from './CloseConfirmation'
+import { panes } from '../workspace/store'
 import { PaneLayout } from './PaneLayout'
 import { createWorkspaceStore, type PaneNode } from '../workspace/store'
 import type { ShellInfo } from '../../../contracts/desktop-api'
@@ -40,6 +42,12 @@ export function App() {
   const [draftOpen, setDraftOpen] = useState(false)
   const [projectId, setProjectId] = useState('')
   const [restoreOffered, setRestoreOffered] = useState(false)
+  const [pendingClose, setPendingClose] = useState<{
+    kind: 'pane' | 'tab'
+    id: string
+    count: number
+    focus: Element | null
+  } | null>(null)
   const saving = useRef(0)
   const terminalActions = useRef<TerminalActions | null>(null)
   async function saveSettings(value: Preferences) {
@@ -170,6 +178,27 @@ export function App() {
         ?.focus()
     )
   }
+  function closeView(kind: 'pane' | 'tab', id: string) {
+    const tab = workspace.tabs.find((item) =>
+      kind === 'tab'
+        ? item.id === id
+        : panes(item.root).some((pane) => pane.id === id)
+    )
+    if (!tab || pendingClose) return
+    if (preferences.confirmClose) {
+      setPendingClose({
+        kind,
+        id,
+        count: kind === 'tab' ? panes(tab.root).length : 1,
+        focus: document.activeElement
+      })
+      setToolsOpen(false)
+    } else {
+      if (kind === 'tab') workspace.closeTab(id)
+      else workspace.closePane(id)
+      focusTerminal()
+    }
+  }
   function split(direction: 'horizontal' | 'vertical') {
     workspace.split(direction)
     focusTerminal()
@@ -227,7 +256,7 @@ export function App() {
       id: 'close',
       label: 'Close active pane',
       run: () => {
-        if (activeTab) workspace.closePane(activeTab.activePaneId)
+        if (activeTab) closeView('pane', activeTab.activePaneId)
       }
     },
     { id: 'next', label: 'Next tab', run: () => switchTab(1) },
@@ -365,8 +394,7 @@ export function App() {
                   aria-label={`Close tab ${tab.title}`}
                   title={`Close tab ${tab.title}`}
                   onClick={() => {
-                    workspace.closeTab(tab.id)
-                    focusTerminal()
+                    closeView('tab', tab.id)
                   }}
                 >
                   <Icon name="close" />
@@ -408,6 +436,31 @@ export function App() {
             }}
             close={() => {
               setRenameId(null)
+              focusTerminal()
+            }}
+          />
+        )}
+        {pendingClose && (
+          <CloseConfirmation
+            count={pendingClose.count}
+            cancel={() => {
+              const previous = pendingClose.focus
+              setPendingClose(null)
+              requestAnimationFrame(() => {
+                if (
+                  previous instanceof HTMLElement &&
+                  previous.isConnected &&
+                  previous.getClientRects().length
+                )
+                  previous.focus()
+                else focusTerminal()
+              })
+            }}
+            confirm={() => {
+              if (pendingClose.kind === 'tab')
+                workspace.closeTab(pendingClose.id)
+              else workspace.closePane(pendingClose.id)
+              setPendingClose(null)
               focusTerminal()
             }}
           />
@@ -779,8 +832,7 @@ export function App() {
             active={tab.id === workspace.activeTabId}
             focusPane={workspace.focusPane}
             closePane={(id) => {
-              workspace.closePane(id)
-              focusTerminal()
+              closeView('pane', id)
             }}
             resizeSplit={workspace.resizeSplit}
             shortcuts={preferences.shortcuts}

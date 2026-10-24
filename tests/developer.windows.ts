@@ -252,18 +252,26 @@ test('saved projects restore fresh sessions only after explicit confirmation', a
         filePaths: [folder]
       })
     }, folder)
+    await expect(page.getByRole('tab')).toHaveCount(1)
     await clickTerminalOption(page, 'Open project')
+    // Open project creates and focuses the project tab immediately.
+    await expect(page.getByRole('tab')).toHaveCount(2)
     await openTerminalOptions(page)
     await expect(
       page.getByRole('combobox', { name: 'Project', exact: true })
     ).not.toHaveValue('')
-    await page.getByRole('button', { name: 'New session', exact: true }).click()
     let panel = page.locator('.tab-viewport:not([hidden])')
     await expect(panel.getByRole('status')).toHaveText('running', {
       timeout: 20000
     })
     await waitForIdlePowerShell(panel)
     await panel.locator('.xterm-helper-textarea').focus()
+    await page.keyboard.type("Write-Output ('PROJECT_' + (Get-Location).Path)")
+    await page.keyboard.press('Enter')
+    await expect(panel.locator('.xterm-accessibility-tree')).toContainText(
+      `PROJECT_${canonicalFolder}`
+    )
+    await waitForIdlePowerShell(panel)
     await page.keyboard.type(
       "$env:TERMINAL_RESTORE_TEST='synthetic'; Write-Output ('SET_' + 'OK')"
     )
@@ -281,6 +289,15 @@ test('saved projects restore fresh sessions only after explicit confirmation', a
       .getByRole('button', { name: 'Save current layout', exact: true })
       .click()
     await expect(settings.getByRole('status')).toContainText('layout saved')
+    const savedTabs = await page.evaluate(
+      async () =>
+        (
+          await (
+            Reflect.get(globalThis, 'desktop') as DesktopApi
+          ).getPreferences()
+        ).settings.restoration.tabs
+    )
+    expect(savedTabs).toHaveLength(2)
     await app.close()
     app = await electron.launch({
       args: ['.', `--user-data-dir=${profile}`],
