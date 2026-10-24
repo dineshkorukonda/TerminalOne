@@ -94,6 +94,7 @@ test('profile startup throughput and repeated native session cleanup', async () 
     const resizeMs: number[] = []
     const resizeSamples: {
       requested: { width: number; height: number }
+      nativeContent: { width: number; height: number }
       actual: { width: number; height: number; scale: number }
     }[] = []
     for (const [width, height] of [
@@ -102,15 +103,17 @@ test('profile startup throughput and repeated native session cleanup', async () 
       [1000, 700]
     ] as const) {
       const started = performance.now()
-      await app!.evaluate(
+      const nativeContent = await app!.evaluate(
         ({ BrowserWindow }, size) => {
-          BrowserWindow.getAllWindows()[0]!.setContentSize(
-            size.width,
-            size.height
-          )
+          const window = BrowserWindow.getAllWindows()[0]!
+          window.setContentSize(size.width, size.height)
+          const [width, height] = window.getContentSize()
+          return { width: width!, height: height! }
         },
         { width, height }
       )
+      expect(Math.abs(nativeContent.width - width)).toBeLessThanOrEqual(1)
+      expect(Math.abs(nativeContent.height - height)).toBeLessThanOrEqual(1)
       await expect
         .poll(async () => {
           const actual = await page.evaluate(() => ({
@@ -119,13 +122,14 @@ test('profile startup throughput and repeated native session cleanup', async () 
           }))
           // Fractional physical-pixel scaling can round the client area by one CSS pixel.
           return (
-            Math.abs(actual.width - width) <= 1 &&
-            Math.abs(actual.height - height) <= 1
+            Math.abs(actual.width - nativeContent.width) <= 1 &&
+            Math.abs(actual.height - nativeContent.height) <= 1
           )
         })
         .toBe(true)
       resizeSamples.push({
         requested: { width, height },
+        nativeContent,
         actual: await page.evaluate(() => ({
           width: Number(Reflect.get(globalThis, 'innerWidth')),
           height: Number(Reflect.get(globalThis, 'innerHeight')),
