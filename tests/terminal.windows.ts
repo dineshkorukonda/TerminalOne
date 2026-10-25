@@ -395,6 +395,26 @@ test('real tabs and panes preserve sessions, search output and use the scoped Wi
       watcher.cancel()
     }
     await expect(visible.locator('.xterm')).toHaveCount(1)
+    for (const [shortcut, marker] of [
+      ['Control+V', 'CTRL_V'],
+      ['Shift+Insert', 'SHIFT_INSERT']
+    ] as const) {
+      await waitForPrompt(page)
+      await page.evaluate(
+        (marker) =>
+          (Reflect.get(globalThis, 'desktop') as DesktopApi).writeClipboard(
+            `Write-Output ('CLIPBOARD_' + '${marker}')`
+          ),
+        marker
+      )
+      await visible.locator('.xterm-helper-textarea').focus()
+      await page.keyboard.press(shortcut)
+      await page.keyboard.press('Enter')
+      await expect(visible.locator('.xterm-accessibility-tree')).toContainText(
+        `CLIPBOARD_${marker}`
+      )
+    }
+    await waitForPrompt(page)
     await page.evaluate(() =>
       (Reflect.get(globalThis, 'desktop') as DesktopApi).writeClipboard(
         "Write-Output ('PASTE_' + 'OK')\r\nWrite-Output ('LINE_' + 'TWO')\r\n"
@@ -415,6 +435,15 @@ test('real tabs and panes preserve sessions, search output and use the scoped Wi
     await visible
       .getByRole('button', { name: 'Next match', exact: true })
       .click()
+    await visible.locator('.xterm-helper-textarea').focus()
+    await page.keyboard.press('Control+C')
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          (Reflect.get(globalThis, 'desktop') as DesktopApi).readClipboard()
+        )
+      )
+      .toBe('PASTE_OK')
     await clickTerminalOption(page, 'Copy selection')
     await expect
       .poll(() =>
