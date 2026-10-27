@@ -25,6 +25,7 @@ interface RecordEntry extends SessionInfo {
   ready: Promise<PtyHandle> | null
   handle: PtyHandle | null
   closing: Promise<void> | null
+  retired: boolean
 }
 
 export class Sessions {
@@ -84,6 +85,14 @@ export class Sessions {
   ): Promise<SessionInfo> {
     if (this.disposed) throw new Error('Terminal service is closed')
     const grid = validateGrid(dimensions)
+    // Keep recent closed IDs for idempotent cleanup, without making the record
+    // bound a lifetime limit. Never evict a host whose close is still pending.
+    if (this.records.size >= 256) {
+      for (const [id, record] of this.records) {
+        if (record.state === 'closed' && record.retired) this.records.delete(id)
+        if (this.records.size < 256) break
+      }
+    }
     if (
       this.records.size >= 256 ||
       [...this.records.values()].filter(
@@ -110,7 +119,8 @@ export class Sessions {
       exitCode: null,
       handle: null,
       ready: null,
-      closing: null
+      closing: null,
+      retired: false
     }
     this.records.set(id, session)
     this.state(session)
@@ -147,6 +157,9 @@ export class Sessions {
             'Could not start the terminal. Verify the shell is installed and the native Windows components were built.'
         })
         this.state(session)
+        // A rejected start returns no session ID to the caller. The port owns
+        // cleanup of failed allocations; there is no live handle to retain.
+        if (!session.handle) this.records.delete(id)
       }
       throw new Error(
         'Could not start the terminal. Verify the shell and native Windows components.'
@@ -188,6 +201,7 @@ export class Sessions {
     session.closing = (async () => {
       const handle = session.handle ?? (await session.ready?.catch(() => null))
       await handle?.close()
+      session.retired = true
     })()
     return session.closing
   }

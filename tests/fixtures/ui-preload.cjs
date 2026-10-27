@@ -10,8 +10,15 @@ let sequence = 0,
   releaseClear = null,
   failClear = false,
   clearCount = 0,
-  failStart = false
+  failStart = false,
+  holdClipboard = false,
+  failClipboard = false,
+  releaseClipboard = null,
+  clipboardReads = 0,
+  holdSessionReply = false,
+  releaseSessionReply = null
 const heldHistory = []
+const forgottenSessions = new Set()
 let historyEntries = [
   {
     id: 'sample-1',
@@ -23,8 +30,37 @@ let historyEntries = [
 ]
 const historyRequests = [],
   historyCompletions = [],
-  sessionLaunches = []
+  sessionLaunches = [],
+  sessionWrites = [],
+  sessionResizes = []
 contextBridge.exposeInMainWorld('uiFixture', {
+  getSessionWrites: () => sessionWrites,
+  forgetClosedSession: (id) => {
+    if (sessions.has(id))
+      throw new Error('Cannot forget a live fixture session')
+    forgottenSessions.add(id)
+  },
+  getSessionResizes: () => sessionResizes,
+  getClipboardReadCount: () => clipboardReads,
+  holdNextClipboardRead: () => {
+    holdClipboard = true
+  },
+  failNextClipboardRead: () => {
+    failClipboard = true
+  },
+  finishClipboardRead: () => {
+    releaseClipboard?.()
+    releaseClipboard = null
+  },
+  holdNextSessionReply: () => {
+    holdSessionReply = true
+  },
+  finishSessionReply: () => {
+    releaseSessionReply?.()
+    releaseSessionReply = null
+  },
+  readySessionIntegration: (id) =>
+    emit({ type: 'integration', id, ready: true }),
   failNextSession: () => {
     failStart = true
   },
@@ -233,15 +269,26 @@ contextBridge.exposeInMainWorld('desktop', {
       sequence: 1,
       data: `\x1b[32mFixture ${id}\x1b[0m 世界\r\nProject: ${projectId ?? 'home'}\r\nsearch match one\r\nsearch match two\r\n`
     })
-    return session
+    const reply = { ...session }
+    if (holdSessionReply) {
+      holdSessionReply = false
+      await new Promise((resolve) => {
+        releaseSessionReply = resolve
+      })
+    }
+    return reply
   },
   writeSession: async (id, data) => {
+    sessionWrites.push({ id, data })
     if (sessions.has(id))
       emit({ type: 'data', id, data: data.replace(/\r/g, '\r\n'), sequence: 2 })
   },
-  resizeSession: async () => {},
+  resizeSession: async (id, grid) => {
+    sessionResizes.push({ id, ...grid })
+  },
   acknowledgeSession: async () => {},
   closeSession: async (id) => {
+    if (forgottenSessions.has(id)) throw new Error('Unknown or unowned session')
     const session = sessions.get(id)
     if (session) {
       session.state = 'closed'
@@ -253,7 +300,20 @@ contextBridge.exposeInMainWorld('desktop', {
     listeners.add(listener)
     return () => listeners.delete(listener)
   },
-  readClipboard: async () => clipboard,
+  readClipboard: async () => {
+    clipboardReads++
+    const text = clipboard
+    const fail = failClipboard
+    failClipboard = false
+    if (holdClipboard) {
+      holdClipboard = false
+      await new Promise((resolve) => {
+        releaseClipboard = resolve
+      })
+    }
+    if (fail) throw new Error('Synthetic clipboard failure')
+    return text
+  },
   writeClipboard: async (text) => {
     clipboard = text
   }

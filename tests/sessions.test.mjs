@@ -177,3 +177,59 @@ test('owner cleanup closes only its sessions and bounds concurrent allocation', 
   await sessions.write('other', other.id, 'still-owned')
   await sessions.dispose()
 })
+
+test('completed sessions can be reused beyond the record bound without losing ownership checks', async () => {
+  const { sessions, calls } = fixture()
+  const sibling = await sessions.create('other', shell, 'cwd', grid)
+  for (let index = 0; index < 300; index++) {
+    const session = await sessions.create('owner', shell, 'cwd', grid)
+    await sessions.close('owner', session.id)
+    await sessions.close('owner', session.id)
+    await assert.rejects(sessions.close('other', session.id), /unowned/)
+  }
+  assert.equal(calls.filter(([type]) => type === 'close').length, 300)
+  await sessions.write('other', sibling.id, 'still running')
+  await sessions.dispose()
+})
+
+test('failed starts with no returned ID do not exhaust retained records', async () => {
+  const { sessions } = fixture(async () => {
+    throw new Error('Synthetic spawn failure')
+  })
+  for (let index = 0; index < 300; index++)
+    await assert.rejects(
+      sessions.create('owner', shell, 'cwd', grid),
+      /Could not start/
+    )
+  await sessions.dispose()
+})
+
+test('pending closes stay bounded and cannot be evicted before host retirement', async () => {
+  const retiring = []
+  let sequence = 0
+  const sessions = new Sessions(
+    {
+      start: async () => ({
+        pid: 42,
+        close: () => new Promise((resolve) => retiring.push(resolve))
+      }),
+      onFailure: () => () => {},
+      dispose: async () => {}
+    },
+    () => `pending-${++sequence}`,
+    () => {}
+  )
+  const closing = []
+  for (let index = 0; index < 256; index++) {
+    const session = await sessions.create('owner', shell, 'cwd', grid)
+    closing.push(sessions.close('owner', session.id))
+  }
+  await assert.rejects(sessions.create('owner', shell, 'cwd', grid), /limit/)
+  retiring[0]()
+  await closing[0]
+  const next = await sessions.create('owner', shell, 'cwd', grid)
+  closing.push(sessions.close('owner', next.id))
+  for (const finish of retiring) finish()
+  await Promise.all(closing)
+  await sessions.dispose()
+})

@@ -45,6 +45,7 @@ export function TerminalPane({
   shortcutRef.current = shortcuts
   const [integrated, setIntegrated] = useState(false)
   const terminalInstance = useRef<Terminal | null>(null)
+  const sessionGeneration = useRef(0)
   const searchInstance = useRef<SearchAddon | null>(null)
   const refit = useRef<() => void>(() => {})
   const [searchOpen, setSearchOpen] = useState(false)
@@ -74,15 +75,28 @@ export function TerminalPane({
     setSearchResult(found ? 'Match selected' : 'No matches')
   }
   async function clipboard(action: 'copy' | 'paste') {
+    const generation = sessionGeneration.current
+    const focusedAtStart = document.activeElement
     try {
       const terminal = terminalInstance.current
       if (!terminal) return
       if (action === 'copy') {
         const selected = terminal.getSelection()
         if (selected) await window.desktop.writeClipboard(selected)
-      } else terminal.paste(await window.desktop.readClipboard())
-      terminal.focus()
+      } else {
+        await pasteSession.current()
+      }
+      if (
+        terminalInstance.current === terminal &&
+        sessionGeneration.current === generation &&
+        (document.activeElement === focusedAtStart ||
+          document.activeElement === document.body) &&
+        terminal.element?.closest('.pane-active') &&
+        !terminal.element.closest('[hidden]')
+      )
+        terminal.focus()
     } catch {
+      if (sessionGeneration.current !== generation) return
       setError(
         'Clipboard operation failed. Select less text or paste a smaller block.'
       )
@@ -95,6 +109,7 @@ export function TerminalPane({
   const searchOpenRef = useRef(false)
   searchOpenRef.current = searchOpen
   const closeSession = useRef<() => void>(() => {})
+  const pasteSession = useRef<() => Promise<void>>(async () => {})
   useImperativeHandle(actionsRef, () => ({
     search: () => {
       if (searchOpenRef.current) closeSearch()
@@ -125,6 +140,7 @@ export function TerminalPane({
       lineHeight: appearance.font.lineHeight,
       cursorBlink: true,
       cursorStyle: 'bar',
+      disableStdin: true,
       allowProposedApi: true,
       screenReaderMode: true,
       theme
@@ -146,41 +162,71 @@ export function TerminalPane({
     searchInstance.current = searchAddon
     terminal.open(element)
     terminalInstance.current = terminal
-    terminal.attachCustomKeyEventHandler(
-      (event) =>
-        !(
-          event.ctrlKey &&
-          event.shiftKey &&
+    if (
+      document.activeElement === document.body &&
+      !element.closest('[hidden]')
+    )
+      terminal.focus()
+    terminal.attachCustomKeyEventHandler((event) => {
+      if (event.isComposing) return true
+      const key = event.key.toLowerCase()
+      const plainControl =
+        event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey
+      const paste =
+        (plainControl && key === 'v') ||
+        (event.shiftKey &&
+          !event.ctrlKey &&
           !event.altKey &&
           !event.metaKey &&
-          Object.values(shortcutRef.current).includes(
-            `Ctrl+Shift+${event.key.toUpperCase()}`
-          )
+          key === 'insert')
+      const copy = plainControl && key === 'c' && terminal.hasSelection()
+      if (paste || copy) {
+        event.preventDefault()
+        if (event.type === 'keydown') void clipboard(copy ? 'copy' : 'paste')
+        return false
+      }
+      return !(
+        event.ctrlKey &&
+        event.shiftKey &&
+        !event.altKey &&
+        !event.metaKey &&
+        Object.values(shortcutRef.current).includes(
+          `Ctrl+Shift+${event.key.toUpperCase()}`
         )
-    )
+      )
+    })
     let unmounted = false
     let restarting = false
     function startSession() {
+      sessionGeneration.current++
       let disposed = false
       let stopping = false
       let running = false
       let id: string | undefined
+      let closing: Promise<void> | null = null
       let pending: SessionEvent[] = []
       let buffered = 0
       let input = Promise.resolve()
       let queuedInput = 0
+      let pastedInput: string | null = null
       let integrationReady = false
       setStatus('Starting...')
       setError('')
       setIntegrated(false)
       terminal.options.disableStdin = true
+      function closeHost() {
+        if (!id) return Promise.resolve()
+        // A stopped pane may outlive the bounded main-process ID cache. Keep
+        // the completed close so restart/unmount never closes a retired ID again.
+        return (closing ??= window.desktop.closeSession(id))
+      }
       const fail = (message: string) => {
         if (disposed) return
         stopping = true
         terminal.options.disableStdin = true
         setError(message)
         setStatus('Failed')
-        if (id) void window.desktop.closeSession(id).catch(() => {})
+        void closeHost().catch(() => {})
       }
       const grids = createGridSender(
         async (grid) => {
@@ -235,7 +281,7 @@ export function TerminalPane({
           integrationReady = event.ready
           setIntegrated(event.ready)
           if (privateSession && integrationReady && !stopping)
-            terminal.options.disableStdin = false
+            terminal.options.disableStdin = !running
         } else if (event.type === 'state') {
           running = event.state === 'running'
           setStatus(
@@ -244,7 +290,7 @@ export function TerminalPane({
               : event.state
           )
           terminal.options.disableStdin =
-            event.state !== 'running' || (privateSession && !integrationReady)
+            stopping || !running || (privateSession && !integrationReady)
         } else if (event.type === 'error') fail(event.message)
       }
       const unsubscribe = window.desktop.onSessionEvent((event) => {
@@ -260,50 +306,84 @@ export function TerminalPane({
           pending.push(event)
         } else receive(event)
       })
-      const onData = terminal.onData((data) => {
-        if (!id || !running || disposed || stopping) return
+      function reserveInput(data: string) {
         queuedInput += data.length
-        if (queuedInput > 262144) {
+        // Leave room for xterm's twelve bracketed-paste delimiters in addition
+        // to the clipboard's 262,144-character text limit.
+        if (queuedInput > 262144 + 12) {
           fail(
             'Terminal input queue is full. Use Restart session to try again.'
           )
+          queuedInput -= data.length
+          return false
+        }
+        return true
+      }
+      async function sendInput(data: string) {
+        try {
+          for (let offset = 0; offset < data.length;) {
+            if (!id || disposed || stopping || !running) return
+            let end = Math.min(offset + 16384, data.length)
+            if (end < data.length && /[\uD800-\uDBFF]/.test(data[end - 1]!))
+              end--
+            await window.desktop.writeSession(id, data.slice(offset, end))
+            offset = end
+          }
+        } catch {
+          fail(
+            'Could not send terminal input. Use Restart session to try again.'
+          )
+        } finally {
+          queuedInput -= data.length
+        }
+      }
+      const onData = terminal.onData((data) => {
+        if (!id || !running || disposed || stopping) return
+        if (pastedInput !== null) {
+          pastedInput += data
           return
         }
-        const sessionId = id
-        input = input
-          .then(async () => {
-            for (let offset = 0; offset < data.length;) {
-              let end = Math.min(offset + 16384, data.length)
-              if (end < data.length && /[\uD800-\uDBFF]/.test(data[end - 1]!))
-                end--
-              if (!disposed && !stopping)
-                await window.desktop.writeSession(
-                  sessionId,
-                  data.slice(offset, end)
-                )
-              offset = end
-            }
-          })
-          .catch(() =>
-            fail(
-              'Could not send terminal input. Use Restart session to try again.'
-            )
-          )
-          .finally(() => {
-            queuedInput -= data.length
-          })
+        if (reserveInput(data)) input = input.then(() => sendInput(data))
       })
+      pasteSession.current = () => {
+        if (
+          !id ||
+          !running ||
+          disposed ||
+          stopping ||
+          terminal.options.disableStdin
+        )
+          return Promise.resolve()
+        // Reserve the paste's position before reading the clipboard so a quick
+        // Enter or subsequent keystroke cannot overtake the pasted command.
+        const operation = input.then(async () => {
+          if (disposed || stopping || !running) return
+          const text = await window.desktop.readClipboard()
+          if (disposed || stopping || !running || terminal.options.disableStdin)
+            return
+          pastedInput = ''
+          let data: string
+          try {
+            terminal.paste(text)
+            data = pastedInput
+          } finally {
+            pastedInput = null
+          }
+          if (reserveInput(data)) await sendInput(data)
+        })
+        // Clipboard errors are recoverable; the caller displays them and later
+        // input must still be sent in order.
+        input = operation.catch(() => {})
+        return operation
+      }
       closeSession.current = () => {
         stopping = true
         terminal.options.disableStdin = true
-        if (id)
-          void window.desktop
-            .closeSession(id)
-            .catch(() =>
-              fail(
-                'Could not close the terminal. Close the window to stop its host.'
-              )
-            )
+        void closeHost().catch(() =>
+          fail(
+            'Could not close the terminal. Close the window to stop its host.'
+          )
+        )
       }
       // React development effect replay can dispose this view before the microtask.
       // Avoid allocating a native session for that discarded mount.
@@ -323,7 +403,7 @@ export function TerminalPane({
           if (!session) return
           id = session.id
           if (disposed || stopping) {
-            await window.desktop.closeSession(id)
+            await closeHost()
             return
           }
           running = session.state === 'running'
@@ -341,6 +421,7 @@ export function TerminalPane({
         )
       return async () => {
         disposed = true
+        sessionGeneration.current++
         unsubscribe()
         observer.disconnect()
         cancelAnimationFrame(frame)
@@ -348,7 +429,7 @@ export function TerminalPane({
         onData.dispose()
         pending = []
         await creation
-        if (id) await window.desktop.closeSession(id)
+        await closeHost()
       }
     }
     let disposeSession = startSession()
@@ -397,7 +478,12 @@ export function TerminalPane({
       style.getPropertyValue(name).trim()
     )
     refit.current()
-  }, [appearance])
+  }, [
+    appearance.theme,
+    appearance.font.family,
+    appearance.font.size,
+    appearance.font.lineHeight
+  ])
   return (
     <section className="terminal-panel" aria-label="Terminal session">
       <div className="pane-context" aria-label="Session launch context">

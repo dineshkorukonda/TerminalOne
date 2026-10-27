@@ -175,7 +175,7 @@ export function App() {
         .querySelector<HTMLTextAreaElement>(
           '.tab-viewport:not([hidden]) .pane-active .xterm-helper-textarea'
         )
-        ?.focus()
+        ?.focus({ preventScroll: true })
     )
   }
   function closeView(kind: 'pane' | 'tab', id: string) {
@@ -302,6 +302,7 @@ export function App() {
   ]
   useEffect(() => {
     const keydown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.isComposing) return
       if (event.key === 'Escape' && toolsOpen) {
         setToolsOpen(false)
         document
@@ -329,6 +330,12 @@ export function App() {
         return
       }
       if (action === 'copy' || action === 'paste') {
+        const target = event.target as HTMLElement | null
+        if (
+          target?.closest('input, textarea, [contenteditable]') &&
+          !target.closest('.xterm')
+        )
+          return
         event.preventDefault()
         paneAction(action)
         return
