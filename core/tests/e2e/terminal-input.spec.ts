@@ -217,6 +217,35 @@ test('large bracketed pastes preserve Unicode and stay inside IPC chunk limits',
   }
 })
 
+for (const newline of ['\n', '\r\n']) {
+  test(`two-line ${newline.length === 1 ? 'LF' : 'CRLF'} paste stays bracketed until Enter`, async ({
+    terminalPage: page
+  }) => {
+    const [id] = (await fixture(page, 'getSessionIds')) as string[]
+    await page.evaluate(
+      (id) =>
+        (Reflect.get(globalThis, 'desktop') as DesktopApi).writeSession(
+          id!,
+          '\u001b[?2004h'
+        ),
+      id
+    )
+    await expect(page.locator('.xterm-rows')).toContainText('search match two')
+    const before = (await fixture(page, 'getSessionWrites')).length
+    await writeClipboard(page, `printf first${newline}printf second`)
+    await page.keyboard.press('Control+V')
+    const pasted = '\u001b[200~printf first\rprintf second\u001b[201~'
+    const writes = async () =>
+      ((await fixture(page, 'getSessionWrites')) as { data: string }[])
+        .slice(before)
+        .map((entry) => entry.data)
+        .join('')
+    await expect.poll(writes).toBe(pasted)
+    await page.keyboard.press('Enter')
+    await expect.poll(writes).toBe(pasted + '\r')
+  })
+}
+
 test('Enter and later typing wait behind a pending paste', async ({
   terminalPage: page
 }) => {

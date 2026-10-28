@@ -60,6 +60,11 @@ test('default Bash loads bundled highlighting and completion and adapts commands
       "[[ $BLE_VERSION && $bleopt_complete_auto_complete ]] && printf '%s%s\\n' EDITOR_ READY"
     )
     await expect(rows).toContainText('EDITOR_READY', { timeout: 20000 })
+    await send(
+      "printf '%s%s\\n' MULTILINE_ FIRST\nprintf '%s%s\\n' MULTILINE_ SECOND"
+    )
+    await expect(rows).toContainText('MULTILINE_FIRST', { timeout: 15000 })
+    await expect(rows).toContainText('MULTILINE_SECOND', { timeout: 15000 })
     await send("Write-Output 'ADAPTER_'OK")
     await expect(rows).toContainText('ADAPTER_OK', { timeout: 15000 })
     await send("printf '%s%s\\n' BUSY_ READY; sleep 90")
