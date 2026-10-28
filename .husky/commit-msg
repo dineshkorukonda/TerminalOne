@@ -1,1 +1,5 @@
-npm run commitlint -- --edit "$1"
+case "$1" in
+  /*|[A-Za-z]:*) message="$1" ;;
+  *) message="$(git rev-parse --show-toplevel)/$1" ;;
+esac
+npm --prefix core run commitlint -- --edit "$message"

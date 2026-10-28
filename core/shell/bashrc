@@ -1,0 +1,30 @@
+# Terminal One's isolated startup file. Never modify the user's dotfiles.
+# Keep the launch folder selected by the application when loading Git's profile.
+export CHERE_INVOKING=1
+[[ -r /etc/profile ]] && source /etc/profile
+[[ -r ~/.bashrc ]] && source ~/.bashrc
+
+export USER=${USER:-$(id -un)}
+export LANG=${LANG:-C.UTF-8}
+_terminal_one_shell_dir=$(cd -- "$(dirname -- "$(cygpath -u "${BASH_SOURCE[0]}")")" && pwd)
+source "$_terminal_one_shell_dir/adapters.bash"
+PS1='\[\e[92m\]\u@\h\[\e[0m\]:\[\e[94m\]\w\[\e[0m\]\$ '
+if [[ -r $_terminal_one_shell_dir/blesh/ble.sh ]]; then
+  if source "$_terminal_one_shell_dir/blesh/ble.sh" --noattach; then
+    bleopt complete_auto_complete=1
+    # Enter submits a pasted block just as it submits a single command.
+    # Register before attach so lazily loaded Emacs defaults cannot replace it.
+    blehook/eval-after-load keymap_emacs '
+      ble-bind -m emacs -f C-m accept-line
+      ble-bind -m emacs -f RET accept-line
+      ble-bind -m emacs -f M-RET newline
+      bleopt keymap_emacs_mode_string_multiline="Enter to run; Alt+Enter for a new line"
+    '
+    ble-attach
+  else
+    printf 'Terminal One: Bash editor could not initialize; using native completion.\n' >&2
+  fi
+else
+  printf 'Terminal One: bundled Bash editor unavailable; using native completion.\n' >&2
+fi
+unset _terminal_one_shell_dir

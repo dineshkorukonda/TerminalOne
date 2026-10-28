@@ -51,7 +51,7 @@ Consumes: semantic behavior specified by the tests. Produces: complete responsiv
 
 ## Task 3: Documentation, automated quality and review
 
-Files: README.md, docs/verification.md, ../.github/workflows/website.yml.
+Files: README.md, docs/verification.md, ../.github/workflows/ci-website.yml.
 
 Consumes: actual command output and implemented website behavior. Produces: accurate setup documentation, isolated website CI and review-ready PR.
 
