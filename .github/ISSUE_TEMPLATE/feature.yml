@@ -1,7 +1,7 @@
 name: Feature request
 description: Propose a scoped feature with observable acceptance criteria.
-title: '[Feature]: '
-labels: ['type:feature']
+title: "[Feature]: "
+labels: ["type:feature"]
 body:
   - type: textarea
     id: description
@@ -36,7 +36,7 @@ body:
     attributes:
       label: Acceptance criteria
       description: Provide specific, verifiable outcomes as a Markdown checklist.
-      placeholder: '- [ ] Observable outcome'
+      placeholder: "- [ ] Observable outcome"
     validations:
       required: true
   - type: textarea

@@ -1,5 +1,5 @@
 node_modules/
-shell/blesh/
+core/shell/blesh/
 out/
 test-results/
 playwright-report/
@@ -8,4 +8,8 @@ playwright-report/
 .DS_Store
 .husky/_/
 artifacts/
-native/*.exe
+core/native/*.exe
+.env
+.env.*
+!.env.example
+!.env.*.example

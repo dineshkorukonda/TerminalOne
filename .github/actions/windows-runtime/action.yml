@@ -3,7 +3,7 @@ description: Install locked dependencies and restore this run's source-bound bui
 inputs:
   alpha:
     description: Apply the caller's alpha run number after dependency installation.
-    default: 'false'
+    default: "false"
 runs:
   using: composite
   steps:
@@ -11,21 +11,32 @@ runs:
       with:
         node-version-file: .node-version
         cache: npm
+        cache-dependency-path: core/package-lock.json
     - run: npm ci
+      working-directory: core
       shell: pwsh
     - if: inputs.alpha == 'true'
       run: node scripts/alpha-version.mjs
+      working-directory: core
       shell: pwsh
     - run: npm run electron:install
+      working-directory: core
       shell: pwsh
     - name: Clean replaced runtime targets
+      working-directory: core
       shell: pwsh
       run: |
-        Remove-Item -Recurse -Force out, native/pty-job-host.exe, node_modules/node-pty/build/Release, shell/blesh -ErrorAction SilentlyContinue
+        $runtimeRoot = (Resolve-Path -LiteralPath .).Path
+        foreach ($relativeTarget in @('out', 'native/pty-job-host.exe', 'node_modules/node-pty/build/Release', 'shell/blesh')) {
+          $target = [IO.Path]::GetFullPath((Join-Path $runtimeRoot $relativeTarget))
+          if (!$target.StartsWith($runtimeRoot + [IO.Path]::DirectorySeparatorChar)) { throw 'Runtime cleanup escaped core' }
+          Remove-Item -LiteralPath $target -Recurse -Force -ErrorAction SilentlyContinue
+        }
     - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
       with:
         name: desktop-runtime
-        path: .
+        path: core
     - name: Verify source, version and runtime bytes
       run: node scripts/ci-runtime.mjs --verify
+      working-directory: core
       shell: pwsh
